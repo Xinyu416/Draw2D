@@ -105,11 +105,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		printf("WM_DESTROY\n");
 		PostQuitMessage(0);
+		EngineClose();
 	}
 	return 0;
 	case WM_CLOSE:
 	{
 		printf("WM_CLOSE\n");
+		WindowsClose();
 		if (MessageBox(hwnd, L"Really quit?", L"Draw2D", MB_OKCANCEL) == IDOK)
 		{
 			DestroyWindow(hwnd);
@@ -209,46 +211,47 @@ void AppLoop(HWND hwnd) {
 		sleepTime = fmax(targetFrameTime - (curTime.QuadPart - lastTime.QuadPart) * invFreq, 0.0) * 1000;
 		printf("sleep:%f\n", targetFrameTime - (curTime.QuadPart - lastTime.QuadPart) * invFreq);
 		Sleep(sleepTime);
+		printf("GameEngine_IsRuning:%d\n", GameEngine_IsRuning());
 	}
 }
 
-void temp() {
-	HDC hdc = GetDC(window);
-	BITMAPINFO bmi; // 定义位图信息结构体
-	memset(&bmi, 0, sizeof(BITMAPINFO)); // 初始化结构体
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER); // 设置位图信息头大小
-	bmi.bmiHeader.biWidth = (LONG)FramBuffer.width; // 位图宽度
-	bmi.bmiHeader.biHeight = -(LONG)FramBuffer.height; // 负值表示顶向下位图
-	bmi.bmiHeader.biPlanes = 1; // 位图平面数，必须为1
-	bmi.bmiHeader.biBitCount = (WORD)FramBuffer.bpp; // 每像素位数
-	bmi.bmiHeader.biCompression = BI_RGB; // 无压缩
-	SetDIBitsToDevice( // 将位图数据传输到设备上下文
-		hdc,
-		0, 0,
-		(DWORD)FramBuffer.width, (DWORD)FramBuffer.height,
-		0, 0,
-		0, (UINT)FramBuffer.height,
-		FramBuffer.memory,
-		&bmi,
-		DIB_RGB_COLORS
-	);
-	ReleaseDC(window, hdc); // 释放设备上下文
-}
-
-void onPaint(HWND hwnd, const uint8_t* frameBufferData, BITMAPINFO* pbmi) {
-	uint32_t width = engine_getFrameWidth();
-	uint32_t height = engine_getFrameHeight();
-	HDC hdc = GetDC(hwnd);
-	// 将位图数据传输到设备上下文
-	SetDIBitsToDevice(
-		hdc,
-		0, 0,
-		(DWORD)width, (DWORD)height,
-		0, 0,
-		0, (UINT)height,
-		frameBufferData,
-		pbmi,
-		DIB_RGB_COLORS
-	);
-	ReleaseDC(hwnd, hdc);
-}
+//void temp() {
+//	HDC hdc = GetDC(window);
+//	BITMAPINFO bmi; // 定义位图信息结构体
+//	memset(&bmi, 0, sizeof(BITMAPINFO)); // 初始化结构体
+//	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER); // 设置位图信息头大小
+//	bmi.bmiHeader.biWidth = (LONG)FramBuffer.width; // 位图宽度
+//	bmi.bmiHeader.biHeight = -(LONG)FramBuffer.height; // 负值表示顶向下位图
+//	bmi.bmiHeader.biPlanes = 1; // 位图平面数，必须为1
+//	bmi.bmiHeader.biBitCount = (WORD)FramBuffer.bpp; // 每像素位数
+//	bmi.bmiHeader.biCompression = BI_RGB; // 无压缩
+//	SetDIBitsToDevice( // 将位图数据传输到设备上下文
+//		hdc,
+//		0, 0,
+//		(DWORD)FramBuffer.width, (DWORD)FramBuffer.height,
+//		0, 0,
+//		0, (UINT)FramBuffer.height,
+//		FramBuffer.memory,
+//		&bmi,
+//		DIB_RGB_COLORS
+//	);
+//	ReleaseDC(window, hdc); // 释放设备上下文
+//}
+//
+//void onPaint(HWND hwnd, const uint8_t* frameBufferData, BITMAPINFO* pbmi) {
+//	uint32_t width = engine_getFrameWidth();
+//	uint32_t height = engine_getFrameHeight();
+//	HDC hdc = GetDC(hwnd);
+//	// 将位图数据传输到设备上下文
+//	SetDIBitsToDevice(
+//		hdc,
+//		0, 0,
+//		(DWORD)width, (DWORD)height,
+//		0, 0,
+//		0, (UINT)height,
+//		frameBufferData,
+//		pbmi,
+//		DIB_RGB_COLORS
+//	);
+//	ReleaseDC(hwnd, hdc);
+//}

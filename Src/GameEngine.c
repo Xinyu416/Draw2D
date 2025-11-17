@@ -1,7 +1,6 @@
 #include "GameEngine.h"
 
 GameEngine* _gameEngneInstance = NULL;
-bool gameIsRuning = false;
 
 void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, GameEngineResizeEvent cb) {
 	GameEngine* gameinstance = _getGameEngine();
@@ -9,7 +8,7 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, GameEngineResi
 	gameinstance->height = height;
 	gameinstance->fps = fps;
 	gameinstance->onResize = cb;
-	gameIsRuning = true;
+	gameinstance->gameIsRuning = true;
 }
 
 void GameEngineResize(uint32_t w, uint32_t h) {
@@ -19,12 +18,12 @@ void GameEngineResize(uint32_t w, uint32_t h) {
 }
 
 void EngineClose() {
-	gameIsRuning = false;
+	_gameEngneInstance->gameIsRuning = false;
 	printf("GameEngine--EngineClose\n");
 }
 
 void  WindowsClose() {
-	gameIsRuning = false;
+	_gameEngneInstance->gameIsRuning = false;
 	printf("GameEngine--WindowsClose\n");
 }
 
@@ -49,7 +48,7 @@ uint8_t GameEngine_GetFPS() {
 }
 
 bool GameEngine_IsRuning() {
-	return gameIsRuning;
+	return _gameEngneInstance->gameIsRuning;
 }
 
 void GameEnginSceneLoop() {

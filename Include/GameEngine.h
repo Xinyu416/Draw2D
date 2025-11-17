@@ -39,6 +39,7 @@ typedef struct {
 	uint8_t fps;
 	uint32_t width;
 	uint32_t height;
+	bool gameIsRuning;
 }GameEngine;
 
 
