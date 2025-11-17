@@ -2,10 +2,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
+#include "GameEngine.h"
 
-static uint8_t* __frameBuffer = NULL;
+void AppLoop(HWND hwnd);
 
-double GameFPS = 30.0f;
+void OnResize(uint32_t width,uint32_t height) {
+	printf("width:%d,height:%d\n",width,height);
+}
 
 void OnPaint(HWND hwnd)
 {
@@ -14,7 +18,6 @@ void OnPaint(HWND hwnd)
 	HDC hdc = BeginPaint(hwnd, &ctx);
 
 #pragma region sample
-	/**/
 	// 实心颜色画刷
 	HBRUSH hSolidBrush = CreateSolidBrush(RGB(255, 0, 0));
 	// 阴影画刷
@@ -25,10 +28,9 @@ void OnPaint(HWND hwnd)
 	{
 		SelectObject(hdc, hBitmap);
 	}
-	HBRUSH hPatternBrush = CreatePatternBrush(hBitmap);
+	//HBRUSH hPatternBrush = CreatePatternBrush(hBitmap);
 
 #pragma endregion
-
 
 #pragma region sample
 	HBRUSH hRedBrush = CreateSolidBrush(RGB(255, 200, 255));
@@ -41,31 +43,31 @@ void OnPaint(HWND hwnd)
 
 #pragma region sample
 
-	//static RECT rects[4];
-	//static HBRUSH brushes[4];
-	//static int initialized = 0;
+	static RECT rects[4];
+	static HBRUSH brushes[4];
+	static int initialized = 0;
 
-	//if (!initialized) {
-	//	// 初始化矩形位置
-	//	for (int i = 0; i < 4; i++) {
-	//		rects[i].left = 50 + i * 80;
-	//		rects[i].top = 50;
-	//		rects[i].right = rects[i].left + 60;
-	//		rects[i].bottom = 150;
-	//	}
+	if (!initialized) {
+		// 初始化矩形位置
+		for (int i = 0; i < 4; i++) {
+			rects[i].left = 50 + i * 80;
+			rects[i].top = 50;
+			rects[i].right = rects[i].left + 60;
+			rects[i].bottom = 150;
+		}
 
-	//	// 创建不同颜色的画刷
-	//	brushes[0] = CreateSolidBrush(RGB(255, 0, 0));     // 红色
-	//	brushes[1] = CreateSolidBrush(RGB(0, 255, 0));     // 绿色
-	//	brushes[2] = CreateSolidBrush(RGB(0, 0, 255));     // 蓝色
-	//	brushes[3] = CreateSolidBrush(RGB(255, 255, 0));   // 黄色
+		// 创建不同颜色的画刷
+		brushes[0] = CreateSolidBrush(RGB(255, 0, 0));     // 红色
+		brushes[1] = CreateSolidBrush(RGB(0, 255, 0));     // 绿色
+		brushes[2] = CreateSolidBrush(RGB(0, 0, 255));     // 蓝色
+		brushes[3] = CreateSolidBrush(RGB(255, 255, 0));   // 黄色
 
-	//	initialized = 1;
-	//}
-	//// 填充所有矩形
-	//for (int i = 0; i < 4; i++) {
-	//	FillRect(hdc, &rects[i], brushes[i]);
-	//}
+		initialized = 1;
+	}
+	// 填充所有矩形
+	for (int i = 0; i < 4; i++) {
+		FillRect(hdc, &rects[i], brushes[i]);
+	}
 
 #pragma endregion
 
@@ -82,18 +84,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 		printf("VM_CREATE\n");
+		/*初始化GameEngine*/
 		break;
 	case WM_SIZE:
 	{
 		//lParam 将窗口的新宽度和高度作为 16 位值纳入一个 32 位或 64 位数字中
-		int width = LOWORD(lParam);  // Macro to get the low-order word.
-		int height = HIWORD(lParam); // Macro to get the high-order word.
-
+		int width = LOWORD(lParam); 
+		int height = HIWORD(lParam);
+		OnResize(width,height);
 		printf("WM_SIZE");
-		printf("width:%d,height:%d\n", width, height);
 	}
 	break;
-
 	case WM_PAINT:
 	{
 		printf("WM_PAINT\n");
@@ -102,7 +103,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 	case WM_DESTROY:
 	{
-
 		printf("WM_DESTROY\n");
 		PostQuitMessage(0);
 	}
@@ -117,7 +117,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 	default:
-		//printf("default\n");
 		//此函数对消息执行默认操作，该操作因消息类型而异。
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
@@ -126,16 +125,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 int main()
 {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
-
 	// 注册窗口类
 	const wchar_t CLASS_NAME[] = L"Sample Window Class";
 
-	WNDCLASS wc = { 0 };
-	wc.lpfnWndProc = WindowProc;
-	wc.hInstance = hInstance;
-	wc.lpszClassName = CLASS_NAME;
-	wc.hbrBackground = (HBRUSH)(COLOR_WINDOWFRAME + 1);
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	WNDCLASS wc = {
+		.lpfnWndProc = WindowProc,
+		.hInstance = hInstance,
+		.lpszClassName = CLASS_NAME,
+		.hbrBackground = (HBRUSH)(COLOR_WINDOWFRAME + 1),
+		.hCursor = LoadCursor(NULL, IDC_ARROW)
+	};
 
 	if (!RegisterClass(&wc))
 	{
@@ -149,14 +148,12 @@ int main()
 		CLASS_NAME,                     // 窗口类名
 		L"在main函数中创建窗口",         // 窗口标题
 		WS_OVERLAPPEDWINDOW,            // 窗口样式
-
-		// 位置和大小
-		CW_USEDEFAULT, CW_USEDEFAULT,
+		CW_USEDEFAULT, CW_USEDEFAULT,	// 位置和大小
 		800, 600,
-		NULL,       // 父窗口    
-		NULL,       // 菜单
-		hInstance,  // 实例句柄
-		NULL        // 附加数据
+		NULL,							// 父窗口    
+		NULL,							// 菜单
+		hInstance,						// 实例句柄
+		NULL							// 附加数据
 	);
 
 	if (hwnd == NULL)
@@ -172,72 +169,86 @@ int main()
 	GetClientRect(hwnd, &windowrc);
 	int width = windowrc.right;
 	int height = windowrc.bottom;
-	printf("    window bpp:%d rect:%d %d %d %d\n", bpp, windowrc.left, windowrc.top, windowrc.right, windowrc.bottom);
 	ReleaseDC(hwnd, hdc);
 
 
-	uint32_t bitDepth = 3;
-	__frameBuffer = (uint8_t*)malloc(width * height * bitDepth);
-
-	for (size_t i = 0; i < width * height; i++)
-	{
-		__frameBuffer[i] = 100;
-		__frameBuffer[i + 1] = 100;
-		__frameBuffer[i + 2] = 100;
-
-	}
+	//BitBlt();
+	/*窗口变化通知*/
 
 	// 显示窗口
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
 
-	printf("窗口已创建，可以同时使用控制台输出！\n");
+	GameEngineInit(width,height,30, OnResize);
 
-	// 消息循环
-	//MSG msg;
-	//while (GetMessage(&msg, NULL, 0, 0))
-	//{
-	//	TranslateMessage(&msg);
-	//	DispatchMessage(&msg);
+	/*消息循环*/
+	AppLoop(hwnd);
+	
+	return 0;
+}
 
-	//	// 可以在这里添加其他逻辑
-	//	if (msg.message == WM_KEYDOWN) {
-	//		printf("按键按下: %c\n", (char)msg.wParam);
-	//	}
-	//}
-
-	MSG msg;
-	LARGE_INTEGER freq; // 计时器频率
-	LARGE_INTEGER now; // 当前时间
-	LARGE_INTEGER last; // 上一帧时间
-	QueryPerformanceFrequency(&freq); // 获取计时器频率
+void AppLoop(HWND hwnd) {
+	LARGE_INTEGER curTime;
+	LARGE_INTEGER lastTime;
+	LARGE_INTEGER freq;
+	QueryPerformanceFrequency(&freq);
 	double invFreq = 1.0 / (double)freq.QuadPart;
-	double targetFrameTime = 1.0 / GameFPS; // 目标帧时间
-	bool isQuit = false;
-	QueryPerformanceCounter(&last); //  只在循环前初始化一次
-	while (!isQuit)
-	{
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			// 有消息:处理它
-			if (msg.message == WM_QUIT)
-			{
-				isQuit = true;
-				break;
-			}
+	double targetFrameTime = 1.0 / (double)GameEngine_GetFPS();
+	DWORD sleepTime = 0;
+	MSG msg = { 0 };
+	while (GameEngine_IsRuning()) {
+		QueryPerformanceCounter(&lastTime);
+		if (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		if (isQuit) break;
-		QueryPerformanceCounter(&now);
-		//判断当前是否满足帧率，如果没有则跳过
-		if ((double)(now.QuadPart - last.QuadPart) * invFreq >= targetFrameTime)
-		{
-			//这里可以添加每帧需要执行的逻辑代码
-			//printf("Frame executed.\n");
+		else {
+			GameEnginSceneLoop();
 		}
+		QueryPerformanceCounter(&curTime);
+		sleepTime = fmax(targetFrameTime - (curTime.QuadPart - lastTime.QuadPart) * invFreq, 0.0) * 1000;
+		printf("sleep:%f\n", targetFrameTime - (curTime.QuadPart - lastTime.QuadPart) * invFreq);
+		Sleep(sleepTime);
 	}
+}
 
-	printf("程序退出\n");
-	return 0;
+void temp() {
+	HDC hdc = GetDC(window);
+	BITMAPINFO bmi; // 定义位图信息结构体
+	memset(&bmi, 0, sizeof(BITMAPINFO)); // 初始化结构体
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER); // 设置位图信息头大小
+	bmi.bmiHeader.biWidth = (LONG)FramBuffer.width; // 位图宽度
+	bmi.bmiHeader.biHeight = -(LONG)FramBuffer.height; // 负值表示顶向下位图
+	bmi.bmiHeader.biPlanes = 1; // 位图平面数，必须为1
+	bmi.bmiHeader.biBitCount = (WORD)FramBuffer.bpp; // 每像素位数
+	bmi.bmiHeader.biCompression = BI_RGB; // 无压缩
+	SetDIBitsToDevice( // 将位图数据传输到设备上下文
+		hdc,
+		0, 0,
+		(DWORD)FramBuffer.width, (DWORD)FramBuffer.height,
+		0, 0,
+		0, (UINT)FramBuffer.height,
+		FramBuffer.memory,
+		&bmi,
+		DIB_RGB_COLORS
+	);
+	ReleaseDC(window, hdc); // 释放设备上下文
+}
+
+void onPaint(HWND hwnd, const uint8_t* frameBufferData, BITMAPINFO* pbmi) {
+	uint32_t width = engine_getFrameWidth();
+	uint32_t height = engine_getFrameHeight();
+	HDC hdc = GetDC(hwnd);
+	// 将位图数据传输到设备上下文
+	SetDIBitsToDevice(
+		hdc,
+		0, 0,
+		(DWORD)width, (DWORD)height,
+		0, 0,
+		0, (UINT)height,
+		frameBufferData,
+		pbmi,
+		DIB_RGB_COLORS
+	);
+	ReleaseDC(hwnd, hdc);
 }

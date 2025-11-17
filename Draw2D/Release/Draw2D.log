@@ -1,0 +1,8 @@
+﻿  GameEngine.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+  正在生成代码
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(125): warning C4715: “WindowProc”: 不是所有的控件路径都返回值
+  All 13 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  Draw2D.vcxproj -> D:\QXY\cpp\Draw2D\Release\Draw2D.exe
