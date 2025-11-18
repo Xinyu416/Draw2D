@@ -30,21 +30,24 @@ typedef void(*GameEnginRenderLoopEvent)();
 
 
 typedef struct {
-	GameEngineCloseEvent engineClose;
 	GameEngineResizeEvent onResize;
+	GameEngineCloseEvent engineClose;
 	GameEngineWindowsCloseEvent windowsClose;
-	GameEnginMaximizeEvent onMax;
-	GameEnginMinimizeEvent onMin;
 
+	/*显示缓冲区*/
+	uint8_t* bufferShow;
+	/*操作缓冲区*/
+	uint8_t* bufferOperate;
 	uint8_t fps;
 	uint32_t width;
 	uint32_t height;
+	uint8_t bytepp;
 	bool gameIsRuning;
 }GameEngine;
 
 
 /*场景循环*/
-void GameEnginSceneLoop();
+void GameEngin_SceneLoop(float delta);
 
 /*渲染循环*/
 void GameEnginRenderLoop();
@@ -65,13 +68,32 @@ void onWindowsMax();
 void onWindowsMin();
 
 /*引擎初始化*/
-void GameEngineInit(uint32_t width, uint32_t height,uint8_t fps, GameEngineResizeEvent cb);
+void GameEngineInit(uint32_t width, uint32_t height,uint8_t fps, uint8_t bytepp);
 
 /*获取单例对象*/
 GameEngine* _getGameEngine();
 
+/*获取帧率*/
 uint8_t GameEngine_GetFPS();
 
+/*获取缓冲区数据*/
+uint8_t* GameEngine_GetFrameData();
+
+/*获取buffer宽度*/
+uint32_t GameEngine_GetFrameWidth();
+
+/*获取buffer高度*/
+uint32_t GameEngine_GetFrameHeight();
+
+/*获取buffer高度*/
+uint32_t GameEngine_GetFrameBytepp();
+
 bool GameEngine_IsRuning();
+
+void GameEngine_Render();
+
+void GameEngine_Release();
+
+void GameEngine_ChangeBuffer();
 
 #endif // !__GAMEENGINE__

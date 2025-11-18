@@ -24,9 +24,21 @@
     <ClCompile Include="..\Src\GameEngine.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\GameInstance.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\GameEngine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Draw2D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\GameInstance.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Define.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

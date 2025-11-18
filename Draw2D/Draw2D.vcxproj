@@ -144,11 +144,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Src\GameEngine.c" />
+    <ClCompile Include="..\Src\GameInstance.c" />
     <ClCompile Include="Draw2D.c" />
     <ClCompile Include="sample.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Include\Define.h" />
+    <ClInclude Include="..\Include\Draw2D.h" />
     <ClInclude Include="..\Include\GameEngine.h" />
+    <ClInclude Include="..\Include\GameInstance.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
