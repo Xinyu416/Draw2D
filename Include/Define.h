@@ -20,20 +20,9 @@ typedef struct {
 }Color4;
 
 typedef struct {
-	//[0,1,2]
-	//[3,4,5]
-	//[6,7,8]
 	float m[9];
 }Matrix;
 
-typedef struct {
-	Vect2 vertex[4];
-}Quad;
-
-typedef struct {
-	uint32_t Num;
-	uint32_t Vertex;
-}Geo;
 
 inline float Rad2Deg(float rad) {
 	float deg = rad * (180 / PI);
@@ -42,6 +31,7 @@ inline float Rad2Deg(float rad) {
 
 inline float Deg2Rad(float deg) {
 	float rad = deg * (PI / 180);
+	printf("rad%f\n",rad);
 	return rad;
 }
 
@@ -97,11 +87,12 @@ inline Matrix CreateMatrix() {
 	};
 	return m;
 }
-//矩阵左乘
+//矩阵左乘 m*v 列矩阵
 inline Vect2 Vect2MultMatrix(const Vect2 v, float* m) {
 	Vect2 out = { 0 };
 	out.x = v.x * m[0] + v.y * m[1] + m[2];
 	out.y = v.x * m[3] + v.y * m[4] + m[5];
+	return out;
 }
 
 //移动后的向量变换成矩阵
@@ -117,7 +108,7 @@ inline Matrix MakeTranslataMatrix(const float x, const float y) {
 }
 
 //缩放后的向量变换成矩阵
-inline Matrix MakeScaleMatrix(const float x, const float y) {
+inline Matrix MakeScaMatrix(const float x, const float y) {
 	Matrix m = {
 		.m = {
 		x,0,0,
@@ -129,7 +120,7 @@ inline Matrix MakeScaleMatrix(const float x, const float y) {
 }
 
 //旋转后的向量变换成矩阵
-inline Matrix MakeRotateMatrix(float angleRad) {
+inline Matrix MakeRotMatrix(float angleRad) {
 	Matrix m = {
 		.m = {
 		cosf(angleRad),-sinf(angleRad),0,
@@ -140,18 +131,25 @@ inline Matrix MakeRotateMatrix(float angleRad) {
 	return m;
 }
 
-
+	//[0,1,2]   [0,1,2]
+	//[3,4,5] x [3,4,5]
+	//[6,7,8]   [6,7,8]
 //矩阵相乘 父子层级转换
-inline void Add2Matrix(const float* a, const float* b, float* out) {
-	out[0] = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-	out[1] = a[0] * b[3] + a[1] * b[4] + a[2] * b[5];
-	out[2] = a[0] * b[6] + a[1] * b[7] + a[2] * b[8];
+inline void Multi2Matrix(const float* a, const float* b, float* out) {
+	out[0] = a[0] * b[0] + a[1] * b[3] + a[2] * b[6];
+	out[1] = a[0] * b[1] + a[1] * b[4] + a[2] * b[7];
+	out[2] = a[0] * b[2] + a[1] * b[5] + a[2] * b[8];
 
-	out[3] = a[3] * b[0] + a[4] * b[1] + a[5] * b[2];
-	out[4] = a[3] * b[3] + a[4] * b[4] + a[5] * b[5];
-	out[5] = a[3] * b[6] + a[4] * b[7] + a[5] * b[8];
+	out[3] = a[3] * b[0] + a[4] * b[3] + a[5] * b[6];
+	out[4] = a[3] * b[1] + a[4] * b[4] + a[5] * b[7];
+	out[5] = a[3] * b[2] + a[4] * b[5] + a[5] * b[8];
 
-	out[6] = a[6] * b[0] + a[7] * b[1] + a[8] * b[2];
-	out[7] = a[6] * b[3] + a[7] * b[4] + a[8] * b[5];
-	out[8] = a[6] * b[6] + a[7] * b[7] + a[8] * b[8];
+	out[6] = a[6] * b[0] + a[7] * b[3] + a[8] * b[6];
+	out[7] = a[6] * b[1] + a[7] * b[4] + a[8] * b[7];
+	out[8] = a[6] * b[2] + a[7] * b[5] + a[8] * b[8];
+}
+
+inline void PrintMatrix(float* m) {
+	printf("Matrix\n");
+	printf("[%.2f,%.2f,%.2f]\n[%.2f,%.2f,%.2f]\n[%.2f,%.2f,%.2f]\n", m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
 }

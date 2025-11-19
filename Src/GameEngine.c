@@ -97,7 +97,6 @@ void GameEngine_Render() {
 				_getGameEngine()->bufferShow[index + 1] = 255;
 				_getGameEngine()->bufferShow[index + 2] = 255;
 			}
-
 		}
 	}
 	Sleep(0.02);

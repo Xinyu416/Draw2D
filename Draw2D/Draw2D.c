@@ -1,5 +1,6 @@
 ﻿#include "Draw2D.h"
 #include "Define.h"
+#include "Mesh.h"
 
 //窗口过程函数(消息回调)
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -101,10 +102,39 @@ void SendBufferToDisplay(HWND hwnd, BITMAPINFO bmi) {
 
 int main()
 {
-	Vect2 v = MakeVect2(2, 3);
-	PrintVect2(v);
+	//测试点
+	Vect2 pos = MakeVect2(40, 80);
+
+	//缩放旋转结果矩阵
+	Matrix srm = CreateMatrix();
+	//缩放旋转位移结果矩阵
+	Matrix srtm = CreateMatrix();
+
+	//缩放
+	Matrix ms = MakeScaMatrix(-4, 2);
+	//旋转
+	Matrix mr = MakeRotMatrix(Deg2Rad(50));
+	//位移
+	Matrix mt = MakeTranslataMatrix(100, 200);
+
+	//分开算
+	Vect2 vs = Vect2MultMatrix(pos,ms.m);
+	Vect2 vsr = Vect2MultMatrix(vs, mr.m);
+	Vect2 vsrt = Vect2MultMatrix(vsr, mt.m);
+	PrintVect2(vsrt);
+
+	//一起算
+	Multi2Matrix(mr.m, ms.m, srm.m);
+	Multi2Matrix(mt.m, srm.m, srtm.m);
+	Vect2 ov = Vect2MultMatrix(pos, srtm.m);
+	PrintVect2(ov);
+
+	printf("sizeof(Mesh) = %d\n",sizeof(Mesh));
 
 	return;
+
+
+
 
 	HWND hwnd = CreateRenderWindow(800, 600);
 	if (hwnd == NULL)

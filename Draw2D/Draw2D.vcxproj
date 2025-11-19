@@ -134,6 +134,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Include</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,6 +147,7 @@
   <ItemGroup>
     <ClCompile Include="..\Src\GameEngine.c" />
     <ClCompile Include="..\Src\GameInstance.c" />
+    <ClCompile Include="..\Src\Mesh.c" />
     <ClCompile Include="Draw2D.c" />
     <ClCompile Include="sample.c" />
   </ItemGroup>
@@ -153,6 +156,7 @@
     <ClInclude Include="..\Include\Draw2D.h" />
     <ClInclude Include="..\Include\GameEngine.h" />
     <ClInclude Include="..\Include\GameInstance.h" />
+    <ClInclude Include="..\Include\Mesh.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
