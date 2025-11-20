@@ -1,4 +1,5 @@
 #include "GameEngine.h"
+#include "GameInstance.h"
 
 GameEngine* _gameEngneInstance = NULL;
 
@@ -10,7 +11,6 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	gameinstance->gameIsRuning = true;
 	gameinstance->bytepp = bytepp;
 	gameinstance->bufferShow = (uint8_t*)malloc(width * height * bytepp);
-	gameinstance->bufferOperate = (uint8_t*)malloc(width * height * bytepp);
 }
 
 void GameEngineResize(uint32_t w, uint32_t h) {
@@ -72,6 +72,7 @@ void GameEngin_SceneLoop(float delta) {
 	//printf("SceneLoop\n");
 	//printf("delta:%f\n",delta);
 	GameEngine_Render();
+	Game_Tick(delta);
 }
 
 void GameEnginRenderLoop() {
@@ -79,6 +80,7 @@ void GameEnginRenderLoop() {
 }
 
 void GameEngine_Render() {
+	
 	for (size_t y = 0; y < _getGameEngine()->height; y++)
 	{
 		for (size_t x = 0; x < _getGameEngine()->width; x++)
@@ -102,13 +104,6 @@ void GameEngine_Render() {
 	Sleep(0.02);
 }
 
-
-void GameEngine_ChangeBuffer() {
-	/*显示缓冲区*/
-	uint8_t* bufferOperate = _getGameEngine()->bufferShow;
-	/*操作缓冲区*/
-	uint8_t* bufferShow = _getGameEngine()->bufferOperate;
-}
 
 void GameEngine_Release() {
 	if (_gameEngneInstance)

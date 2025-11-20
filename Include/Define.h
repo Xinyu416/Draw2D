@@ -31,7 +31,7 @@ inline float Rad2Deg(float rad) {
 
 inline float Deg2Rad(float deg) {
 	float rad = deg * (PI / 180);
-	printf("rad%f\n",rad);
+	printf("rad%f\n", rad);
 	return rad;
 }
 
@@ -42,6 +42,7 @@ inline Vect2 MakeVect2(const float x, const float y) {
 
 inline Color4 MakeColor4(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) {
 	Color4 out = { .r = r,.g = g,.b = b,.a = a };
+	return out;
 }
 
 inline float Vect2Len(const Vect2 v) {
@@ -62,12 +63,14 @@ inline Vect2 Vect2Rot(const Vect2 v, float angleInRad) {
 	return out;
 }
 
+//点乘 arcos（v）=(rad2deg) 得到角度
 inline float dotVect2(const Vect2 v1, const Vect2 v2) {
 	return v1.x * v2.x + v1.y * v2.y;
 }
 
+//>0 左侧 <0右侧 =0线上（重合）
 inline float crossVect2(const Vect2 v1, const Vect2 v2) {
-	return v1.x * v2.y - v2.x * v1.y;
+	return v1.x * v2.y - v1.y * v2.x;
 }
 
 inline Vect2 AddVect2(const Vect2 v1, const Vect2 v2) {
@@ -75,11 +78,18 @@ inline Vect2 AddVect2(const Vect2 v1, const Vect2 v2) {
 	return v;
 }
 
-inline PrintVect2(const Vect2 v) {
-	printf("Vect2 [x:%.2f,y:%.2f]\n", v.x, v.y);
+//p1 指向 p2 的向量
+inline Vect2 SubVect2(const Vect2 p1, const Vect2 p2) {
+	Vect2 v = { .x = p2.x - p1.x,.y = p2.y - p1.y };
+	return v;
 }
 
-inline Matrix CreateMatrix() {
+
+inline PrintVect2(const Vect2 v) {
+	printf("[x:%.2f,y:%.2f]\n", v.x, v.y);
+}
+
+inline Matrix CreateStandardMatrix() {
 	Matrix m = {
 		1,0,0,
 		0,1,0,
@@ -131,9 +141,9 @@ inline Matrix MakeRotMatrix(float angleRad) {
 	return m;
 }
 
-	//[0,1,2]   [0,1,2]
-	//[3,4,5] x [3,4,5]
-	//[6,7,8]   [6,7,8]
+//[0,1,2]   [0,1,2]
+//[3,4,5] x [3,4,5]
+//[6,7,8]   [6,7,8]
 //矩阵相乘 父子层级转换
 inline void Multi2Matrix(const float* a, const float* b, float* out) {
 	out[0] = a[0] * b[0] + a[1] * b[3] + a[2] * b[6];
@@ -153,3 +163,5 @@ inline void PrintMatrix(float* m) {
 	printf("Matrix\n");
 	printf("[%.2f,%.2f,%.2f]\n[%.2f,%.2f,%.2f]\n[%.2f,%.2f,%.2f]\n", m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
 }
+
+

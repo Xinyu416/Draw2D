@@ -36,8 +36,6 @@ typedef struct {
 
 	/*显示缓冲区*/
 	uint8_t* bufferShow;
-	/*操作缓冲区*/
-	uint8_t* bufferOperate;
 	uint8_t fps;
 	uint32_t width;
 	uint32_t height;
@@ -94,6 +92,5 @@ void GameEngine_Render();
 
 void GameEngine_Release();
 
-void GameEngine_ChangeBuffer();
 
 #endif // !__GAMEENGINE__

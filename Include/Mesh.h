@@ -2,14 +2,14 @@
 #include "Define.h"
 
 typedef struct {
-	Vect2 vertices[4]; //8
-	Vect2 uvs[4];	   //8	
+	Vect2 vertices[4]; //8*4
+	Vect2 uvs[4];	   //8*4	
 	Color4 color[4];   //16
-}Quad;//32 byte
+}Quad;//80 byte
 
 typedef struct struc {
 	Color4 color;			//4
-	//uint8_t textureId;	//1
+	uint8_t textureId;	//1
 }Material;//5 byte
 
 typedef struct {
@@ -36,4 +36,6 @@ void ReleaseGeometry(Geometry* geo);
 
 void GeometryAddQuad(Geometry* geo, const Quad quad);
 
-Mesh CreateMesh(const uint32_t id,const Geometry geo,const Matrix tm,const Material mat);
+Mesh CreateMesh(const uint32_t id, Vect2 pos,float rot,const Geometry geo,const Matrix tm,const Material mat);
+
+bool IsPointInQuad(Vect2 p,Quad quad);
