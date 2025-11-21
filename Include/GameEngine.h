@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
-
+#include "GameInstance.h"
+#include "Define.h"
+#include "Mesh.h"
 
 /*引擎关闭事件*/
 typedef void (*GameEngineCloseEvent)();
@@ -40,6 +42,7 @@ typedef struct {
 	uint32_t width;
 	uint32_t height;
 	uint8_t bytepp;
+	Color4 backgroudColor;
 	bool gameIsRuning;
 }GameEngine;
 
@@ -89,6 +92,8 @@ uint32_t GameEngine_GetFrameBytepp();
 bool GameEngine_IsRuning();
 
 void GameEngine_Render();
+
+void GameEngine_DrawBg();
 
 void GameEngine_Release();
 

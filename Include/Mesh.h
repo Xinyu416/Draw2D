@@ -26,6 +26,7 @@ typedef struct {
 	Vect2 pos; //8byte
 	Matrix tm; //36byte
 	float rot; //4byte
+	Vect2 scale; //8byte
 	Material mat;//5byte
 	uint8_t block[7];
 }Mesh;//96byte
@@ -36,6 +37,10 @@ void ReleaseGeometry(Geometry* geo);
 
 void GeometryAddQuad(Geometry* geo, const Quad quad);
 
-Mesh CreateMesh(const uint32_t id, Vect2 pos,float rot,const Geometry geo,const Matrix tm,const Material mat);
+Mesh CreateMesh(const uint32_t id, Vect2 pos,float rot, Vect2 scale, const Geometry geo,const Matrix tm,const Material mat);
 
 bool IsPointInQuad(Vect2 p,Quad quad);
+
+bool IsPointInQuadDotSign(Vect2 p, Vect2 vertices[4]);
+
+void PrintMesh(Mesh* mesh);

@@ -29,8 +29,8 @@ void GeometryAddQuad(Geometry* geo, const Quad quad) {
 	geo->numOfQuad++;
 }
 
-Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, const Geometry geo, const Matrix tm, const Material mat) {
-	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.geo = geo,.tm = tm,.mat = mat };
+Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geometry geo, const Matrix tm, const Material mat) {
+	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.scale = scale,.geo = geo,.tm = tm,.mat = mat };
 	return mesh;
 }
 
@@ -45,30 +45,35 @@ bool IsPointOnSegment(Vect2 p, Vect2 a, Vect2 b) {
 		p.y >= fminf(a.y, b.y) && p.y <= fmaxf(a.y, b.y));
 }
 
+bool IsPointInQuadDotSign(Vect2 p, Vect2 vertices[4]) {
+	for (int i = 0; i < 4; i++) {
+		Vect2 v1 = SubVect2(p, vertices[i]);
+		Vect2 v2 = SubVect2(p, vertices[(i + 1) % 4]);
+
+		Vect2 base = SubVect2(vertices[i], vertices[(i + 1) % 4]);
+		Vect2 pV = SubVect2(vertices[i], p);
+		float dotResult = dotVect2(base, pV);
+		//printf("dot result %.2f\n", dotResult);
+		if (dotResult < 0)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool IsPointInQuadTotalAngle(Vect2 p, Quad quad) {
 	//1.点跟四个顶点做连线点乘求角度和 等于360度必在里面 不等于在外面
 	//点乘 arcos（v）=(rad2deg) 得到角度
-
-	//printf("p sides:\n");
-	//Vect2 pSide0 = SubVect2(p, quad.vertices[0]);
-	//PrintVect2(pSide0);
-	//Vect2 pSide1 = SubVect2(p, quad.vertices[1]);
-	//PrintVect2(pSide1);
-	//Vect2 pSide2 = SubVect2(p, quad.vertices[2]);
-	//PrintVect2(pSide2);
-	//Vect2 pSide3 = SubVect2(p, quad.vertices[3]);
-	//PrintVect2(pSide3);
-
-	//float deg0 = Rad2Deg(acosf(dotVect2(Vect2Normalize(pSide0), Vect2Normalize(pSide1))));
-	//float deg1 = Rad2Deg(acosf(dotVect2(Vect2Normalize(pSide1), Vect2Normalize(pSide2))));
-	//float deg2 = Rad2Deg(acosf(dotVect2(Vect2Normalize(pSide2), Vect2Normalize(pSide3))));
-	//float deg3 = Rad2Deg(acosf(dotVect2(Vect2Normalize(pSide3), Vect2Normalize(pSide0))));
 
 	float total = 0;
 	for (int i = 0; i < 4; i++) {
 
 		Vect2 v1 = SubVect2(p, quad.vertices[i]);
 		Vect2 v2 = SubVect2(p, quad.vertices[(i + 1) % 4]);
+		float dotResult = dotVect2(v1, v2);
+		printf("dot result %.2f\n", dotResult);
 
 		float angle = Rad2Deg(acosf(dotVect2(Vect2Normalize(v1), Vect2Normalize(v2))));
 		total += angle;
@@ -128,5 +133,49 @@ bool IsPointInQuad(Vect2 p, Quad quad) {
 
 	//return IsPointInQuadTotalAngle(p,quad);
 	//return IsPointInConvexQuad(p,quad);
-	return IsPointInConvexQuad(p, quad);
+	//return IsPointInQuadRayCast(p, quad);
+	//return IsPointInQuadDotSign(p, quad);
+}
+
+void PrintMesh(Mesh *mesh) {
+
+	printf("mesh: id = %d, textureId = %d\n", mesh->id, mesh->mat.textureId);
+	printf("mesh pos:");
+	PrintVect2(mesh->pos);
+	printf("mesh rot:%.2f\n", mesh->rot);
+	printf("mesh matrix:\n");
+	PrintMatrix(mesh->tm.m);
+	for (size_t i = 0; i < mesh->geo.numOfQuad; i++)
+	{
+		printf("Quad[%d] vertices:(", i);
+		for (size_t j = 0; j < 8; j++)
+		{
+			uint32_t index = i * 8 + j;
+			printf("%.2f,", mesh->geo.vertices[index]);
+		}
+		printf(")\n");
+
+		printf("Quad[%d] uvs:(", i);
+		for (size_t j = 0; j < 8; j++)
+		{
+			uint32_t index = i * 8 + j;
+			printf("%.2f,", mesh->geo.uvs[index]);
+		}
+		printf(")\n");
+
+		printf("Quad[%d] colors:", i);
+		for (size_t j = 0; j < 16; j++)
+		{
+			uint32_t index = i * 16 + j;
+			//printf("(");
+			if (j % 4 == 0) {
+				printf("[");
+			}
+			printf("%d,", mesh->geo.colors[index]);
+			if (j % 4 == 3) {
+				printf("]");
+			}
+		}
+		printf("\n");
+	}
 }

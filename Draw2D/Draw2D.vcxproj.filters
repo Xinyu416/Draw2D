@@ -30,6 +30,12 @@
     <ClCompile Include="..\Src\Mesh.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\containers.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\threadTest.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\GameEngine.h">
@@ -45,6 +51,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\containers.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

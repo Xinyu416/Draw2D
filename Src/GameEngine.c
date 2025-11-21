@@ -1,16 +1,19 @@
 #include "GameEngine.h"
-#include "GameInstance.h"
 
-GameEngine* _gameEngneInstance = NULL;
+
+GameEngine* _gameEngne = NULL;
 
 void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp) {
-	GameEngine* gameinstance = _getGameEngine();
-	gameinstance->width = width;
-	gameinstance->height = height;
-	gameinstance->fps = fps;
-	gameinstance->gameIsRuning = true;
-	gameinstance->bytepp = bytepp;
-	gameinstance->bufferShow = (uint8_t*)malloc(width * height * bytepp);
+	GameEngine* gameengine = _getGameEngine();
+	gameengine->width = width;
+	gameengine->height = height;
+	gameengine->fps = fps;
+	gameengine->gameIsRuning = true;
+	gameengine->bytepp = bytepp;
+	//gameengine->backgroudColor = MakeColor4(128, 128, 30, 255);
+	gameengine->backgroudColor = MakeColor4(0, 0, 0, 255);
+	gameengine->bufferShow = (uint8_t*)malloc(width * height * bytepp);
+	GameIns_Init();
 }
 
 void GameEngineResize(uint32_t w, uint32_t h) {
@@ -38,10 +41,10 @@ void onWindowsMin() {
 }
 
 GameEngine* _getGameEngine() {
-	if (_gameEngneInstance == NULL) {
-		_gameEngneInstance = calloc(1, sizeof(GameEngine));
+	if (_gameEngne == NULL) {
+		_gameEngne = calloc(1, sizeof(GameEngine));
 	}
-	return _gameEngneInstance;
+	return _gameEngne;
 }
 
 uint8_t* GameEngine_GetFrameData() {
@@ -71,45 +74,89 @@ bool GameEngine_IsRuning() {
 void GameEngin_SceneLoop(float delta) {
 	//printf("SceneLoop\n");
 	//printf("delta:%f\n",delta);
+	GameEngine_DrawBg();
 	GameEngine_Render();
-	Game_Tick(delta);
+	GameIns_Tick(delta);
 }
 
 void GameEnginRenderLoop() {
 	printf("GameEnginRenderLoop\n");
 }
-
 void GameEngine_Render() {
-	
-	for (size_t y = 0; y < _getGameEngine()->height; y++)
+	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
+	pmesh->rot += 2.f;
+	//缩放旋转结果矩阵
+	Matrix srm = CreateStandardMatrix();
+	//缩放旋转位移结果矩阵
+	Matrix srtm = CreateStandardMatrix();
+	//缩放
+	Matrix ms = MakeScaMatrix(pmesh->scale.x, pmesh->scale.y);
+	//旋转
+	Matrix mr = MakeRotMatrix(Deg2Rad(pmesh->rot));
+	//位移
+	Matrix mt = MakeTranslataMatrix(pmesh->pos.x, pmesh->pos.y);
+	//一起算
+	Multi2Matrix(mr.m, ms.m, srm.m);
+	Multi2Matrix(mt.m, srm.m, srtm.m);
+	pmesh->tm = srtm;
+
+	//后期根据BoudingBox大小调整像素渲染区
+	Vect2 vertices[4] = { 0 };
+	for (size_t v = 0; v < pmesh->geo.numOfQuad; v++)
 	{
-		for (size_t x = 0; x < _getGameEngine()->width; x++)
+		uint32_t vi = v * 8;
+		vertices[0] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 0], pmesh->geo.vertices[vi + 1]), pmesh->tm.m);
+		vertices[1] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 2], pmesh->geo.vertices[vi + 3]), pmesh->tm.m);
+		vertices[2] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 4], pmesh->geo.vertices[vi + 5]), pmesh->tm.m);
+		vertices[3] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 6], pmesh->geo.vertices[vi + 7]), pmesh->tm.m);
+
+		//遍历屏幕空间像素
+		for (size_t y = 0; y < _getGameEngine()->height; y++)
 		{
-			size_t index = y * _getGameEngine()->width * _getGameEngine()->bytepp + x * _getGameEngine()->bytepp;
-			//bgr
-			if (y % 10 == 0 || (x * _getGameEngine()->bytepp) % 10 == 0)
+			for (size_t x = 0; x < _getGameEngine()->width; x++)
 			{
-				_getGameEngine()->bufferShow[index + 0] = rand() % 255;
-				_getGameEngine()->bufferShow[index + 1] = rand() % 255;
-				_getGameEngine()->bufferShow[index + 2] = rand() % 255;
-			}
-			else
-			{
-				_getGameEngine()->bufferShow[index + 0] = 255;
-				_getGameEngine()->bufferShow[index + 1] = 255;
-				_getGameEngine()->bufferShow[index + 2] = 255;
+				size_t index = y * _getGameEngine()->width * _getGameEngine()->bytepp + x * _getGameEngine()->bytepp;
+				//bgr
+				Vect2 pixel = MakeVect2((float)x, (float)y);
+				if (IsPointInQuadDotSign(pixel, vertices))
+				{
+					_getGameEngine()->bufferShow[index + 0] = pmesh->mat.color.b;
+					_getGameEngine()->bufferShow[index + 1] = pmesh->mat.color.g;
+					_getGameEngine()->bufferShow[index + 2] = pmesh->mat.color.r;
+				}
+				else
+				{
+					_getGameEngine()->bufferShow[index + 0] = _getGameEngine()->bufferShow[index + 0] + _getGameEngine()->backgroudColor.b;
+					_getGameEngine()->bufferShow[index + 1] = _getGameEngine()->bufferShow[index + 1] + _getGameEngine()->backgroudColor.g;
+					_getGameEngine()->bufferShow[index + 2] = _getGameEngine()->bufferShow[index + 2] + _getGameEngine()->backgroudColor.r;
+				}
 			}
 		}
 	}
 	Sleep(0.02);
 }
 
+void GameEngine_DrawBg() {
+
+	for (size_t y = 0; y < _getGameEngine()->height; y++)
+	{
+		for (size_t x = 0; x < _getGameEngine()->width; x++)
+		{
+			size_t index = y * _getGameEngine()->width * _getGameEngine()->bytepp + x * _getGameEngine()->bytepp;
+
+			_getGameEngine()->bufferShow[index + 0] = _getGameEngine()->backgroudColor.b;
+			_getGameEngine()->bufferShow[index + 1] = _getGameEngine()->backgroudColor.g;
+			_getGameEngine()->bufferShow[index + 2] = _getGameEngine()->backgroudColor.r;
+		}
+	}
+}
+
 
 void GameEngine_Release() {
-	if (_gameEngneInstance)
+	if (_gameEngne)
 	{
-		free(_gameEngneInstance);
-		_gameEngneInstance = NULL;
+		free(_gameEngne);
+		_gameEngne = NULL;
 	}
 	printf("GameEngine_Release\n");
 }

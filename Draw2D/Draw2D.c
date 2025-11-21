@@ -134,9 +134,9 @@ void MeshTest() {
 	//create Quad
 	Quad quad1 = { 0 };
 	quad1.vertices[0] = MakeVect2(0, 0);
-	quad1.vertices[1] = MakeVect2(0, 1);
-	quad1.vertices[2] = MakeVect2(1, 1);
-	quad1.vertices[3] = MakeVect2(1, 0);
+	quad1.vertices[1] = MakeVect2(100, 0);
+	quad1.vertices[2] = MakeVect2(100, 100);
+	quad1.vertices[3] = MakeVect2(0, 100);
 	quad1.uvs[0] = MakeVect2(0, 0);
 	quad1.uvs[1] = MakeVect2(0.2, 0.3);
 	quad1.uvs[2] = MakeVect2(0.8, 0.5);
@@ -147,10 +147,10 @@ void MeshTest() {
 	quad1.color[3] = MakeColor4(10, 10, 10, 10);
 
 	Quad quad2 = { 0 };
-	quad2.vertices[0] = MakeVect2(1, 1);
-	quad2.vertices[1] = MakeVect2(1, 2);
-	quad2.vertices[2] = MakeVect2(2, 2);
-	quad2.vertices[3] = MakeVect2(2, 1);
+	quad2.vertices[0] = MakeVect2(10, 10);
+	quad2.vertices[1] = MakeVect2(20, 10);
+	quad2.vertices[2] = MakeVect2(20, 20);
+	quad2.vertices[3] = MakeVect2(10, 20);
 	quad2.color[0] = MakeColor4(100, 100, 100, 100);
 	quad2.color[1] = MakeColor4(200, 200, 200, 200);
 	quad2.color[2] = MakeColor4(150, 150, 150, 150);
@@ -161,36 +161,13 @@ void MeshTest() {
 	GeometryAddQuad(&geo, quad2);
 
 	printf("num:%d\n", geo.numOfQuad);
-	for (size_t i = 0; i < geo.numOfQuad * 8; i++)
-	{
-		if (i % 2 == 0) {
-
-			printf("vertices[%d]:(%.0f,%.0f)\n", (i / 2), geo.vertices[i], geo.vertices[i + 1]);
-		}
-	}
-
-	for (size_t i = 0; i < geo.numOfQuad * 8; i++)
-	{
-		if (i % 2 == 0) {
-
-			printf("uvs[%d]:(%.1f,%.1f)\n", (i / 2), geo.uvs[i], geo.uvs[i + 1]);
-		}
-	}
-
-	for (size_t i = 0; i < geo.numOfQuad * 16; i++)
-	{
-		if (i % 4 == 0) {
-
-			printf("color[%d]:(%d,%d,%d,%d)\n", (i / 4), geo.colors[i], geo.colors[i + 1], geo.colors[i + 2], geo.colors[i + 3]);
-		}
-	}
 
 	//test point in or out
 	Quad quad3 = { 0 };
-	quad3.vertices[0] = MakeVect2(1, 1);
-	quad3.vertices[1] = MakeVect2(1, 3);
-	quad3.vertices[2] = MakeVect2(3, 3);
-	quad3.vertices[3] = MakeVect2(3, 1);
+	quad3.vertices[0] = MakeVect2(10, 10);
+	quad3.vertices[1] = MakeVect2(30, 10);
+	quad3.vertices[2] = MakeVect2(30, 30);
+	quad3.vertices[3] = MakeVect2(10, 30);
 	quad3.color[0] = MakeColor4(100, 100, 100, 100);
 	quad3.color[1] = MakeColor4(200, 200, 200, 200);
 	quad3.color[2] = MakeColor4(150, 150, 150, 150);
@@ -202,15 +179,16 @@ void MeshTest() {
 
 	Matrix tm = CreateStandardMatrix();
 	Material mat = { .color = MakeColor4(255,255,255,255),.textureId = 1 };
-	Mesh mesh = CreateMesh(1, MakeVect2(1, 1), 50.f, geo, tm, mat);
+	Mesh mesh = CreateMesh(1, MakeVect2(1, 1), 50.f, MakeVect2(1, 1), geo, tm, mat);
 
-
+	PrintMesh(&mesh);
 }
 
-int main()
+int main__()
 {
-	MeshTest();
-	return;
+	//MeshTest();
+	//GameIns_Init();
+	//return;
 
 	HWND hwnd = CreateRenderWindow(800, 600);
 	if (hwnd == NULL)
@@ -230,7 +208,7 @@ int main()
 	uint8_t bytepp = bpp / 8;
 
 	/*引擎初始化*/
-	uint8_t fps = 30;
+	uint8_t fps = 5;
 	GameEngineInit(width, height, fps, bytepp);
 
 	/*显示窗口*/

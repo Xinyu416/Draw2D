@@ -31,7 +31,6 @@ inline float Rad2Deg(float rad) {
 
 inline float Deg2Rad(float deg) {
 	float rad = deg * (PI / 180);
-	printf("rad%f\n", rad);
 	return rad;
 }
 
@@ -160,7 +159,6 @@ inline void Multi2Matrix(const float* a, const float* b, float* out) {
 }
 
 inline void PrintMatrix(float* m) {
-	printf("Matrix\n");
 	printf("[%.2f,%.2f,%.2f]\n[%.2f,%.2f,%.2f]\n[%.2f,%.2f,%.2f]\n", m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
 }
 

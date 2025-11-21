@@ -1,14 +1,18 @@
 #pragma once
-//#include "GameEngine.h"
+#include "containers.h"
 
-//typedef struct {
-//
-//}GameInstance;
+typedef struct {
+	Array meshs;
+}GameInstance;
 
-void Game_Init();
+void GameIns_Init();
 
-void Game_Release();
+void GameIns_Release();
 
-void Game_Tick(float delta);
+void GameIns_Tick(float delta);
 
-void RenderMesh(uint8_t* buffer, uint32_t height, uint32_t width, uint8_t bytepp, Mesh mesh);
+GameInstance* _getGameIns();
+
+void CreateMeshTest();
+
+//void RenderMesh(uint8_t* buffer, uint32_t height, uint32_t width, uint8_t bytepp, Mesh mesh);

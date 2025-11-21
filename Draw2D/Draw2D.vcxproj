@@ -145,13 +145,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Src\containers.c" />
     <ClCompile Include="..\Src\GameEngine.c" />
     <ClCompile Include="..\Src\GameInstance.c" />
     <ClCompile Include="..\Src\Mesh.c" />
+    <ClCompile Include="..\Src\threadTest.c" />
     <ClCompile Include="Draw2D.c" />
     <ClCompile Include="sample.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Include\containers.h" />
     <ClInclude Include="..\Include\Define.h" />
     <ClInclude Include="..\Include\Draw2D.h" />
     <ClInclude Include="..\Include\GameEngine.h" />
