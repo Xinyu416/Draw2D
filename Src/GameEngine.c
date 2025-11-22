@@ -10,7 +10,6 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	gameengine->fps = fps;
 	gameengine->gameIsRuning = true;
 	gameengine->bytepp = bytepp;
-	//gameengine->backgroudColor = MakeColor4(128, 128, 30, 255);
 	gameengine->backgroudColor = MakeColor4(0, 0, 0, 255);
 	gameengine->bufferShow = (uint8_t*)malloc(width * height * bytepp);
 	GameIns_Init();
@@ -83,8 +82,8 @@ void GameEnginRenderLoop() {
 	printf("GameEnginRenderLoop\n");
 }
 void GameEngine_Render() {
-	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
-	pmesh->rot += 2.f;
+	//Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
+	Mesh* pmesh = _getGameIns()->cMesh;
 	//缩放旋转结果矩阵
 	Matrix srm = CreateStandardMatrix();
 	//缩放旋转位移结果矩阵
@@ -99,6 +98,8 @@ void GameEngine_Render() {
 	Multi2Matrix(mr.m, ms.m, srm.m);
 	Multi2Matrix(mt.m, srm.m, srtm.m);
 	pmesh->tm = srtm;
+
+	Color4 randColor =  MakeColor4(rand() % 255, rand() % 255, rand() % 255, 255);
 
 	//后期根据BoudingBox大小调整像素渲染区
 	Vect2 vertices[4] = { 0 };
@@ -120,9 +121,9 @@ void GameEngine_Render() {
 				Vect2 pixel = MakeVect2((float)x, (float)y);
 				if (IsPointInQuadDotSign(pixel, vertices))
 				{
-					_getGameEngine()->bufferShow[index + 0] = pmesh->mat.color.b;
-					_getGameEngine()->bufferShow[index + 1] = pmesh->mat.color.g;
-					_getGameEngine()->bufferShow[index + 2] = pmesh->mat.color.r;
+					_getGameEngine()->bufferShow[index + 0] = /*pmesh->mat.color.b*/ randColor.b;
+					_getGameEngine()->bufferShow[index + 1] = /*pmesh->mat.color.g*/ randColor.g;
+					_getGameEngine()->bufferShow[index + 2] = /*pmesh->mat.color.r*/ randColor.r;
 				}
 				else
 				{
@@ -150,7 +151,6 @@ void GameEngine_DrawBg() {
 		}
 	}
 }
-
 
 void GameEngine_Release() {
 	if (_gameEngne)

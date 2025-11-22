@@ -53,13 +53,11 @@ bool IsPointInQuadDotSign(Vect2 p, Vect2 vertices[4]) {
 		Vect2 base = SubVect2(vertices[i], vertices[(i + 1) % 4]);
 		Vect2 pV = SubVect2(vertices[i], p);
 		float dotResult = dotVect2(base, pV);
-		//printf("dot result %.2f\n", dotResult);
 		if (dotResult < 0)
 		{
 			return false;
 		}
 	}
-
 	return true;
 }
 
@@ -127,14 +125,6 @@ bool IsPointInQuadRayCast(Vect2 p, Quad quad) {
 		}
 	}
 	return (crossCount % 2) == 1;
-}
-
-bool IsPointInQuad(Vect2 p, Quad quad) {
-
-	//return IsPointInQuadTotalAngle(p,quad);
-	//return IsPointInConvexQuad(p,quad);
-	//return IsPointInQuadRayCast(p, quad);
-	//return IsPointInQuadDotSign(p, quad);
 }
 
 void PrintMesh(Mesh *mesh) {

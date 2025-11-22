@@ -1,6 +1,7 @@
 ﻿#include "Draw2D.h"
 #include "Define.h"
 #include "Mesh.h"
+#include "Renderer.h"
 
 //窗口过程函数(消息回调)
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -81,7 +82,7 @@ HWND CreateRenderWindow(uint32_t width, uint32_t height) {
 }
 
 /*buffer显示*/
-void SendBufferToDisplay(HWND hwnd, BITMAPINFO bmi) {
+void SendBufferToDisplay(HWND hwnd, BITMAPINFO bmi,uint8_t *frameBuffer) {
 	uint32_t width = GameEngine_GetFrameWidth();
 	uint32_t height = GameEngine_GetFrameHeight();
 
@@ -93,7 +94,7 @@ void SendBufferToDisplay(HWND hwnd, BITMAPINFO bmi) {
 		(DWORD)width, (DWORD)height,
 		0, 0,
 		0, (UINT)height,
-		GameEngine_GetFrameData(),
+		frameBuffer,
 		&bmi,
 		DIB_RGB_COLORS
 	);
@@ -184,10 +185,11 @@ void MeshTest() {
 	PrintMesh(&mesh);
 }
 
-int main__()
+int main()
 {
 	//MeshTest();
 	//GameIns_Init();
+	//ThreadTest();
 	//return;
 
 	HWND hwnd = CreateRenderWindow(800, 600);
@@ -208,7 +210,7 @@ int main__()
 	uint8_t bytepp = bpp / 8;
 
 	/*引擎初始化*/
-	uint8_t fps = 5;
+	uint8_t fps = 15;
 	GameEngineInit(width, height, fps, bytepp);
 
 	/*显示窗口*/
@@ -256,7 +258,7 @@ void AppLoop(HWND hwnd) {
 		QueryPerformanceCounter(&lastTime);
 
 		/*帧开始时发送画面数据供显示 帧间处理画面数据*/
-		SendBufferToDisplay(hwnd, bmi);
+		SendBufferToDisplay(hwnd, bmi, GameEngine_GetFrameData());
 
 		/*消息循环*/
 		while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE))

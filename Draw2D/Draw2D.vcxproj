@@ -149,6 +149,7 @@
     <ClCompile Include="..\Src\GameEngine.c" />
     <ClCompile Include="..\Src\GameInstance.c" />
     <ClCompile Include="..\Src\Mesh.c" />
+    <ClCompile Include="..\Src\Renderer.c" />
     <ClCompile Include="..\Src\threadTest.c" />
     <ClCompile Include="Draw2D.c" />
     <ClCompile Include="sample.c" />
@@ -160,6 +161,7 @@
     <ClInclude Include="..\Include\GameEngine.h" />
     <ClInclude Include="..\Include\GameInstance.h" />
     <ClInclude Include="..\Include\Mesh.h" />
+    <ClInclude Include="..\Include\Renderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

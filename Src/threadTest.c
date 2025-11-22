@@ -38,7 +38,7 @@ BOOL    bTrails = FALSE;
 
 HANDLE  hThreads[MAX_THREADS] = { NULL }; // Handles for created threads
 
-int main(void) // Thread One
+int main__(void) // Thread One
 {
     // Get display screen information & clear the screen.
     hConsoleOut = GetStdHandle(STD_OUTPUT_HANDLE);

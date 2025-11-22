@@ -36,6 +36,9 @@
     <ClCompile Include="..\Src\threadTest.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\Renderer.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\GameEngine.h">
@@ -54,6 +57,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\containers.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

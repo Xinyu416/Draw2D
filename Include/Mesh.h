@@ -39,8 +39,7 @@ void GeometryAddQuad(Geometry* geo, const Quad quad);
 
 Mesh CreateMesh(const uint32_t id, Vect2 pos,float rot, Vect2 scale, const Geometry geo,const Matrix tm,const Material mat);
 
-bool IsPointInQuad(Vect2 p,Quad quad);
-
+/*用点乘的符号判断点跟向量的角度 进而判断点是否在四边形内*/
 bool IsPointInQuadDotSign(Vect2 p, Vect2 vertices[4]);
 
 void PrintMesh(Mesh* mesh);
