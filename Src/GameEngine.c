@@ -98,7 +98,6 @@ void GameEngine_Render() {
 	Multi2Matrix(mr.m, ms.m, srm.m);
 	Multi2Matrix(mt.m, srm.m, srtm.m);
 	pmesh->tm = srtm;
-
 	Color4 randColor =  MakeColor4(rand() % 255, rand() % 255, rand() % 255, 255);
 
 	//后期根据BoudingBox大小调整像素渲染区

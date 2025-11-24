@@ -7,7 +7,7 @@ typedef struct {
 	Color4 color[4];   //16
 }Quad;//80 byte
 
-typedef struct struc {
+typedef struct {
 	Color4 color;			//4
 	uint8_t textureId;	//1
 }Material;//5 byte

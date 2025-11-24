@@ -2,6 +2,7 @@
 #include "Define.h"
 #include "Mesh.h"
 #include "Renderer.h"
+#include "Camera.h"
 
 //窗口过程函数(消息回调)
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -175,8 +176,6 @@ void MeshTest() {
 	quad3.color[3] = MakeColor4(10, 10, 10, 10);
 
 	GeometryAddQuad(&geo, quad3);
-	bool isIn = IsPointInQuad(MakeVect2(2.5f, 2), quad3);
-	printf("isIn:%d\n", isIn);
 
 	Matrix tm = CreateStandardMatrix();
 	Material mat = { .color = MakeColor4(255,255,255,255),.textureId = 1 };
@@ -190,8 +189,9 @@ int main()
 	//MeshTest();
 	//GameIns_Init();
 	//ThreadTest();
-	//return;
+	Camera_Init();
 
+	return;
 	HWND hwnd = CreateRenderWindow(800, 600);
 	if (hwnd == NULL)
 	{

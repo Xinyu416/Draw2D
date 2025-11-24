@@ -22,6 +22,13 @@ typedef struct array {
 	uint32_t size;//数组容器长度
 }Array;
 
+typedef struct {
+	uint32_t maxSize;
+	uint8_t* pop;
+	uint8_t* push;
+	uint8_t* data;
+}Queue;
+
 typedef struct testContainer {
 	size_t number0;
 	size_t number1;

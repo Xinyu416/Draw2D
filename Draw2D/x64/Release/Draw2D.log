@@ -1,22 +1,47 @@
-﻿  GameEngine.c
+﻿  Camera.c
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
 D:\QXY\cpp\Draw2D\Include\Define.h(28,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
 D:\QXY\cpp\Draw2D\Include\Define.h(33,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\GameEngine.c(137,12): warning C4244: “函数”: 从“double”转换到“DWORD”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\GameEngine.c(108,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
+  GameEngine.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(28,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(33,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(136,12): warning C4244: “函数”: 从“double”转换到“DWORD”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(107,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
+  GameInstance.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(28,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(33,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+  Mesh.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(28,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(33,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Mesh.c(40,1): warning C4305: “初始化”: 从“double”到“float”截断
+D:\QXY\cpp\Draw2D\Src\Mesh.c(51,9): warning C4101: “v2”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Src\Mesh.c(50,9): warning C4101: “v1”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Src\Mesh.c(80,1): warning C4305: “初始化”: 从“double”到“float”截断
+D:\QXY\cpp\Draw2D\Src\Mesh.c(140,10): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
+D:\QXY\cpp\Draw2D\Src\Mesh.c(140,10): message : 请考虑在格式字符串中使用“%zd”
+D:\QXY\cpp\Draw2D\Src\Mesh.c(148,10): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
+D:\QXY\cpp\Draw2D\Src\Mesh.c(148,10): message : 请考虑在格式字符串中使用“%zd”
+D:\QXY\cpp\Draw2D\Src\Mesh.c(156,10): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
+D:\QXY\cpp\Draw2D\Src\Mesh.c(156,10): message : 请考虑在格式字符串中使用“%zd”
+D:\QXY\cpp\Draw2D\Src\Mesh.c(143,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Mesh.c(151,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Mesh.c(159,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
   Draw2D.c
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
 D:\QXY\cpp\Draw2D\Include\Define.h(28,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
 D:\QXY\cpp\Draw2D\Include\Define.h(33,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(65,11): warning C4047: “return”:“HWND”与“int”的间接级别不同
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(85,74): warning C4029: 声明的形参表不同于定义
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(142,30): warning C4305: “函数”: 从“double”到“const float”截断
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(142,35): warning C4305: “函数”: 从“double”到“const float”截断
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(66,11): warning C4047: “return”:“HWND”与“int”的间接级别不同
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(86,74): warning C4029: 声明的形参表不同于定义
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(143,30): warning C4305: “函数”: 从“double”到“const float”截断
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(143,35): warning C4305: “函数”: 从“double”到“const float”截断
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(144,30): warning C4305: “函数”: 从“double”到“const float”截断
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(273,99): warning C4244: “=”: 从“double”转换到“DWORD”，可能丢失数据
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(278,71): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
   正在生成代码
-  5 of 46 functions (10.9%) were compiled, the rest were copied from previous compilation.
+  3 of 49 functions ( 6.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成

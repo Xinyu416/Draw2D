@@ -90,9 +90,11 @@ inline PrintVect2(const Vect2 v) {
 
 inline Matrix CreateStandardMatrix() {
 	Matrix m = {
+		.m = {
 		1,0,0,
 		0,1,0,
 		0,0,1
+		}
 	};
 	return m;
 }
@@ -156,6 +158,42 @@ inline void Multi2Matrix(const float* a, const float* b, float* out) {
 	out[6] = a[6] * b[0] + a[7] * b[3] + a[8] * b[6];
 	out[7] = a[6] * b[1] + a[7] * b[4] + a[8] * b[7];
 	out[8] = a[6] * b[2] + a[7] * b[5] + a[8] * b[8];
+}
+
+inline Matrix InversMatrix(const float* m) {
+	float t[9];
+	//代数余子式计算
+	t[0] = +(m[4] * m[8] - m[5] * m[7]);
+	t[1] = -(m[3] * m[8] - m[5] * m[6]);
+	t[2] = +(m[3] * m[7] - m[4] * m[6]);
+
+	t[3] = -(m[1] * m[8] - m[2] * m[7]);
+	t[4] = +(m[0] * m[8] - m[2] * m[6]);
+	t[5] = -(m[0] * m[7] - m[1] * m[6]);
+
+	t[6] = +(m[1] * m[5] - m[2] * m[4]);
+	t[7] = -(m[0] * m[5] - m[2] * m[3]);
+	t[8] = +(m[0] * m[4] - m[1] * m[3]);
+
+	//计算行列式
+	float det = (m[0] * m[4] * m[8] + m[1] * m[5] * m[6] + m[2] * m[3] * m[7]) - (m[2] * m[4] * m[6] + m[0] * m[5] * m[7] + m[1] * m[3] * m[8]);
+
+	//计算标准伴随矩阵 （代数余子式的转置矩阵）
+	float r[9] = {
+		t[0],t[3],t[6],
+		t[1],t[4],t[7],
+		t[2],t[5],t[8],
+	};
+
+	//求逆矩阵
+	Matrix om = {
+		.m = {
+			r[0] / det,r[1] / det,r[2] / det,
+			r[3] / det,r[4] / det,r[5] / det,
+			r[6] / det,r[7] / det,r[8] / det,
+	} };
+
+	return om;
 }
 
 inline void PrintMatrix(float* m) {
