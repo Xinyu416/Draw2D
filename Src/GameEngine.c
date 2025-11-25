@@ -14,12 +14,16 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	gameengine->backgroudColor = MakeColor4(0, 0, 0, 255);
 	gameengine->bufferShow = (uint8_t*)malloc(width * height * bytepp);
 
-	const char* path = "C:\\Users\\DRF\\Desktop\\Temp\\uv.bmp";
-	GameEngine_LoadTexture(path);
+	printf("Load texture");
+	const char* path = "C:\\Users\\Xinyu\\Desktop\\Temp\\uv.bmp";
+	Texture* tex =  GameEngine_LoadTexture(path);
+	gameengine->texture = tex;
+	printf("Load texture over");
+
 	GameIns_Init();
 
 	//先测试
-	GameEngine_Render();
+	//GameEngine_Render();
 }
 
 void GameEngineResize(uint32_t w, uint32_t h) {
@@ -146,10 +150,6 @@ void GameEngine_Render() {
 		//Color4 uvB = UVTextureSample(uv[1].x, uv[1].y);
 		//Color4 uvC = UVTextureSample(uv[2].x, uv[2].y);
 
-		/*PrintColor(uvA);
-		PrintColor(uvB);
-		PrintColor(uvC);*/
-
 		//遍历屏幕空间像素
 		for (size_t y = 0; y < _getGameEngine()->height; y++)
 		{
@@ -185,9 +185,9 @@ void GameEngine_Render() {
 					_getGameEngine()->bufferShow[index + 2] = colPick.r;
 
 					//uv验证
-					_getGameEngine()->bufferShow[index + 0] = pure.b * v;
-					_getGameEngine()->bufferShow[index + 1] = pure.g * u;
-					_getGameEngine()->bufferShow[index + 2] = 0;
+					//_getGameEngine()->bufferShow[index + 0] = pure.b * v;
+					//_getGameEngine()->bufferShow[index + 1] = pure.g * u;
+					//_getGameEngine()->bufferShow[index + 2] = 0;
 				}
 				else
 				{
@@ -225,7 +225,7 @@ void GameEngine_Release() {
 	printf("GameEngine_Release\n");
 }
 
-void GameEngine_LoadTexture(const char* path) {
+Texture* GameEngine_LoadTexture(const char* path) {
 	FILE* rbmp = fopen(path, "rb");
 	if (rbmp == NULL)
 	{
@@ -240,29 +240,41 @@ void GameEngine_LoadTexture(const char* path) {
 	uint8_t* bgrcolors = (uint8_t*)malloc(info.biWidth * info.biHeight * count);
 	fread(bgrcolors, 1, info.biWidth * info.biHeight * count, rbmp);
 
-	Texture texture = { .data = bgrcolors,.width = info.biWidth,.height = info.biHeight,.bpp = info.biBitCount };
+	//Texture* texture = { .data = bgrcolors,.width = info.biWidth,.height = info.biHeight,.bpp = info.biBitCount };
+	Texture* texture = (Texture*)malloc(sizeof(Texture));
+	texture->height = info.biHeight;
+	texture->width = info.biWidth;
+	texture->bpp = info.biBitCount;
+	texture->data = bgrcolors;
+	printf("width:%d,height:%d\n",texture->width,texture->height);
 
-	_getGameEngine()->texture = &texture;
+	return texture;
+	
+	//printf("texture:%x\n", _getGameEngine()->texture->data[0]);
 }
 
 Color4 UVTextureSample(float u, float v) {
-	/*u = fmodf(u, 1.0f);
-	v = fmodf(v, 1.0f);*/
-	//Color4 out = MakeColor4(255, 255, 255, 255);
 
+	Color4 out = MakeColor4(0, 0, 0, 255);
+	u = fmaxf(0.0f, fminf(1.0f, u));
+	v = fmaxf(0.0f, fminf(1.0f, v));
+	uint32_t tw = _getGameEngine()->texture->width;
+	uint32_t th = _getGameEngine()->texture->height;
 
+	uint32_t x = (uint32_t)((float)(tw - 1) * u + 0.5f);
+	uint32_t y = (uint32_t)((float)(th - 1) * v + 0.5f);
+	uint8_t bytepp = _getGameEngine()->texture->bpp / 8;
 
-	uint32_t width = (float)_getGameEngine()->texture->width * u;
-	uint32_t height = (float)_getGameEngine()->texture->height * v;
-
-	uint32_t index = _getGameEngine()->texture->width * height * _getGameEngine()->texture->bpp / 8
-		+ width * _getGameEngine()->texture->bpp / 8;
+	uint32_t index = y *tw *bytepp + x * bytepp;
+	if (index + bytepp > tw * th * bytepp)
+	{
+		return out;
+	}
 	uint8_t r = _getGameEngine()->texture->data[index + 2];
 	uint8_t g = _getGameEngine()->texture->data[index + 1];
 	uint8_t b = _getGameEngine()->texture->data[index + 0];
 	uint8_t a = 255;
-	Color4 out = MakeColor4(r, g, b, a);
-
+	out = MakeColor4(r, g, b, a);
 	return out;
 
 }

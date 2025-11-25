@@ -105,7 +105,7 @@ void GameEngine_DrawBg();
 
 void GameEngine_Release();
 
-void GameEngine_LoadTexture(const char* path);
+Texture* GameEngine_LoadTexture(const char* path);
 
 Color4 UVTextureSample(float u,float v);
 
