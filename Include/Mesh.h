@@ -2,20 +2,22 @@
 #include "Define.h"
 
 typedef struct {
-	Vect2 vertices[4]; //8*4
-	Vect2 uvs[4];	   //8*4	
-	Color4 color[4];   //16
-}Quad;//80 byte
+	//一个quad管理两个三角面
+	Vect2 vertices[6]; //12*4
+	Vect2 uvs[6];	   //12*4	
+	Color4 color[6];   //24
+}Quad;//120 byte
 
 typedef struct {
 	Color4 color;			//4
-	uint8_t textureId;	//1
+	uint8_t textureId;		//1
 }Material;//5 byte
 
 typedef struct {
-	float* vertices; //8*quad  顶点数组			8byte(64位操作系统指针是8字节)
-	float* uvs;		 //8*quad  顶点uv数组			8byte	
-	uint8_t* colors; //16*quad 顶点颜色数组		8byte 
+	//改为三角面
+	float* vertices; //12*quad  顶点数组			8byte(64位操作系统指针是8字节)
+	float* uvs;		 //12*quad  顶点uv数组		8byte	
+	uint8_t* colors; //24*quad 顶点颜色数组		8byte 
 	uint32_t numOfQuad;//当前quad数				4byte		
 	uint32_t maxOfQuad;//最大quad数				4byte
 }Geometry;//32byte

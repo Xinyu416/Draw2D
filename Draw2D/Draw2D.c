@@ -1,8 +1,10 @@
-﻿#include "Draw2D.h"
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include "Draw2D.h"
 #include "Define.h"
 #include "Mesh.h"
 #include "Renderer.h"
 #include "Camera.h"
+#include <string.h>
 
 //窗口过程函数(消息回调)
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -83,7 +85,7 @@ HWND CreateRenderWindow(uint32_t width, uint32_t height) {
 }
 
 /*buffer显示*/
-void SendBufferToDisplay(HWND hwnd, BITMAPINFO bmi,uint8_t *frameBuffer) {
+void SendBufferToDisplay(HWND hwnd, BITMAPINFO bmi, uint8_t* frameBuffer) {
 	uint32_t width = GameEngine_GetFrameWidth();
 	uint32_t height = GameEngine_GetFrameHeight();
 
@@ -192,7 +194,7 @@ int main()
 	//Camera_Init();
 
 	//return;
-	HWND hwnd = CreateRenderWindow(800+16, 600+39);
+	HWND hwnd = CreateRenderWindow(800 + 16, 600 + 39);
 	if (hwnd == NULL)
 	{
 		MessageBox(NULL, L"窗口创建失败!", L"错误", MB_ICONERROR);
@@ -207,7 +209,7 @@ int main()
 	int width = windowrc.right;
 	int height = windowrc.bottom;
 
-	printf("width:%d,height:%d\n",width,height);
+	printf("width:%d,height:%d\n", width, height);
 
 	//每像素字节数
 	uint8_t bytepp = bpp / 8;
@@ -268,6 +270,32 @@ void AppLoop(HWND hwnd) {
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+			if (msg.message == WM_KEYDOWN) {
+
+				if ((char)msg.wParam =='1')
+				{
+					uint32_t image_size = GameEngine_GetFrameWidth() * GameEngine_GetFrameHeight() * GameEngine_GetFrameBytepp();
+					uint32_t file_size = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + image_size;
+					// 初始化文件头
+					BITMAPFILEHEADER file_header = {
+						.bfType = 0x4D42,        // "BM"
+						.bfSize = file_size,
+						.bfReserved1 = 0,
+						.bfReserved2 = 0,
+						.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)
+					};
+
+					const char* file = "C:\\Users\\DRF\\Desktop\\Temp\\quad.bmp";
+					FILE* f = fopen(file, "wb");
+					// 写入文件头和信息头
+					fwrite(&file_header, 1, sizeof(file_header), f);
+					fwrite(&bmi, 1, sizeof(BITMAPINFO), f);
+					fwrite(GameEngine_GetFrameData(), 1, image_size, f);
+					fclose(f);
+					printf("save bmp");
+				}
+			}
 		}
 		/*场景循环*/
 		GameEngin_SceneLoop(delta);

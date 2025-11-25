@@ -2,9 +2,9 @@
 
 Geometry CreateGeometry(const uint32_t maxOfQuads) {
 	Geometry geo = { .maxOfQuad = maxOfQuads,.numOfQuad = 0 };
-	geo.vertices = (float*)malloc(sizeof(float) * maxOfQuads * 8);
-	geo.uvs = (float*)malloc(sizeof(float) * maxOfQuads * 8);
-	geo.colors = (uint8_t*)malloc(sizeof(uint8_t) * maxOfQuads * 16);
+	geo.vertices = (float*)malloc(sizeof(float) * maxOfQuads * 12);
+	geo.uvs = (float*)malloc(sizeof(float) * maxOfQuads * 12);
+	geo.colors = (uint8_t*)malloc(sizeof(uint8_t) * maxOfQuads * 24);
 	return geo;
 }
 
@@ -23,9 +23,9 @@ void GeometryAddQuad(Geometry* geo, const Quad quad) {
 		printf("out of limit\n");
 		return;
 	}
-	memcpy(geo->vertices + (geo->numOfQuad * 8), quad.vertices, sizeof(quad.vertices));
-	memcpy(geo->uvs + (geo->numOfQuad * 8), quad.uvs, sizeof(quad.uvs));
-	memcpy(geo->colors + (geo->numOfQuad * 16), quad.color, sizeof(quad.color));
+	memcpy(geo->vertices + (geo->numOfQuad * 12), quad.vertices, sizeof(quad.vertices));
+	memcpy(geo->uvs + (geo->numOfQuad * 12), quad.uvs, sizeof(quad.uvs));
+	memcpy(geo->colors + (geo->numOfQuad * 24), quad.color, sizeof(quad.color));
 	geo->numOfQuad++;
 }
 

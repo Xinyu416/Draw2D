@@ -32,6 +32,13 @@ typedef void(*GameEnginRenderLoopEvent)();
 
 
 typedef struct {
+	uint8_t* data;
+	uint32_t width;
+	uint32_t height;
+	uint32_t bpp;
+}Texture;
+
+typedef struct {
 	GameEngineResizeEvent onResize;
 	GameEngineCloseEvent engineClose;
 	GameEngineWindowsCloseEvent windowsClose;
@@ -44,6 +51,7 @@ typedef struct {
 	uint8_t bytepp;
 	Color4 backgroudColor;
 	bool gameIsRuning;
+	Texture* texture;
 }GameEngine;
 
 
@@ -97,5 +105,8 @@ void GameEngine_DrawBg();
 
 void GameEngine_Release();
 
+void GameEngine_LoadTexture(const char* path);
+
+Color4 UVTextureSample(float u,float v);
 
 #endif // !__GAMEENGINE__
