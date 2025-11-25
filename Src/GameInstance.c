@@ -1,12 +1,15 @@
 #include "GameInstance.h"
 #include "Mesh.h"
 
+
 static GameInstance* _gameIns = NULL;
 void GameIns_Init() {
 	GameInstance* gameIns = _getGameIns();
 	gameIns->meshs = ArrayCreate(sizeof(Mesh));
 	gameIns->cMesh = NULL;
 	CreateMeshTest();
+	Camera* cam = CreateCamera(400, 4.0f/3.0f, 0, MakeVect2(400, 300), MakeVect2(1, 1));
+	gameIns->pCam = cam;
 }
 
 void CreateMeshTest() {
@@ -49,14 +52,12 @@ void CreateMeshTest() {
 
 	Matrix tm = CreateStandardMatrix();
 	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 1 };
-	Mesh mesh = CreateMesh(1, MakeVect2(400.f, 300.f), 0, MakeVect2(1.f, 1.f), geo, tm, mat);
+	Mesh mesh = CreateMesh(1, MakeVect2(400.f, 300.f), 0, MakeVect2(1.0f, 1.0f), geo, tm, mat);
 	ArrayPush(&_getGameIns()->meshs, &mesh);
 
 	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
 	_getGameIns()->cMesh = pmesh;
 
-	//PrintMesh(&mesh);
-	//PrintArray(&_getGameIns()->meshs);
 }
 
 void GameIns_Release() {

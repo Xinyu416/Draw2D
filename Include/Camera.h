@@ -11,4 +11,8 @@ typedef struct {
 	Matrix tm;
 }Camera;
 
+Camera* CreateCamera(float width,float ratio,float rot,Vect2 pos,Vect2 scale);
+
+void GenerateCameraTM(Camera* pCam);
+
 void Camera_Init();

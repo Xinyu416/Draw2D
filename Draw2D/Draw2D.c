@@ -189,10 +189,10 @@ int main()
 	//MeshTest();
 	//GameIns_Init();
 	//ThreadTest();
-	Camera_Init();
+	//Camera_Init();
 
-	return;
-	HWND hwnd = CreateRenderWindow(800, 600);
+	//return;
+	HWND hwnd = CreateRenderWindow(800+16, 600+39);
 	if (hwnd == NULL)
 	{
 		MessageBox(NULL, L"窗口创建失败!", L"错误", MB_ICONERROR);
@@ -206,6 +206,9 @@ int main()
 	GetClientRect(hwnd, &windowrc);
 	int width = windowrc.right;
 	int height = windowrc.bottom;
+
+	printf("width:%d,height:%d\n",width,height);
+
 	//每像素字节数
 	uint8_t bytepp = bpp / 8;
 
@@ -276,7 +279,7 @@ void AppLoop(HWND hwnd) {
 
 		QueryPerformanceCounter(&frameEndTime);
 		delta = (float)(frameEndTime.QuadPart - lastTime.QuadPart) * invFreq;
-		printf("deltatime:%f\n", delta);
+		//printf("deltatime:%f\n", delta);
 	}
 }
 
