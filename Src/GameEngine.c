@@ -15,9 +15,9 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	gameengine->bufferShow = (uint8_t*)malloc(width * height * bytepp);
 
 	//创建贴图数据
-	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\uv.bmp";
+	const char* path1 = "C:\\Users\\Xinyu\\Desktop\\Temp\\uv.bmp";
 	Texture tex1 = GameEngine_LoadTexture(path1, 1);
-	const char* path2 = "C:\\Users\\DRF\\Desktop\\Temp\\color.bmp";
+	const char* path2 = "C:\\Users\\Xinyu\\Desktop\\Temp\\color.bmp";
 	Texture tex2 = GameEngine_LoadTexture(path2, 2);
 
 
@@ -103,9 +103,9 @@ void GameEnginRenderLoop() {
 }
 void GameEngine_Render() {
 
-	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
+	//for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
 	{
-		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, i);
+		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 2);
 
 		//Mesh* pmesh = _getGameIns()->cMesh;
 		//缩放旋转结果矩阵
@@ -192,17 +192,17 @@ void GameEngine_Render() {
 						_getGameEngine()->bufferShow[index + 2] = alpha * CA.r + beta * CB.r + gama * CC.r;*/
 
 						//贴图颜色采样
-						Color4 colPick = UVTextureSample(uv_u, uv_v, pmesh->mat.textureId);
+						//Color4 colPick = UVTextureSample(uv_u, uv_v, pmesh->mat.textureId);
 
 						//设置颜色值
-						_getGameEngine()->bufferShow[index + 0] = colPick.b;
-						_getGameEngine()->bufferShow[index + 1] = colPick.g;
-						_getGameEngine()->bufferShow[index + 2] = colPick.r;
+						//_getGameEngine()->bufferShow[index + 0] = colPick.b;
+						//_getGameEngine()->bufferShow[index + 1] = colPick.g;
+						//_getGameEngine()->bufferShow[index + 2] = colPick.r;
 
 						//uv验证
-						//_getGameEngine()->bufferShow[index + 0] = pure.b * v;
-						//_getGameEngine()->bufferShow[index + 1] = pure.g * u;
-						//_getGameEngine()->bufferShow[index + 2] = 0;
+						_getGameEngine()->bufferShow[index + 0] = 255;
+						_getGameEngine()->bufferShow[index + 1] = 255;
+						_getGameEngine()->bufferShow[index + 2] = 0;
 					}
 					else
 					{

@@ -8,7 +8,7 @@ void GameIns_Init() {
 	gameIns->meshs = ArrayCreate(sizeof(Mesh));
 	gameIns->cMesh = NULL;
 	CreateMeshTest();
-	Camera* cam = CreateCamera(400, 700.0f / 775.0f, 0, MakeVect2(400, 300), MakeVect2(1, 1));
+	Camera* cam = CreateCamera(700, 700.0f / 775.0f, 0, MakeVect2(400, 300), MakeVect2(1, 1));
 	gameIns->pCam = cam;
 }
 
@@ -62,11 +62,11 @@ void GameIns_Release() {
 
 void GameIns_Tick(float delta) {
 	//Ðý×ªmesh
-	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
-	{
-		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, i);
-		pmesh->rot += i * 2.f + 2.f;
-	}
+	//for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
+	//{
+	//	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, i);
+	//	pmesh->rot += i * 2.f + 2.f;
+	//}
 	//_getGameIns()->cMesh->rot += 2.f;
 }
 
