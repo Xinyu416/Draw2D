@@ -8,7 +8,7 @@ void GameIns_Init() {
 	gameIns->meshs = ArrayCreate(sizeof(Mesh));
 	gameIns->cMesh = NULL;
 	CreateMeshTest();
-	Camera* cam = CreateCamera(400, 4.0f / 3.0f, 0, MakeVect2(400, 300), MakeVect2(1, 1));
+	Camera* cam = CreateCamera(400, 700.0f / 775.0f, 0, MakeVect2(400, 300), MakeVect2(1, 1));
 	gameIns->pCam = cam;
 }
 
@@ -22,6 +22,9 @@ void CreateMeshTest() {
 	};
 
 	Quad quad2 = { .vertices = {-50, 50,-20, 50,-20, 20,-20, 20,-50, 20,-50, 50},
+		.uvs = {
+			0.0f, 0.f, 1.0f, 0.0f, 1.f, 1.f ,
+			1.f, 1.f, 0.0f, 1.0f, 0.f, 0.f},
 				.color = {255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255,0,255,255,255,255,255,255,255}
 	};
 
@@ -35,16 +38,19 @@ void CreateMeshTest() {
 
 	Geometry geo = CreateGeometry(4);
 	GeometryAddQuad(&geo, quad1);
-	/*GeometryAddQuad(&geo, quad2);
-	GeometryAddQuad(&geo, quad3);
-	GeometryAddQuad(&geo, quad4);*/
+	Geometry geo2 = CreateGeometry(1);
+	GeometryAddQuad(&geo2, quad2);
+	//GeometryAddQuad(&geo, quad3);
+	//GeometryAddQuad(&geo, quad4);
 	printf("numOfQuad:%d\n", geo.numOfQuad);
 
 	Matrix tm = CreateStandardMatrix();
 	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 2 };
+	Material mat2 = { .color = MakeColor4(10,255,255,255),.textureId = 1 };
 	Mesh mesh = CreateMesh(1, MakeVect2(400.f, 400.f), 0, MakeVect2(1.5f, 1.5f), geo, tm, mat);
+	Mesh mesh2 = CreateMesh(2, MakeVect2(450.f, 450.f), 0, MakeVect2(1.5f, 1.5f), geo2, tm, mat2);
 	ArrayPush(&_getGameIns()->meshs, &mesh);
-
+	ArrayPush(&_getGameIns()->meshs, &mesh2);
 	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
 	_getGameIns()->cMesh = pmesh;
 
@@ -56,7 +62,12 @@ void GameIns_Release() {
 
 void GameIns_Tick(float delta) {
 	//Ðý×ªmesh
-	_getGameIns()->cMesh->rot += 2.f;
+	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
+	{
+		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, i);
+		pmesh->rot += i * 2.f + 2.f;
+	}
+	//_getGameIns()->cMesh->rot += 2.f;
 }
 
 GameInstance* _getGameIns() {

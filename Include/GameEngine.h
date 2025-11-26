@@ -9,6 +9,7 @@
 #include "Define.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "Scene.h"
 
 /*引擎关闭事件*/
 typedef void (*GameEngineCloseEvent)();

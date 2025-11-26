@@ -194,7 +194,7 @@ int main()
 	//Camera_Init();
 
 	//return;
-	HWND hwnd = CreateRenderWindow(800 + 16, 600 + 39);
+	HWND hwnd = CreateRenderWindow(700 + 16, 775 + 39);
 	if (hwnd == NULL)
 	{
 		MessageBox(NULL, L"窗口创建失败!", L"错误", MB_ICONERROR);

@@ -153,6 +153,7 @@
     <ClCompile Include="..\Src\GameInstance.c" />
     <ClCompile Include="..\Src\Mesh.c" />
     <ClCompile Include="..\Src\Renderer.c" />
+    <ClCompile Include="..\Src\Scene.c" />
     <ClCompile Include="..\Src\Texture.c" />
     <ClCompile Include="..\Src\threadTest.c" />
     <ClCompile Include="Draw2D.c" />
@@ -167,6 +168,7 @@
     <ClInclude Include="..\Include\GameInstance.h" />
     <ClInclude Include="..\Include\Mesh.h" />
     <ClInclude Include="..\Include\Renderer.h" />
+    <ClInclude Include="..\Include\Scene.h" />
     <ClInclude Include="..\Include\Texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
