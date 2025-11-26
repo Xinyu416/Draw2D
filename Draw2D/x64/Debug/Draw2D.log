@@ -1,12 +1,14 @@
 ﻿  GameEngine.c
-C:\CProject\Draw2D\Include\Define.h(28,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-C:\CProject\Draw2D\Include\Define.h(33,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-C:\CProject\Draw2D\Src\GameEngine.c(205,12): warning C4244: “函数”: 从“double”转换到“DWORD”，可能丢失数据
-C:\CProject\Draw2D\Src\GameEngine.c(126,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
-C:\CProject\Draw2D\Src\GameEngine.c(113,9): warning C4101: “CB”: 未引用的局部变量
-C:\CProject\Draw2D\Src\GameEngine.c(112,9): warning C4101: “CA”: 未引用的局部变量
-C:\CProject\Draw2D\Src\GameEngine.c(114,9): warning C4101: “CC”: 未引用的局部变量
-C:\CProject\Draw2D\Src\GameEngine.c(177,13): warning C4101: “pure”: 未引用的局部变量
-C:\CProject\Draw2D\Src\GameEngine.c(237,3): warning C4033: “GameEngine_LoadTexture”必须返回值
-C:\CProject\Draw2D\Src\GameEngine.c(258): warning C4715: “GameEngine_LoadTexture”: 不是所有的控件路径都返回值
-  Draw2D.vcxproj -> C:\CProject\Draw2D\x64\Debug\Draw2D.exe
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(28,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(33,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(191,54): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(212,12): warning C4244: “函数”: 从“double”转换到“DWORD”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(137,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(124,9): warning C4101: “CB”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(123,9): warning C4101: “CA”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(125,9): warning C4101: “CC”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(184,13): warning C4101: “pure”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(236,79): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(261,67): warning C4244: “函数”: 从“WORD”转换到“const uint8_t”，可能丢失数据
+  Draw2D.vcxproj -> D:\QXY\cpp\Draw2D\x64\Debug\Draw2D.exe

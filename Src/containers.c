@@ -63,26 +63,11 @@ void PrintArray(Array* arr) {
 /// <param name="element">新增的元素</param>
 void ArrayPush(Array* arr, void* element) {
 	if (((arr->length + 1) * arr->elementSize > arr->size)) {
-		//元素占用总空间 > 容器总空间 需要扩容
-		//uint8_t* newContainer = (uint8_t*)malloc(arr->size * 2);/
-		//逐字节拷贝
-		//for (uint32_t i = 0; i < arr->length; i++)
-		//{
-		//	for (uint32_t j = 0; j < arr->elementSize; j++)
-		//	{
-		//		newContainer[i * arr->elementSize + j] = arr->data[i * arr->elementSize + j];
-		//	}
-		//}
-		//arr->size = arr->size * 2;
 		arr = ArrayResize(arr);
 	}
 
 	memcpy(arr->data + (arr->length * arr->elementSize), element, arr->elementSize);
-	/*uint8_t* temp = (uint8_t*)element;
-	for (uint32_t i = 0; i < arr->elementSize; i++)
-	{
-		arr->data[arr->length * arr->elementSize + i] = temp[i];
-	}*/
+
 	arr->length = arr->length + 1;
 }
 
@@ -115,25 +100,7 @@ void ArrayInsert(Array* arr, void* element, uint32_t index) {
 	}
 	memcpy(arr->data + (index * arr->elementSize), element, arr->elementSize);
 	arr->length = arr->length + 1;
-	//逐字节拷贝
-	//if (((arr->length + 1) * arr->elementSize < arr->size)) {
-	//	//不需要扩容
-	//	arr->length = arr->length + 1;
-	//	for (uint32_t i = arr->length - 1; i > index; i--)
-	//	{
-	//		uint8_t* moveElement = arr->data + ((i - 1) * arr->elementSize);
-	//		for (uint32_t j = 0; j < arr->elementSize; j++)
-	//		{
-	//			arr->data[i * arr->elementSize + j] = moveElement[j];
-	//		}
-	//	}
-
-	//	uint8_t* insertElement = (uint8_t*)element;
-	//	for (uint32_t i = 0; i < arr->elementSize; i++)
-	//	{
-	//		arr->data[index * arr->elementSize + i] = insertElement[i];
-	//	}
-	//}
+	
 }
 
 /// <summary>
@@ -143,14 +110,6 @@ void ArrayInsert(Array* arr, void* element, uint32_t index) {
 /// <param name="index">删除的元素下标</param>
 void ArrayDelete(Array* arr, uint32_t index) {
 
-	/*for (uint32_t i = index; i < arr->length; i++)
-	{
-		uint8_t* moveElement = arr->data + ((i + 1) * arr->elementSize);
-		for (uint32_t j = 0; j < arr->elementSize; j++)
-		{
-			arr->data[i * arr->elementSize + j] = moveElement[j];
-		}
-	}*/
 	for (uint32_t i = index; i < arr->length; i++) {
 
 		memcpy(arr->data + (i * arr->elementSize), arr->data + ((i + 1) * arr->elementSize), arr->elementSize);

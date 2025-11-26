@@ -41,7 +41,7 @@ void CreateMeshTest() {
 	printf("numOfQuad:%d\n", geo.numOfQuad);
 
 	Matrix tm = CreateStandardMatrix();
-	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 1 };
+	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 2 };
 	Mesh mesh = CreateMesh(1, MakeVect2(400.f, 400.f), 0, MakeVect2(1.5f, 1.5f), geo, tm, mat);
 	ArrayPush(&_getGameIns()->meshs, &mesh);
 

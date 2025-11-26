@@ -8,6 +8,7 @@
 #include "GameInstance.h"
 #include "Define.h"
 #include "Mesh.h"
+#include "Texture.h"
 
 /*引擎关闭事件*/
 typedef void (*GameEngineCloseEvent)();
@@ -32,13 +33,6 @@ typedef void(*GameEnginRenderLoopEvent)();
 
 
 typedef struct {
-	uint8_t* data;
-	uint32_t width;
-	uint32_t height;
-	uint32_t bpp;
-}Texture;
-
-typedef struct {
 	GameEngineResizeEvent onResize;
 	GameEngineCloseEvent engineClose;
 	GameEngineWindowsCloseEvent windowsClose;
@@ -51,7 +45,7 @@ typedef struct {
 	uint8_t bytepp;
 	Color4 backgroudColor;
 	bool gameIsRuning;
-	Texture* texture;
+	Array texture;
 }GameEngine;
 
 
@@ -105,8 +99,10 @@ void GameEngine_DrawBg();
 
 void GameEngine_Release();
 
-Texture* GameEngine_LoadTexture(const char* path);
+Array GameEngine_GetTextureArr();
 
-Color4 UVTextureSample(float u,float v);
+Texture GameEngine_LoadTexture(const char* path, uint32_t textureID);
+
+Color4 UVTextureSample(float u,float v, uint32_t textureID);
 
 #endif // !__GAMEENGINE__
