@@ -34,6 +34,26 @@ Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geom
 	return mesh;
 }
 
+//通过index取到切块的uv图
+Vect2* getUVbyType(uint8_t index, uint32_t wNum, uint32_t hNum) {
+	Vect2 uvs[6];
+	/*uint32_t width = 4;
+	uint32_t height = 4;*/
+	float uStep = 1.0f / (float)wNum;
+	float vStep = 1.0f / (float)hNum;
+	float uv_u = (index % wNum) * uStep;
+	float uv_v = (index / hNum) * vStep;
+
+	uvs[0] = MakeVect2(uv_u, uv_v);
+	uvs[1] = MakeVect2(uv_u + uStep, uv_v);
+	uvs[2] = MakeVect2(uv_u + uStep, uv_v + vStep);
+	uvs[3] = MakeVect2(uv_u + uStep, uv_v + vStep);
+	uvs[4] = MakeVect2(uv_u, uv_v + vStep);
+	uvs[5] = MakeVect2(uv_u, uv_v);
+
+	return uvs;
+}
+
 bool IsPointOnSegment(Vect2 p, Vect2 a, Vect2 b) {
 	// 检查点p是否在线段ab上
 	float cross = (p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x);

@@ -15,20 +15,38 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	gameengine->bufferShow = (uint8_t*)malloc(width * height * bytepp);
 
 	//创建贴图数据
-	const char* path1 = "C:\\Users\\Xinyu\\Desktop\\Temp\\uv.bmp";
+	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\uv.bmp";
 	Texture tex1 = GameEngine_LoadTexture(path1, 1);
-	const char* path2 = "C:\\Users\\Xinyu\\Desktop\\Temp\\color.bmp";
+	const char* path2 = "C:\\Users\\DRF\\Desktop\\Temp\\color.bmp";
 	Texture tex2 = GameEngine_LoadTexture(path2, 2);
+	const char* path3 = "C:\\Users\\DRF\\Desktop\\Temp\\bean.bmp";
+	Texture tex3 = GameEngine_LoadTexture(path3, 3);
+	const char* path4 = "C:\\Users\\DRF\\Desktop\\Temp\\item.bmp";
+	Texture tex4 = GameEngine_LoadTexture(path4, 4);
+	const char* path5 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
+	Texture tex5 = GameEngine_LoadTexture(path5, 5);
 
 
 	Array arr = ArrayCreate(sizeof(Texture));
 	ArrayPush(&arr, &tex1);
 	ArrayPush(&arr, &tex2);
+	ArrayPush(&arr, &tex3);
+	ArrayPush(&arr, &tex4);
+	ArrayPush(&arr, &tex5);
 	gameengine->texture = arr;
 
 	GameIns_Init();
 
-	InitGridData();
+	SetMapData();
+	GenerateGridData();
+	//GenerateBeansData();
+}
+
+void GameEngin_SceneLoop(float delta) {
+
+	GameIns_Tick(delta);
+	GameEngine_DrawBg();
+	GameEngine_Render();
 }
 
 void GameEngineResize(uint32_t w, uint32_t h) {
@@ -91,13 +109,6 @@ bool GameEngine_IsRuning() {
 	return _getGameEngine()->gameIsRuning;
 }
 
-void GameEngin_SceneLoop(float delta) {
-
-	GameIns_Tick(delta);
-	GameEngine_DrawBg();
-	GameEngine_Render();
-}
-
 void GameEnginRenderLoop() {
 	printf("GameEnginRenderLoop\n");
 }
@@ -105,7 +116,7 @@ void GameEngine_Render() {
 
 	//for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
 	{
-		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 2);
+		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
 
 		//Mesh* pmesh = _getGameIns()->cMesh;
 		//缩放旋转结果矩阵
@@ -123,21 +134,11 @@ void GameEngine_Render() {
 		Multi2Matrix(mt.m, srm.m, srtm.m);
 		pmesh->tm = srtm;
 
-		//Color4 randColor = MakeColor4(rand() % 255, rand() % 255, rand() % 255, 255);
-		Color4 CA = MakeColor4(255, 0, 0, 255);
-		Color4 CB = MakeColor4(0, 255, 0, 255);
-		Color4 CC = MakeColor4(0, 0, 255, 255);
-
-
 		//后期根据BoudingBox大小调整像素渲染区
 		Vect2 vp[3] = { 0 };
 		Vect2 uv[3] = { 0 };
 		for (size_t v = 0; v < pmesh->geo.numOfQuad * 2; v++)
 		{
-			//c = v * 12;
-			//CA = MakeColor4(pmesh->geo.colors[0 + c], pmesh->geo.colors[1 + c], pmesh->geo.colors[2 + c], pmesh->geo.colors[3 + c]);
-			//CB = MakeColor4(pmesh->geo.colors[4 + c], pmesh->geo.colors[5 + c], pmesh->geo.colors[6 + c], pmesh->geo.colors[7 + c]);
-			//CC = MakeColor4(pmesh->geo.colors[8 + c], pmesh->geo.colors[9 + c], pmesh->geo.colors[10 + c], pmesh->geo.colors[11 + c]);
 			uint32_t vi = v * 6;
 
 			uv[0] = MakeVect2(pmesh->geo.uvs[vi + 0], pmesh->geo.uvs[vi + 1]);
@@ -161,10 +162,6 @@ void GameEngine_Render() {
 			Vect2 B = AddVect2(MakeVect2((p1.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p1.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
 			Vect2 C = AddVect2(MakeVect2((p2.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p2.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
 
-			//Color4 uvA = UVTextureSample(uv[0].x, uv[0].y);
-			//Color4 uvB = UVTextureSample(uv[1].x, uv[1].y);
-			//Color4 uvC = UVTextureSample(uv[2].x, uv[2].y);
-
 			//遍历屏幕空间像素
 			for (size_t y = 0; y < _getGameEngine()->height; y++)
 			{
@@ -185,24 +182,28 @@ void GameEngine_Render() {
 						//通过顶点的uv值算出每个点的uv值
 						float uv_u = alpha * uv[0].x + beta * uv[1].x + gama * uv[2].x;
 						float uv_v = alpha * uv[0].y + beta * uv[1].y + gama * uv[2].y;
-						Color4 pure = MakeColor4(255, 255, 255, 255);
-
-						/*_getGameEngine()->bufferShow[index + 0] = alpha * CA.b + beta * CB.b + gama * CC.b;
-						_getGameEngine()->bufferShow[index + 1] = alpha * CA.g + beta * CB.g + gama * CC.g;
-						_getGameEngine()->bufferShow[index + 2] = alpha * CA.r + beta * CB.r + gama * CC.r;*/
 
 						//贴图颜色采样
-						//Color4 colPick = UVTextureSample(uv_u, uv_v, pmesh->mat.textureId);
+						Color4 colPick = UVTextureSample(uv_u, uv_v, pmesh->mat.textureId);
 
 						//设置颜色值
-						//_getGameEngine()->bufferShow[index + 0] = colPick.b;
-						//_getGameEngine()->bufferShow[index + 1] = colPick.g;
-						//_getGameEngine()->bufferShow[index + 2] = colPick.r;
+						_getGameEngine()->bufferShow[index + 0] = colPick.b;
+						_getGameEngine()->bufferShow[index + 1] = colPick.g;
+						_getGameEngine()->bufferShow[index + 2] = colPick.r;
 
-						//uv验证
-						_getGameEngine()->bufferShow[index + 0] = 255;
-						_getGameEngine()->bufferShow[index + 1] = 255;
-						_getGameEngine()->bufferShow[index + 2] = 0;
+						/*if ((v / 2) % 2 == 0)
+						{
+							_getGameEngine()->bufferShow[index + 0] = 255;
+							_getGameEngine()->bufferShow[index + 1] = 255;
+							_getGameEngine()->bufferShow[index + 2] = 255;
+						}
+						else
+						{
+							_getGameEngine()->bufferShow[index + 0] = 0;
+							_getGameEngine()->bufferShow[index + 1] = 255;
+							_getGameEngine()->bufferShow[index + 2] = 255;
+						}*/
+
 					}
 					else
 					{
@@ -258,10 +259,25 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID) {
 	struct tagBITMAPFILEHEADER head;
 	struct tagBITMAPINFOHEADER info;
 	fread(&head, 1, sizeof(struct tagBITMAPFILEHEADER), rbmp);
+	//printf("bitmap: bfSize:%d,bfOffBits:%d\n", head.bfSize, head.bfOffBits);
+
 	fread(&info, 1, sizeof(struct tagBITMAPINFOHEADER), rbmp);
+	//printf("bitmap: biSize:%d,biWidth:%d,biHeight:%d,biBitCount:%d,biClrUsed:%d,biCompression:%d\n", info.biSize, info.biWidth, info.biHeight, info.biBitCount, info.biClrUsed, info.biCompression);
+
+	//printf("sizeof head:%d\n", sizeof(struct tagBITMAPFILEHEADER));
+	//printf("sizeof info:%d\n", sizeof(struct tagBITMAPINFOHEADER));
+
+	uint32_t stride = ((((info.biWidth * info.biBitCount) + 31) & ~31) >> 3);
+	uint32_t biSizeImage = abs(info.biHeight) * stride;
+
+	//printf("stride:%d,biSizeImage:%d\n", stride, biSizeImage);
+
 	uint8_t count = info.biBitCount / 8;
 	uint8_t* bgrcolors = (uint8_t*)malloc(info.biWidth * info.biHeight * count);
-	fread(bgrcolors, 1, info.biWidth * info.biHeight * count, rbmp);
+	for (size_t y = 0; y < info.biHeight; y++)
+	{
+		fread(bgrcolors + y * info.biWidth * count, 1, stride, rbmp);
+	}
 
 	return TextureCreate(info.biWidth, info.biHeight, info.biBitCount, bgrcolors, textureID);
 

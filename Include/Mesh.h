@@ -6,6 +6,7 @@ typedef struct {
 	Vect2 vertices[6]; //12*4
 	Vect2 uvs[6];	   //12*4	
 	Color4 color[6];   //24
+	uint8_t type;		//类型换取uv值
 }Quad;//120 byte
 
 typedef struct {
@@ -40,6 +41,8 @@ void ReleaseGeometry(Geometry* geo);
 void GeometryAddQuad(Geometry* geo, const Quad quad);
 
 Mesh CreateMesh(const uint32_t id, Vect2 pos,float rot, Vect2 scale, const Geometry geo,const Matrix tm,const Material mat);
+
+Vect2* getUVbyType(uint8_t type, uint32_t wNum, uint32_t hNum);
 
 /*用点乘的符号判断点跟向量的角度 进而判断点是否在四边形内*/
 bool IsPointInQuadDotSign(Vect2 p, Vect2 vertices[4]);
