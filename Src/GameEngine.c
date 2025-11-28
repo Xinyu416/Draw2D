@@ -18,24 +18,24 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	
 	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
 	Texture tex1 = GameEngine_LoadTexture(path1, 1);
-	const char* path2 = "C:\\Users\\DRF\\Desktop\\Temp\\bean.bmp";
+	const char* path2 = "C:\\Users\\DRF\\Desktop\\Temp\\bean_alpha.bmp";
 	Texture tex2 = GameEngine_LoadTexture(path2, 1);
 	const char* path3 = "C:\\Users\\DRF\\Desktop\\Temp\\item.bmp";
 	Texture tex3 = GameEngine_LoadTexture(path3, 2);
+	const char* path4 = "C:\\Users\\DRF\\Desktop\\Temp\\role_alpha.bmp";
+	Texture tex4 = GameEngine_LoadTexture(path4, 2);
 
 
 	Array arr = ArrayCreate(sizeof(Texture));
 	ArrayPush(&arr, &tex1);
 	ArrayPush(&arr, &tex2);
 	ArrayPush(&arr, &tex3);
+	ArrayPush(&arr, &tex4);
 	gameengine->texture = arr;
 
 	GameIns_Init();
 
-	SetMapData();
-	GenerateGridData();
-	GenerateBeansData();
-	GenerateItemData();
+	Scene_Init();
 }
 
 void GameEngin_SceneLoop(float delta) {
@@ -225,6 +225,7 @@ void GameEngine_DrawBg() {
 			_getGameEngine()->bufferShow[index + 0] = _getGameEngine()->backgroudColor.b;
 			_getGameEngine()->bufferShow[index + 1] = _getGameEngine()->backgroudColor.g;
 			_getGameEngine()->bufferShow[index + 2] = _getGameEngine()->backgroudColor.r;
+			_getGameEngine()->bufferShow[index + 3] = _getGameEngine()->backgroudColor.a;
 		}
 	}
 }
@@ -248,7 +249,8 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID) {
 	FILE* rbmp = fopen(path, "rb");
 	if (rbmp == NULL)
 	{
-		printf("File is NULL");
+		printf("path:%s\n",path);
+		printf("File is NULL\n");
 		Texture texture = { .bpp = 0,.data = NULL,.height = 0,.width = 0 };
 		return texture;
 	}
@@ -266,9 +268,9 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID) {
 	uint32_t stride = ((((info.biWidth * info.biBitCount) + 31) & ~31) >> 3);
 	uint32_t biSizeImage = abs(info.biHeight) * stride;
 
-	//printf("stride:%d,biSizeImage:%d\n", stride, biSizeImage);
 
 	uint8_t count = info.biBitCount / 8;
+	printf("GameEngine_LoadTexture:: count:%d\n", count);
 	uint8_t* bgrcolors = (uint8_t*)malloc(info.biWidth * info.biHeight * count);
 	for (size_t y = 0; y < info.biHeight; y++)
 	{
@@ -280,7 +282,7 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID) {
 }
 
 Color4 UVTextureSample(float u, float v, uint32_t tID) {
-	Color4 out = MakeColor4(0, 0, 0, 255);
+	Color4 out = MakeColor4(0, 0, 0, 0);
 	if (_getGameEngine()->texture.length == 0)
 	{
 		printf("texture len == 0 \n");
@@ -305,7 +307,10 @@ Color4 UVTextureSample(float u, float v, uint32_t tID) {
 	uint8_t r = texture->data[index + 2];
 	uint8_t g = texture->data[index + 1];
 	uint8_t b = texture->data[index + 0];
+	
 	uint8_t a = 255;
+	a = bytepp > 3 ? texture->data[index + 3] : 255;
+
 	out = MakeColor4(r, g, b, a);
 	return out;
 

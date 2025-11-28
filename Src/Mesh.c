@@ -35,10 +35,13 @@ Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geom
 }
 
 //通过index取到切块的uv图
-Vect2* getUVbyType(uint8_t index, uint32_t wNum, uint32_t hNum) {
+Vect2* getUVbyType(uint8_t category,uint8_t index, uint32_t wNum, uint32_t hNum) {
+	//贴图为单种贴图单个元素时 uv值需要特殊计算
+	if (category > 0)
+	{
+		index = 0;
+	}
 	Vect2 uvs[6];
-	/*uint32_t width = 4;
-	uint32_t height = 4;*/
 	float uStep = 1.0f / (float)wNum;
 	float vStep = 1.0f / (float)hNum;
 	float uv_u = (index % wNum) * uStep;
@@ -55,10 +58,10 @@ Vect2* getUVbyType(uint8_t index, uint32_t wNum, uint32_t hNum) {
 }
 
 //通过坐标（格子）得到顶点数据
-Vect2* getVeticesbyCoord(uint32_t x, uint32_t y, Vect2 pos,float GridSize) {
+Vect2* getVeticesbyCoord(uint32_t x, uint32_t y, Vect2 offset,float GridSize) {
 	Vect2 vert[6];
-	float posx = pos.x;
-	float posy = pos.y;
+	float posx = offset.x;
+	float posy = offset.y;
 	vert[0]= MakeVect2(x * GridSize - posx, (y + 1) * GridSize - posy);
 	vert[1]= MakeVect2((x + 1) * GridSize - posx, (y + 1) * GridSize - posy);
 	vert[2]= MakeVect2((x + 1) * GridSize - posx, y * GridSize - posy);

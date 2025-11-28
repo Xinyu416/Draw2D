@@ -209,7 +209,7 @@ int main()
 	int width = windowrc.right;
 	int height = windowrc.bottom;
 
-	printf("width:%d,height:%d\n", width, height);
+	printf("DeviceInfo width:%d,height:%d,bpp:%d\n", width, height,bpp);
 
 	//每像素字节数
 	uint8_t bytepp = bpp / 8;
