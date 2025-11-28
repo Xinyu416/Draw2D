@@ -15,31 +15,27 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	gameengine->bufferShow = (uint8_t*)malloc(width * height * bytepp);
 
 	//创建贴图数据
-	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\uv.bmp";
+	
+	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
 	Texture tex1 = GameEngine_LoadTexture(path1, 1);
-	const char* path2 = "C:\\Users\\DRF\\Desktop\\Temp\\color.bmp";
-	Texture tex2 = GameEngine_LoadTexture(path2, 2);
-	const char* path3 = "C:\\Users\\DRF\\Desktop\\Temp\\bean.bmp";
-	Texture tex3 = GameEngine_LoadTexture(path3, 3);
-	const char* path4 = "C:\\Users\\DRF\\Desktop\\Temp\\item.bmp";
-	Texture tex4 = GameEngine_LoadTexture(path4, 4);
-	const char* path5 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
-	Texture tex5 = GameEngine_LoadTexture(path5, 5);
+	const char* path2 = "C:\\Users\\DRF\\Desktop\\Temp\\bean.bmp";
+	Texture tex2 = GameEngine_LoadTexture(path2, 1);
+	const char* path3 = "C:\\Users\\DRF\\Desktop\\Temp\\item.bmp";
+	Texture tex3 = GameEngine_LoadTexture(path3, 2);
 
 
 	Array arr = ArrayCreate(sizeof(Texture));
 	ArrayPush(&arr, &tex1);
 	ArrayPush(&arr, &tex2);
 	ArrayPush(&arr, &tex3);
-	ArrayPush(&arr, &tex4);
-	ArrayPush(&arr, &tex5);
 	gameengine->texture = arr;
 
 	GameIns_Init();
 
 	SetMapData();
 	GenerateGridData();
-	//GenerateBeansData();
+	GenerateBeansData();
+	GenerateItemData();
 }
 
 void GameEngin_SceneLoop(float delta) {
@@ -114,9 +110,9 @@ void GameEnginRenderLoop() {
 }
 void GameEngine_Render() {
 
-	//for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
+	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
 	{
-		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
+		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, i);
 
 		//Mesh* pmesh = _getGameIns()->cMesh;
 		//缩放旋转结果矩阵

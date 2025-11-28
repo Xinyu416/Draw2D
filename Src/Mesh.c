@@ -54,6 +54,20 @@ Vect2* getUVbyType(uint8_t index, uint32_t wNum, uint32_t hNum) {
 	return uvs;
 }
 
+//通过坐标（格子）得到顶点数据
+Vect2* getVeticesbyCoord(uint32_t x, uint32_t y, Vect2 pos,float GridSize) {
+	Vect2 vert[6];
+	float posx = pos.x;
+	float posy = pos.y;
+	vert[0]= MakeVect2(x * GridSize - posx, (y + 1) * GridSize - posy);
+	vert[1]= MakeVect2((x + 1) * GridSize - posx, (y + 1) * GridSize - posy);
+	vert[2]= MakeVect2((x + 1) * GridSize - posx, y * GridSize - posy);
+	vert[3] = MakeVect2((x + 1) * GridSize - posx, y * GridSize - posy);
+	vert[4]= MakeVect2(x * GridSize - posx, y * GridSize - posy);
+	vert[5] = MakeVect2(x * GridSize - posx, (y + 1) * GridSize - posy);
+	return vert;
+}
+
 bool IsPointOnSegment(Vect2 p, Vect2 a, Vect2 b) {
 	// 检查点p是否在线段ab上
 	float cross = (p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x);

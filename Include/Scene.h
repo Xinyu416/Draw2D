@@ -3,7 +3,7 @@
 #include "GameEngine.h"
 
 //单元格单位值
-#define GridSize 25
+#define GridSize 25.f
 
 typedef struct {
 	uint32_t wNum;
@@ -16,6 +16,8 @@ void GenerateGridData();
 void SetMapData();
 
 void GenerateBeansData();
+
+void GenerateItemData();
 
 void GenerateEnemyData();
 
