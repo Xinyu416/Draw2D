@@ -106,4 +106,7 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID);
 
 Color4 UVTextureSample(float u,float v, uint32_t textureID);
 
+void Role_Move(char direction);
+
+
 #endif // !__GAMEENGINE__

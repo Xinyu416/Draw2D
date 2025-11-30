@@ -11,13 +11,14 @@ MapData* _getMapData() {
 
 void Scene_Init() {
 	SetMapData();
-	CreateMeshData(BG, 3, 3, 1);
-	CreateMeshData(BEAN, 1, 1, 2);
-	CreateMeshData(ITEM, 1, 1, 3);
-	GenerateRoleData();
-	//GenerateGridData();
-	//GenerateBeansData();
-	//GenerateItemData();
+	//CreateMeshData(BG, 3, 3, 1);	//0
+	CreateMeshData(BEAN, 1, 1, 2);	//1
+	//CreateMeshData(ITEM, 1, 1, 3);	//2
+	GenerateRoleData();				//3
+	//设置角色数据
+	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 1);
+	_getGameIns()->cMesh = pmesh;
+
 }
 
 void SetMapData() {
@@ -38,7 +39,7 @@ void SetMapData() {
 		0,1,1,1,1,5,7,4,0,1,1,5,7,4,4,7,3,1,1,2,4,7,3,1,1,1,1,2,
 		6,6,6,6,6,4,7,4,3,1,1,2,7,0,2,7,0,1,1,5,4,7,4,6,6,6,6,6,
 		6,6,6,6,6,4,7,4,4,7,7,7,7,7,7,7,7,7,7,4,4,7,4,6,6,6,6,6,
-		6,6,6,6,6,4,7,4,4,7,3,1,1,1,1,1,1,5,7,4,4,7,4,6,6,6,6,6,
+		6,6,6,6,6,4,7,4,4,7,3,1,1,6,6,1,1,5,7,4,4,7,4,6,6,6,6,6,
 		1,1,1,1,1,2,7,0,2,7,4,6,6,6,6,6,6,4,7,0,2,7,0,1,1,1,1,1,
 		7,7,7,7,7,7,7,7,7,7,4,6,6,6,6,6,6,4,7,7,7,7,7,7,7,7,7,7,
 		1,1,1,1,1,5,7,3,5,7,4,6,6,6,6,6,6,4,7,3,5,7,3,1,1,1,1,1,
@@ -89,6 +90,7 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 				count++;
 			}
 		}
+		printf("CreateMeshData:: bean Count:%d\n", count);
 		geo = CreateGeometry(count);
 		break;
 	case ITEM:
@@ -124,6 +126,7 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 				Quad quad = {
 					.vertices = {vertices[0],vertices[1],vertices[2],vertices[3],vertices[4],vertices[5]},
 					 .uvs = {uvs[0],uvs[1],uvs[2],uvs[3],uvs[4],uvs[5]},
+					 .color = {255,255,255,255, 255,255,255,255 ,255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255},
 					.type = texType
 				};
 				GeometryAddQuad(&geo, quad);
@@ -134,6 +137,7 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 					Quad quad = {
 					.vertices = {vertices[0],vertices[1],vertices[2],vertices[3],vertices[4],vertices[5]},
 					 .uvs = {uvs[0],uvs[1],uvs[2],uvs[3],uvs[4],uvs[5]},
+					  .color = {255,255,255,255, 255,255,255,255 ,255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255},
 					.type = texType
 					};
 					GeometryAddQuad(&geo, quad);
@@ -145,6 +149,7 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 					Quad quad = {
 					.vertices = {vertices[0],vertices[1],vertices[2],vertices[3],vertices[4],vertices[5]},
 					 .uvs = {uvs[0],uvs[1],uvs[2],uvs[3],uvs[4],uvs[5]},
+					  .color = {255,255,255,255, 255,255,255,255 ,255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255},
 					.type = texType
 					};
 					GeometryAddQuad(&geo, quad);
@@ -158,7 +163,7 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 	}
 	Matrix tm = CreateStandardMatrix();
 	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = textureId };
-	Mesh mesh = CreateMesh(1, _getGameIns()->pCam->pos, 0, MakeVect2(1.f, 1.f), geo, tm, mat);
+	Mesh mesh = CreateMesh(textureId, _getGameIns()->pCam->pos, 0, MakeVect2(1.f, 1.f), geo, tm, mat);
 	ArrayPush(&_getGameIns()->meshs, &mesh);
 }
 
@@ -166,139 +171,78 @@ void GenerateRoleData() {
 	Vect2* uvs = getUVbyType(0, 0, 1, 1);
 	Geometry geo = CreateGeometry(1);
 	//Vect2* vertices = getVeticesbyCoord(x, y, offset, GridSize);
+	Vect2 offset = MakeVect2(_getGameIns()->pCam->width / 2, _getGameIns()->pCam->height / 2);
 	Quad quad = {
 				.vertices = {-25.f,25.f, 25.f,25.f, 25.f,-25.f, 25.f,-25.f, -25.f,-25.f, -25.f,25.f},
 				.uvs = {uvs[0],uvs[1],uvs[2],uvs[3],uvs[4],uvs[5]},
-				//.uvs = {0,0,0.33f,0,0.33f, 1,0.33f,1,0,1,0,0},
+				 .color = {255,255,255,255, 255,255,255,255 ,255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255},
 			   .type = 0
 	};
 	GeometryAddQuad(&geo, quad);
 	Matrix tm = CreateStandardMatrix();
 	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 4 };
-	Mesh mesh = CreateMesh(1, _getGameIns()->pCam->pos, 0, MakeVect2(1.f, 1.f), geo, tm, mat);
+	Vect2 pos = MakeVect2(_getGameIns()->pCam->pos.x - GridSize * 4, _getGameIns()->pCam->pos.y - GridSize * 4);
+	printf("RolePos:(%f,%f)\n", pos.x, pos.y);
+	Mesh mesh = CreateMesh(1, pos/*MakeVect2(offset.x - GridSize, offset.y - GridSize)*/, -90, MakeVect2(1.f, 1.f), geo, tm, mat);
 	ArrayPush(&_getGameIns()->meshs, &mesh);
 }
 
-void GenerateGridData() {
 
-	CreateMeshData(BG, 3, 3, 1);
-	//uint32_t wNum = _getMapData()->wNum;
-	//uint32_t hNum = _getMapData()->hNum;
-	//uint32_t texWidth = 3;
-	//uint32_t texHeight = 3;
-	//Geometry geo = CreateGeometry(wNum * hNum);
-	////坐标原点 根据Camera位置和窗口设计换算来的
-	//Vect2 offset = MakeVect2(_getGameIns()->pCam->width / 2, _getGameIns()->pCam->height / 2);
-	//uint8_t type = 0;
-	//uint32_t index = 0;
-	////以中心对齐的方式建mesh
-	//for (size_t y = 0; y < hNum; y++)
-	//{
-	//	for (size_t x = 0; x < wNum; x++)
-	//	{
-	//		type = _getMapData()->typeData[index];
-	//		Vect2* uvs = getUVbyType(type, texWidth, texHeight);
-	//		Vect2* vertices = getVeticesbyCoord(x, y, offset, GridSize);
-	//		Quad quad = {
-	//					.vertices = {vertices[0],vertices[1],vertices[2],vertices[3],vertices[4],vertices[5]},
-	//					 .uvs = {uvs[0],uvs[1],uvs[2],uvs[3],uvs[4],uvs[5]},
-	//					.type = type
-	//		};
-	//		GeometryAddQuad(&geo, quad);
-	//		index++;
-	//	}
-	//}
-	//Matrix tm = CreateStandardMatrix();
-	//Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 1 };
-	//Mesh mesh = CreateMesh(1, _getGameIns()->pCam->pos, 0, MakeVect2(1.f, 1.f), geo, tm, mat);
-	//ArrayPush(&_getGameIns()->meshs, &mesh);
+//通过坐标（格子）得到顶点数据
+Vect2* getVeticesbyCoord(uint32_t x, uint32_t y, Vect2 offset, float gridSize) {
+	Vect2 vert[6];
+	float posx = offset.x;
+	float posy = offset.y;
+	vert[0] = MakeVect2(x * gridSize - posx, (y + 1) * gridSize - posy);
+	vert[1] = MakeVect2((x + 1) * gridSize - posx, (y + 1) * gridSize - posy);
+	vert[2] = MakeVect2((x + 1) * gridSize - posx, y * gridSize - posy);
+	vert[3] = MakeVect2((x + 1) * gridSize - posx, y * gridSize - posy);
+	vert[4] = MakeVect2(x * gridSize - posx, y * gridSize - posy);
+	vert[5] = MakeVect2(x * gridSize - posx, (y + 1) * gridSize - posy);
+	return vert;
 }
 
-void GenerateBeansData() {
-	CreateMeshData(BEAN, 1, 1, 2);
-	//uint32_t wNum = _getMapData()->wNum;
-	//uint32_t hNum = _getMapData()->hNum;
-	//uint8_t type = 0;
-	//uint32_t count = 0;
-	////统计quad数量
-	//for (size_t i = 0; i < wNum * hNum; i++)
-	//{
-	//	if (_getMapData()->typeData[i] == 7) {
-	//		count++;
-	//	}
-	//}
-	//Geometry geo = CreateGeometry(count);
-	//Vect2 offset = MakeVect2(_getGameIns()->pCam->width / 2, _getGameIns()->pCam->height / 2);
-	////以中心对齐的方式建mesh
-	//uint32_t index = 0;
+//通过角色行进的下一个位置判断当前地图格子类型是否可以行动
+int getMapDataByPos(Vect2 pos) {
+	printf("pos:(%f,%f)\n", pos.x, pos.y);
+	//需要偏移一个格子的距离
+	Vect2 offset = MakeVect2(_getGameIns()->pCam->width / 2, _getGameIns()->pCam->height / 2);
+	Vect2 newPos = AddVect2(pos, offset);
+	printf("newPos:(%f,%f)\n", newPos.x, newPos.y);
+	float gridLocX = (newPos.x / _getGameIns()->pCam->width) * (float)_getMapData()->wNum;
+	printf("_getGameIns()->pCam->height:%f\n", _getGameIns()->pCam->height);
+	float gridLocY = (newPos.y / _getGameIns()->pCam->height) * (float)_getMapData()->hNum;
+	uint32_t mapIndex = (uint32_t)gridLocY * _getMapData()->wNum + (uint32_t)gridLocX;
+	printf("gridLocX:%f,gridLocY:%f,mapIndex:%d\n", gridLocX, gridLocY, mapIndex);
 
-	//for (size_t y = 0; y < hNum; y++)
-	//{
-	//	for (size_t x = 0; x < wNum; x++)
-	//	{
-	//		type = _getMapData()->typeData[index];
-
-	//		if (type == 7)
-	//		{
-	//			Vect2* vertices = getVeticesbyCoord(x, y, offset, GridSize);
-	//			Vect2* uvs = getUVbyType(0, 1, 1);
-	//			Quad quad = {
-	//				.vertices = {vertices[0],vertices[1],vertices[2],vertices[3],vertices[4],vertices[5]},
-	//						 .uvs = {uvs[0],uvs[1],uvs[2],uvs[3],uvs[4],uvs[5]},
-	//						.type = type
-	//			};
-	//			GeometryAddQuad(&geo, quad);
-	//		}
-	//		index++;
-	//	}
-	//}
-	//Matrix tm = CreateStandardMatrix();
-	//Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 2 };
-	//Mesh mesh = CreateMesh(2, _getGameIns()->pCam->pos, 0, MakeVect2(1.f, 1.f), geo, tm, mat);
-	//ArrayPush(&_getGameIns()->meshs, &mesh);
+	uint8_t mapType = _getMapData()->typeData[mapIndex];
+	if (mapType == 7)
+	{
+		//豆子路径 可以行动
+		return mapIndex;
+	}
+	return -1;
 }
 
-void GenerateItemData() {
-	CreateMeshData(ITEM, 1, 1, 3);
-	//uint32_t wNum = _getMapData()->wNum;
-	//uint32_t hNum = _getMapData()->hNum;
-	//printf("GenerateBeansData:: wNum:%d,hNum%d\n", wNum, hNum);
-	//uint32_t count = 0;
-	//Vect2 offset = MakeVect2(_getGameIns()->pCam->width / 2, _getGameIns()->pCam->height / 2);
-	////统计quad数量
-	//for (size_t i = 0; i < wNum * hNum; i++)
-	//{
-	//	if (_getMapData()->typeData[i] == 8) {
-	//		count++;
-	//	}
-	//}
-	//Geometry geo = CreateGeometry(count);
-	//uint8_t type = 0;
+//吃豆子 改变豆子颜色
+void ChangeBeanColor(uint32_t mapIndex) {
 
-	////以中心对齐的方式建mesh
-	//uint32_t index = 0;
-	//for (size_t y = 0; y < hNum; y++)
-	//{
-	//	for (size_t x = 0; x < wNum; x++)
-	//	{
-	//		type = _getMapData()->typeData[index];
+	Mesh* pmeshBean = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
+	printf("ChangeBeanColor:: mapIndex:%d\n", mapIndex);
+	//printf("bean MaxQuadNum:%d,numQuad:%d\n", pmeshBean->geo.maxOfQuad, pmeshBean->geo.numOfQuad);
+	uint32_t count = 0;
+	//通过mapIndex得到bean的index
+	for (size_t i = 0; i < mapIndex; i++)
+	{
+		if (_getMapData()->typeData[i] == 7)
+		{
+			count++;
+		};
+	}
+	//printf("ChangeBeanColor::count:%d\n", count);
+	for (size_t i = 0; i < 24; i++)
+	{
+		pmeshBean->geo.colors[count * 24 + i] = 0;
+	}
 
-	//		if (type == 8)
-	//		{
-	//			Vect2* vertices = getVeticesbyCoord(x, y, offset, GridSize);
-	//			Vect2* uvs = getUVbyType(0, 1, 1);
-	//			Quad quad = {
-	//				.vertices = {vertices[0],vertices[1],vertices[2],vertices[3],vertices[4],vertices[5]},
-	//						 .uvs = {uvs[0],uvs[1],uvs[2],uvs[3],uvs[4],uvs[5]},
-	//						.type = type
-	//			};
-	//			GeometryAddQuad(&geo, quad);
-	//		}
-	//		index++;
-	//	}
-	//}
-	//Matrix tm = CreateStandardMatrix();
-	//Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 3 };
-	//Mesh mesh = CreateMesh(3, _getGameIns()->pCam->pos, 0, MakeVect2(1.f, 1.f), geo, tm, mat);
-	//ArrayPush(&_getGameIns()->meshs, &mesh);
 }

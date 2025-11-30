@@ -8,7 +8,7 @@ void GameIns_Init() {
 	gameIns->meshs = ArrayCreate(sizeof(Mesh));
 	gameIns->cMesh = NULL;
 	//CreateMeshTest();
-	Camera* cam = CreateCamera(700, 700.0f / 775.0f, 0, MakeVect2(100.f,100.f), MakeVect2(1, 1));
+	Camera* cam = CreateCamera(700, 700.0f / 775.0f, 0, MakeVect2(0,0), MakeVect2(1, 1));
 	gameIns->pCam = cam;
 }
 

@@ -6,6 +6,9 @@
 #include "Camera.h"
 #include <string.h>
 
+#include "Queue.h"
+
+
 //窗口过程函数(消息回调)
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -26,6 +29,69 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		printf("WM_PAINT\n");
 		/*OnPaint(hwnd);*/
+	}
+	break;
+	case WM_KEYDOWN:
+	{
+		//printf("key down\n");
+		//printf("wParam:%c\n", (char)wParam);
+		//角色移动事件
+		Role_Move((char)wParam);
+		//if ((char)wParam == 'W')
+		//{
+		//	//向上移动
+		//	printf("W\n");
+		//}
+		//if ((char)wParam == 'S')
+		//{
+		//	//向上移动
+		//	printf("S\n");
+		//}
+		//if ((char)wParam == 'A')
+		//{
+		//	//向上移动
+		//	printf("A\n");
+		//}
+		//if ((char)wParam == 'D')
+		//{
+		//	//向上移动
+		//	printf("D\n");
+		//}
+
+		if ((char)wParam == '1')
+		{
+			printf("start save bmp\n");
+			// 定义位图信息结构体
+			HDC hdc = GetDC(hwnd);
+			BITMAPINFO bmi;
+			memset(&bmi, 0, sizeof(BITMAPINFO)); // 初始化结构体
+			bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER); // 设置位图信息头大小
+			bmi.bmiHeader.biWidth = (LONG)GameEngine_GetFrameWidth(); // 位图宽度
+			bmi.bmiHeader.biHeight = -(LONG)GameEngine_GetFrameHeight(); // 负值表示顶向下位图
+			bmi.bmiHeader.biPlanes = 1; // 位图平面数，必须为1
+			bmi.bmiHeader.biBitCount = (WORD)GameEngine_GetFrameBytepp() * 8; // 每像素位数
+			bmi.bmiHeader.biCompression = BI_RGB; // 无压缩
+			ReleaseDC(hwnd, hdc);
+
+			uint32_t image_size = GameEngine_GetFrameWidth() * GameEngine_GetFrameHeight() * GameEngine_GetFrameBytepp();
+			uint32_t file_size = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + image_size;
+			// 初始化文件头
+			BITMAPFILEHEADER file_header = {
+				.bfType = 0x4D42,        // "BM"
+				.bfSize = file_size,
+				.bfReserved1 = 0,
+				.bfReserved2 = 0,
+				.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)
+			};
+			const char* file = "C:\\Users\\Xinyu\\Desktop\\Temp\\quad.bmp";
+			FILE* f = fopen(file, "wb");
+			// 写入文件头和信息头
+			fwrite(&file_header, 1, sizeof(file_header), f);
+			fwrite(&bmi, 1, sizeof(BITMAPINFO), f);
+			fwrite(GameEngine_GetFrameData(), 1, image_size, f);
+			fclose(f);
+			printf("save bmp\n");
+		}
 	}
 	break;
 	case WM_DESTROY:
@@ -72,7 +138,7 @@ HWND CreateRenderWindow(uint32_t width, uint32_t height) {
 	HWND hwnd = CreateWindowEx(
 		0,                              // 扩展窗口样式
 		CLASS_NAME,                     // 窗口类名
-		L"在main函数中创建窗口",         // 窗口标题
+		L"Draw2D",         // 窗口标题
 		WS_OVERLAPPEDWINDOW,            // 窗口样式
 		CW_USEDEFAULT, CW_USEDEFAULT,	// 位置和大小
 		width, height,
@@ -192,8 +258,8 @@ int main()
 	//GameIns_Init();
 	//ThreadTest();
 	//Camera_Init();
-
-	//return;
+	QueueTest();
+	return;
 	HWND hwnd = CreateRenderWindow(700 + 16, 775 + 39);
 	if (hwnd == NULL)
 	{
@@ -209,13 +275,13 @@ int main()
 	int width = windowrc.right;
 	int height = windowrc.bottom;
 
-	printf("DeviceInfo width:%d,height:%d,bpp:%d\n", width, height,bpp);
+	printf("DeviceInfo width:%d,height:%d,bpp:%d\n", width, height, bpp);
 
 	//每像素字节数
 	uint8_t bytepp = bpp / 8;
 
 	/*引擎初始化*/
-	uint8_t fps = 15;
+	uint8_t fps = 30;
 	GameEngineInit(width, height, fps, bytepp);
 
 	/*显示窗口*/
@@ -265,37 +331,18 @@ void AppLoop(HWND hwnd) {
 		/*帧开始时发送画面数据供显示 帧间处理画面数据*/
 		SendBufferToDisplay(hwnd, bmi, GameEngine_GetFrameData());
 
-		/*消息循环*/
-		while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE))
+
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
+			if (msg.message == WM_QUIT)
+				break;
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
-
-			if (msg.message == WM_KEYDOWN) {
-
-				if ((char)msg.wParam =='1')
-				{
-					uint32_t image_size = GameEngine_GetFrameWidth() * GameEngine_GetFrameHeight() * GameEngine_GetFrameBytepp();
-					uint32_t file_size = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + image_size;
-					// 初始化文件头
-					BITMAPFILEHEADER file_header = {
-						.bfType = 0x4D42,        // "BM"
-						.bfSize = file_size,
-						.bfReserved1 = 0,
-						.bfReserved2 = 0,
-						.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)
-					};
-
-					const char* file = "C:\\Users\\DRF\\Desktop\\Temp\\quad.bmp";
-					FILE* f = fopen(file, "wb");
-					// 写入文件头和信息头
-					fwrite(&file_header, 1, sizeof(file_header), f);
-					fwrite(&bmi, 1, sizeof(BITMAPINFO), f);
-					fwrite(GameEngine_GetFrameData(), 1, image_size, f);
-					fclose(f);
-					printf("save bmp");
-				}
-			}
+		}
+		else
+		{
+			// 游戏主循环，可以在这里处理输入状态
+			// 例如检查键盘/鼠标的当前状态
 		}
 		/*场景循环*/
 		GameEngin_SceneLoop(delta);

@@ -22,17 +22,15 @@ typedef struct {
 
 void Scene_Init();
 
-void GenerateGridData();
-
 void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight,uint8_t textureId);
 
 void SetMapData();
 
-void GenerateBeansData();
+Vect2* getVeticesbyCoord(uint32_t x, uint32_t y, Vect2 offset, float gridSize);
 
-void GenerateItemData();
+int getMapDataByPos(Vect2 pos);
 
-void GenerateEnemyData();
+void ChangeBeanColor(uint32_t mapIndex);
 
 void GenerateRoleData();
 

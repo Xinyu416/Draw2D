@@ -44,8 +44,6 @@ Mesh CreateMesh(const uint32_t id, Vect2 pos,float rot, Vect2 scale, const Geome
 
 Vect2* getUVbyType(uint8_t category,uint8_t type, uint32_t wNum, uint32_t hNum);
 
-Vect2* getVeticesbyCoord(uint32_t x, uint32_t y,Vect2 offset, float gridSize);
-
 /*用点乘的符号判断点跟向量的角度 进而判断点是否在四边形内*/
 bool IsPointInQuadDotSign(Vect2 p, Vect2 vertices[4]);
 

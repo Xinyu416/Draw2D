@@ -20,7 +20,7 @@ void ReleaseGeometry(Geometry* geo) {
 void GeometryAddQuad(Geometry* geo, const Quad quad) {
 	if (geo->numOfQuad >= geo->maxOfQuad)
 	{
-		printf("out of limit\n");
+		printf("GeometryAddQuad out of limit\n");
 		return;
 	}
 	memcpy(geo->vertices + (geo->numOfQuad * 12), quad.vertices, sizeof(quad.vertices));
@@ -55,20 +55,6 @@ Vect2* getUVbyType(uint8_t category,uint8_t index, uint32_t wNum, uint32_t hNum)
 	uvs[5] = MakeVect2(uv_u, uv_v);
 
 	return uvs;
-}
-
-//通过坐标（格子）得到顶点数据
-Vect2* getVeticesbyCoord(uint32_t x, uint32_t y, Vect2 offset,float GridSize) {
-	Vect2 vert[6];
-	float posx = offset.x;
-	float posy = offset.y;
-	vert[0]= MakeVect2(x * GridSize - posx, (y + 1) * GridSize - posy);
-	vert[1]= MakeVect2((x + 1) * GridSize - posx, (y + 1) * GridSize - posy);
-	vert[2]= MakeVect2((x + 1) * GridSize - posx, y * GridSize - posy);
-	vert[3] = MakeVect2((x + 1) * GridSize - posx, y * GridSize - posy);
-	vert[4]= MakeVect2(x * GridSize - posx, y * GridSize - posy);
-	vert[5] = MakeVect2(x * GridSize - posx, (y + 1) * GridSize - posy);
-	return vert;
 }
 
 bool IsPointOnSegment(Vect2 p, Vect2 a, Vect2 b) {
