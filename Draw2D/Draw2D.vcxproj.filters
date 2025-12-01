@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="User">
+      <UniqueIdentifier>{aacf8273-3bf0-4048-ac3e-75b1dea212dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Draw2D.c">
@@ -51,6 +54,12 @@
     <ClCompile Include="..\Src\Queue.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\User\StartLevel.c">
+      <Filter>User</Filter>
+    </ClCompile>
+    <ClCompile Include="..\User\PlayLevel.c">
+      <Filter>User</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\GameEngine.h">
@@ -85,6 +94,15 @@
     </ClInclude>
     <ClInclude Include="..\Include\Queue.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\User\UserDefine.h">
+      <Filter>User</Filter>
+    </ClInclude>
+    <ClInclude Include="..\User\StartLevel.h">
+      <Filter>User</Filter>
+    </ClInclude>
+    <ClInclude Include="..\User\PlayLevel.h">
+      <Filter>User</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

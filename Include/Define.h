@@ -7,6 +7,16 @@
 
 #define PI 3.14159
 
+typedef void(*BeginPlayFn)();
+typedef void(*EndPlayFn)();
+
+typedef struct _Level {
+	BeginPlayFn BeginPlay;
+	EndPlayFn EndPlay;
+	uint8_t levelID;
+}Level;
+
+
 typedef struct {
 	float x;
 	float y;

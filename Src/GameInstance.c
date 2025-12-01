@@ -1,5 +1,6 @@
 #include "GameInstance.h"
 #include "Mesh.h"
+#include "UserDefine.h"
 
 
 static GameInstance* _gameIns = NULL;
@@ -8,8 +9,11 @@ void GameIns_Init() {
 	gameIns->meshs = ArrayCreate(sizeof(Mesh));
 	gameIns->cMesh = NULL;
 	//CreateMeshTest();
-	Camera* cam = CreateCamera(700, 700.0f / 775.0f, 0, MakeVect2(0,0), MakeVect2(1, 1));
+	Camera* cam = CreateCamera(700, 700.0f / 775.0f, 0, MakeVect2(0, 0), MakeVect2(1, 1));
 	gameIns->pCam = cam;
+
+	OPENLEVEL(gameIns, 1);
+	gameIns->pLevel->BeginPlay();
 }
 
 void CreateMeshTest() {

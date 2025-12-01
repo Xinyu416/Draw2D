@@ -11,12 +11,12 @@ MapData* _getMapData() {
 
 void Scene_Init() {
 	SetMapData();
-	//CreateMeshData(BG, 3, 3, 1);	//0
+	CreateMeshData(BG, 3, 3, 1);	//0
 	CreateMeshData(BEAN, 1, 1, 2);	//1
-	//CreateMeshData(ITEM, 1, 1, 3);	//2
+	CreateMeshData(ITEM, 1, 1, 3);	//2
 	GenerateRoleData();				//3
 	//设置角色数据
-	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 1);
+	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 3);
 	_getGameIns()->cMesh = pmesh;
 
 }
@@ -39,6 +39,7 @@ void SetMapData() {
 		0,1,1,1,1,5,7,4,0,1,1,5,7,4,4,7,3,1,1,2,4,7,3,1,1,1,1,2,
 		6,6,6,6,6,4,7,4,3,1,1,2,7,0,2,7,0,1,1,5,4,7,4,6,6,6,6,6,
 		6,6,6,6,6,4,7,4,4,7,7,7,7,7,7,7,7,7,7,4,4,7,4,6,6,6,6,6,
+
 		6,6,6,6,6,4,7,4,4,7,3,1,1,6,6,1,1,5,7,4,4,7,4,6,6,6,6,6,
 		1,1,1,1,1,2,7,0,2,7,4,6,6,6,6,6,6,4,7,0,2,7,0,1,1,1,1,1,
 		7,7,7,7,7,7,7,7,7,7,4,6,6,6,6,6,6,4,7,7,7,7,7,7,7,7,7,7,
@@ -181,9 +182,10 @@ void GenerateRoleData() {
 	GeometryAddQuad(&geo, quad);
 	Matrix tm = CreateStandardMatrix();
 	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 4 };
-	Vect2 pos = MakeVect2(_getGameIns()->pCam->pos.x - GridSize * 4, _getGameIns()->pCam->pos.y - GridSize * 4);
-	printf("RolePos:(%f,%f)\n", pos.x, pos.y);
-	Mesh mesh = CreateMesh(1, pos/*MakeVect2(offset.x - GridSize, offset.y - GridSize)*/, -90, MakeVect2(1.f, 1.f), geo, tm, mat);
+	//Vect2 pos = MakeVect2(_getGameIns()->pCam->pos.x - GridSize * 4, _getGameIns()->pCam->pos.y - GridSize * 4);
+	Vect2 pos = MakeVect2(0, 200);
+	printf("RolePos:[%f,%f]\n", pos.x, pos.y);
+	Mesh mesh = CreateMesh(4, pos, -90, MakeVect2(1.f, 1.f), geo, tm, mat);
 	ArrayPush(&_getGameIns()->meshs, &mesh);
 }
 
@@ -204,13 +206,11 @@ Vect2* getVeticesbyCoord(uint32_t x, uint32_t y, Vect2 offset, float gridSize) {
 
 //通过角色行进的下一个位置判断当前地图格子类型是否可以行动
 int getMapDataByPos(Vect2 pos) {
-	printf("pos:(%f,%f)\n", pos.x, pos.y);
 	//需要偏移一个格子的距离
 	Vect2 offset = MakeVect2(_getGameIns()->pCam->width / 2, _getGameIns()->pCam->height / 2);
 	Vect2 newPos = AddVect2(pos, offset);
-	printf("newPos:(%f,%f)\n", newPos.x, newPos.y);
+	printf("inpos:[%f,%f],newPos:[%f,%f]\n", pos.x, pos.y, newPos.x, newPos.y);
 	float gridLocX = (newPos.x / _getGameIns()->pCam->width) * (float)_getMapData()->wNum;
-	printf("_getGameIns()->pCam->height:%f\n", _getGameIns()->pCam->height);
 	float gridLocY = (newPos.y / _getGameIns()->pCam->height) * (float)_getMapData()->hNum;
 	uint32_t mapIndex = (uint32_t)gridLocY * _getMapData()->wNum + (uint32_t)gridLocX;
 	printf("gridLocX:%f,gridLocY:%f,mapIndex:%d\n", gridLocX, gridLocY, mapIndex);
@@ -226,8 +226,8 @@ int getMapDataByPos(Vect2 pos) {
 
 //吃豆子 改变豆子颜色
 void ChangeBeanColor(uint32_t mapIndex) {
-
-	Mesh* pmeshBean = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
+	//提取豆子mesh
+	Mesh* pmeshBean = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 1);
 	printf("ChangeBeanColor:: mapIndex:%d\n", mapIndex);
 	//printf("bean MaxQuadNum:%d,numQuad:%d\n", pmeshBean->geo.maxOfQuad, pmeshBean->geo.numOfQuad);
 	uint32_t count = 0;

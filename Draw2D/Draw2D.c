@@ -33,31 +33,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_KEYDOWN:
 	{
-		//printf("key down\n");
-		//printf("wParam:%c\n", (char)wParam);
 		//角色移动事件
 		Role_Move((char)wParam);
-		//if ((char)wParam == 'W')
-		//{
-		//	//向上移动
-		//	printf("W\n");
-		//}
-		//if ((char)wParam == 'S')
-		//{
-		//	//向上移动
-		//	printf("S\n");
-		//}
-		//if ((char)wParam == 'A')
-		//{
-		//	//向上移动
-		//	printf("A\n");
-		//}
-		//if ((char)wParam == 'D')
-		//{
-		//	//向上移动
-		//	printf("D\n");
-		//}
-
 		if ((char)wParam == '1')
 		{
 			printf("start save bmp\n");
@@ -83,7 +60,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				.bfReserved2 = 0,
 				.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)
 			};
-			const char* file = "C:\\Users\\Xinyu\\Desktop\\Temp\\quad.bmp";
+			const char* file = "C:\\Users\\DRF\\Desktop\\Temp\\quad.bmp";
 			FILE* f = fopen(file, "wb");
 			// 写入文件头和信息头
 			fwrite(&file_header, 1, sizeof(file_header), f);
@@ -258,8 +235,8 @@ int main()
 	//GameIns_Init();
 	//ThreadTest();
 	//Camera_Init();
-	QueueTest();
-	return;
+	//QueueTest();
+	//return;
 	HWND hwnd = CreateRenderWindow(700 + 16, 775 + 39);
 	if (hwnd == NULL)
 	{

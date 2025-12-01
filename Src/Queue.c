@@ -7,6 +7,8 @@ Queue CreateQueue(uint32_t length, uint32_t elementSize) {
 }
 
 void ReleaseQueue(Queue* Q) {
+	if (Q == NULL || Q->data == NULL)
+		return;
 	Q->length = 0;
 	Q->elementSize = 0;
 	free(Q->data);
@@ -23,7 +25,7 @@ void EnQueue(Queue* Q, void* element) {
 	}
 	uint32_t next_tail = (Q->tail + 1) % Q->length;
 
-	if (/*Q->head == next_tail */ Q->count == Q->length)
+	if (Q->count == Q->length)
 	{
 		//队列是满的 无法插入，元素上溢
 		printf("EnQueue 满队列 无法入队\n");
@@ -37,10 +39,10 @@ void EnQueue(Queue* Q, void* element) {
 
 uint8_t* DeQueue(Queue* Q) {
 	if (Q == NULL || Q->data == NULL) {
-		return;
+		return NULL;
 	}
 	printf("DeQueue\n");
-	if (/*Q->head == Q->tail*/  Q->count == 0)
+	if ( Q->count == 0)
 	{
 		printf("DeQueue 空队列 无法出队\n");
 		return NULL;
@@ -80,7 +82,7 @@ void QueueTest() {
 				.color = {255,0,0,255, 0,255,0,255, 0,0,255,255, 255,255,0,255, 0,255,255,255, 255,255,255,255}
 	};
 
-	Quad quad5 = { .vertices = { -4, 6, 6, 6, 6, -4, 6, -6, -6, -6,-6, 4},
+	Quad quad5 = { .vertices = { -22, 22, 22, 22, 6, -4, 6, -6, -6, -6,-6, 4},
 				.color = {255,0,0,255, 0,255,0,255, 0,0,255,255, 255,255,0,255, 0,255,255,255, 255,255,255,255} };
 
 	Queue Q = CreateQueue(4, sizeof(Quad));
@@ -96,25 +98,14 @@ void QueueTest() {
 	Quad* deq3 = (Quad*)DeQueue(&Q);
 	Quad* deq4 = (Quad*)DeQueue(&Q);
 
-	Quad* deq5 = (Quad*)DeQueue(&Q);
 	EnQueue(&Q, &quad5);
-	EnQueue(&Q, &quad4);
-	EnQueue(&Q, &quad1);
-	EnQueue(&Q, &quad2);
+	Quad* deq5 = (Quad*)DeQueue(&Q);
+	/*EnQueue(&Q, &quad4);
 	EnQueue(&Q, &quad3);
-	deq5 = (Quad*)DeQueue(&Q);
-	return;
-
-	EnQueue(&Q, &quad1);
-	PrintQueue(&Q);
 	EnQueue(&Q, &quad2);
-	PrintQueue(&Q);
-	EnQueue(&Q, &quad3);
-	PrintQueue(&Q);
-	deq1 = (Quad*)DeQueue(&Q);
-	PrintQueue(&Q);
-
-	/*if (deq1)
+	EnQueue(&Q, &quad1);*/
+	
+	if (deq1)
 	{
 		printf("quad1:vertices :%f\n", deq1->vertices[0].x);
 
@@ -133,5 +124,10 @@ void QueueTest() {
 	{
 		printf("quad4:vertices :%f\n", deq4->vertices[0].x);
 
-	}*/
+	}
+	if (deq5)
+	{
+		printf("quad4:vertices :%f\n", deq5->vertices[0].x);
+
+	}
 }

@@ -3,10 +3,12 @@
 #include "Mesh.h"
 #include "Camera.h"
 
+
 typedef struct {
 	Array meshs;
 	Mesh* cMesh;
 	Camera* pCam;
+	Level* pLevel;
 }GameInstance;
 
 void GameIns_Init();

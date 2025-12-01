@@ -16,10 +16,10 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 
 	//创建贴图数据
 
-	const char* path1 = "C:\\Users\\Xinyu\\Desktop\\Temp\\bg.bmp";
-	const char* path2 = "C:\\Users\\Xinyu\\Desktop\\Temp\\bean.bmp";
-	const char* path3 = "C:\\Users\\Xinyu\\Desktop\\Temp\\item.bmp";
-	const char* path4 = "C:\\Users\\Xinyu\\Desktop\\Temp\\role03.bmp";
+	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
+	const char* path2 = "C:\\Users\\DRF\\Desktop\\Temp\\bean.bmp";
+	const char* path3 = "C:\\Users\\DRF\\Desktop\\Temp\\item.bmp";
+	const char* path4 = "C:\\Users\\DRF\\Desktop\\Temp\\role03.bmp";
 	Texture tex1 = GameEngine_LoadTexture(path1, 1);
 	Texture tex2 = GameEngine_LoadTexture(path2, 1);
 	Texture tex3 = GameEngine_LoadTexture(path3, 2);
@@ -33,8 +33,10 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	ArrayPush(&arr, &tex4);
 	gameengine->texture = arr;
 
+	//Instance初始化
 	GameIns_Init();
 
+	//场景初始化
 	Scene_Init();
 }
 
@@ -186,9 +188,9 @@ void GameEngine_Render() {
 			vp[1] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 2], pmesh->geo.vertices[vi + 3]), pmesh->tm.m);
 			vp[2] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 4], pmesh->geo.vertices[vi + 5]), pmesh->tm.m);
 
-			col[0] = MakeColor4(pmesh->geo.colors[vi + 0], pmesh->geo.colors[vi + 1], pmesh->geo.colors[vi + 1], pmesh->geo.colors[vi + 3]);
-			col[1] = MakeColor4(pmesh->geo.colors[vi + 4], pmesh->geo.colors[vi + 5], pmesh->geo.colors[vi + 6], pmesh->geo.colors[vi + 7]);
-			col[2] = MakeColor4(pmesh->geo.colors[vi + 8], pmesh->geo.colors[vi + 9], pmesh->geo.colors[vi + 10], pmesh->geo.colors[vi + 11]);
+			col[0] = MakeColor4(pmesh->geo.colors[vi * 2 + 0], pmesh->geo.colors[vi * 2 + 1], pmesh->geo.colors[vi * 2 + 1], pmesh->geo.colors[vi * 2 + 3]);
+			col[1] = MakeColor4(pmesh->geo.colors[vi * 2 + 4], pmesh->geo.colors[vi * 2 + 5], pmesh->geo.colors[vi * 2 + 6], pmesh->geo.colors[vi * 2 + 7]);
+			col[2] = MakeColor4(pmesh->geo.colors[vi * 2 + 8], pmesh->geo.colors[vi * 2 + 9], pmesh->geo.colors[vi * 2 + 10], pmesh->geo.colors[vi * 2 + 11]);
 
 
 			half = MakeVect2((float)_getGameEngine()->width / 2.f, (float)_getGameEngine()->height / 2.f);
@@ -291,9 +293,9 @@ void GameEngine_Release() {
 
 Texture GameEngine_LoadTexture(const char* path, uint32_t textureID) {
 	FILE* rbmp = fopen(path, "rb");
+	printf("path:%s\n", path);
 	if (rbmp == NULL)
 	{
-		printf("path:%s\n", path);
 		printf("File is NULL\n");
 		Texture texture = { .bpp = 0,.data = NULL,.height = 0,.width = 0 };
 		return texture;
@@ -302,10 +304,10 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID) {
 	struct tagBITMAPINFOHEADER info;
 	fread(&head, 1, sizeof(struct tagBITMAPFILEHEADER), rbmp);
 	fread(&info, 1, sizeof(struct tagBITMAPINFOHEADER), rbmp);
-
+	
+	//一行像素补齐到DWORD对齐的值
 	uint32_t stride = ((((info.biWidth * info.biBitCount) + 31) & ~31) >> 3);
 	uint32_t biSizeImage = abs(info.biHeight) * stride;
-
 
 	uint8_t count = info.biBitCount / 8;
 	printf("GameEngine_LoadTexture:: count:%d\n", count);
@@ -365,6 +367,7 @@ void Role_Move(char direction) {
 		{
 			_getGameIns()->cMesh->pos.y = preMove;
 			_getGameIns()->cMesh->rot = -90.f;
+			ChangeBeanColor(mapIndex);
 		}
 		break;
 	case 'A':
@@ -373,9 +376,9 @@ void Role_Move(char direction) {
 		mapIndex = getMapDataByPos(MakeVect2(preMove, _getGameIns()->cMesh->pos.y));
 		if (mapIndex > -1)
 		{
-			//ChangeBeanColor(mapIndex);
 			_getGameIns()->cMesh->pos.x = preMove;
 			_getGameIns()->cMesh->rot = 180.f;
+			ChangeBeanColor(mapIndex);
 		}
 
 		break;
@@ -385,9 +388,9 @@ void Role_Move(char direction) {
 		mapIndex = getMapDataByPos(MakeVect2(_getGameIns()->cMesh->pos.x, preMove));
 		if (mapIndex > -1)
 		{
-			//ChangeBeanColor(mapIndex);
 			_getGameIns()->cMesh->pos.y = preMove;
 			_getGameIns()->cMesh->rot = 90.f;
+			ChangeBeanColor(mapIndex);
 		}
 		break;
 	case 'D':
@@ -396,13 +399,13 @@ void Role_Move(char direction) {
 		mapIndex = getMapDataByPos(MakeVect2(preMove, _getGameIns()->cMesh->pos.y));
 		if (mapIndex > -1)
 		{
-			//ChangeBeanColor(mapIndex);
 			_getGameIns()->cMesh->pos.x = preMove;
 			_getGameIns()->cMesh->rot = 0.f;
+			ChangeBeanColor(mapIndex);
 		}
 		break;
 	default:
 		break;
 	}
-	ChangeBeanColor(mapIndex);
+
 }

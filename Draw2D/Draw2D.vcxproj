@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Include;$(SolutionDir)User;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Include;$(SolutionDir)User</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
@@ -157,6 +157,8 @@
     <ClCompile Include="..\Src\Scene.c" />
     <ClCompile Include="..\Src\Texture.c" />
     <ClCompile Include="..\Src\threadTest.c" />
+    <ClCompile Include="..\User\PlayLevel.c" />
+    <ClCompile Include="..\User\StartLevel.c" />
     <ClCompile Include="Draw2D.c" />
     <ClCompile Include="sample.c" />
   </ItemGroup>
@@ -172,6 +174,9 @@
     <ClInclude Include="..\Include\Renderer.h" />
     <ClInclude Include="..\Include\Scene.h" />
     <ClInclude Include="..\Include\Texture.h" />
+    <ClInclude Include="..\User\PlayLevel.h" />
+    <ClInclude Include="..\User\StartLevel.h" />
+    <ClInclude Include="..\User\UserDefine.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
