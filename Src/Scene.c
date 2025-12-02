@@ -1,5 +1,6 @@
 #include "Scene.h"
 
+
 static MapData* mapData = NULL;
 
 MapData* _getMapData() {
@@ -9,7 +10,28 @@ MapData* _getMapData() {
 	return mapData;
 }
 
+void Scene_BeginPlay() {
+	printf("Scene_BeginPlay(),ID:%d\n", _getGameIns()->pLevel->levelID);
+	_getGameIns()->meshs = ArrayCreate(sizeof(Mesh));
+	Scene_Init();
+}
+
+void Scene_EndPlay() {
+	printf("Scene_EndPlay(),ID:%d\n", _getGameIns()->pLevel->levelID);
+	ArrayRelease(&_getGameIns()->meshs);
+}
+
+void Scene_Tick(float delta) {
+
+}
+
 void Scene_Init() {
+
+	if (_getGameIns()->meshs.length > 0)
+	{
+		ArrayRelease(&_getGameIns()->meshs);
+	}
+
 	SetMapData();
 	CreateMeshData(BG, 3, 3, 1);	//0
 	CreateMeshData(BEAN, 1, 1, 2);	//1
@@ -18,7 +40,6 @@ void Scene_Init() {
 	//设置角色数据
 	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 3);
 	_getGameIns()->cMesh = pmesh;
-
 }
 
 void SetMapData() {
@@ -91,7 +112,6 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 				count++;
 			}
 		}
-		printf("CreateMeshData:: bean Count:%d\n", count);
 		geo = CreateGeometry(count);
 		break;
 	case ITEM:
@@ -184,11 +204,10 @@ void GenerateRoleData() {
 	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = 4 };
 	//Vect2 pos = MakeVect2(_getGameIns()->pCam->pos.x - GridSize * 4, _getGameIns()->pCam->pos.y - GridSize * 4);
 	Vect2 pos = MakeVect2(0, 200);
-	printf("RolePos:[%f,%f]\n", pos.x, pos.y);
+	//printf("RolePos:[%f,%f]\n", pos.x, pos.y);
 	Mesh mesh = CreateMesh(4, pos, -90, MakeVect2(1.f, 1.f), geo, tm, mat);
 	ArrayPush(&_getGameIns()->meshs, &mesh);
 }
-
 
 //通过坐标（格子）得到顶点数据
 Vect2* getVeticesbyCoord(uint32_t x, uint32_t y, Vect2 offset, float gridSize) {
@@ -228,8 +247,6 @@ int getMapDataByPos(Vect2 pos) {
 void ChangeBeanColor(uint32_t mapIndex) {
 	//提取豆子mesh
 	Mesh* pmeshBean = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 1);
-	printf("ChangeBeanColor:: mapIndex:%d\n", mapIndex);
-	//printf("bean MaxQuadNum:%d,numQuad:%d\n", pmeshBean->geo.maxOfQuad, pmeshBean->geo.numOfQuad);
 	uint32_t count = 0;
 	//通过mapIndex得到bean的index
 	for (size_t i = 0; i < mapIndex; i++)
@@ -244,5 +261,80 @@ void ChangeBeanColor(uint32_t mapIndex) {
 	{
 		pmeshBean->geo.colors[count * 24 + i] = 0;
 	}
+}
 
+void Scene_MouseKeyEvent(VMEVENT eventType, void* key) {
+	float moveStep = 12.5f;
+	float preMove = 0.f;
+	int mapIndex = 0;
+	switch (eventType)
+	{
+	case KEYDOWN:
+		printf("Scene_MouseKeyEvent type:%d,key:%c\n", eventType, (char)key);
+		switch ((char)key)
+		{
+		case 'W':
+			printf("向上移动\n");
+			preMove = _getGameIns()->cMesh->pos.y - moveStep;
+			PrintVect2(_getGameIns()->cMesh->pos);
+			mapIndex = getMapDataByPos(MakeVect2(_getGameIns()->cMesh->pos.x, preMove));
+			if (mapIndex > -1)
+			{
+				_getGameIns()->cMesh->pos.y = preMove;
+				_getGameIns()->cMesh->rot = -90.f;
+				ChangeBeanColor(mapIndex);
+			}
+			break;
+		case 'A':
+			printf("向左移动\n");
+			preMove = _getGameIns()->cMesh->pos.x - moveStep;
+			mapIndex = getMapDataByPos(MakeVect2(preMove, _getGameIns()->cMesh->pos.y));
+			if (mapIndex > -1)
+			{
+				_getGameIns()->cMesh->pos.x = preMove;
+				_getGameIns()->cMesh->rot = 180.f;
+				ChangeBeanColor(mapIndex);
+			}
+			break;
+		case 'S':
+			printf("向下移动\n");
+			preMove = _getGameIns()->cMesh->pos.y + moveStep;
+			mapIndex = getMapDataByPos(MakeVect2(_getGameIns()->cMesh->pos.x, preMove));
+			if (mapIndex > -1)
+			{
+				_getGameIns()->cMesh->pos.y = preMove;
+				_getGameIns()->cMesh->rot = 90.f;
+				ChangeBeanColor(mapIndex);
+			}
+			break;
+		case 'D':
+			printf("向右移动\n");
+			preMove = _getGameIns()->cMesh->pos.x + moveStep;
+			mapIndex = getMapDataByPos(MakeVect2(preMove, _getGameIns()->cMesh->pos.y));
+			if (mapIndex > -1)
+			{
+				_getGameIns()->cMesh->pos.x = preMove;
+				_getGameIns()->cMesh->rot = 0.f;
+				ChangeBeanColor(mapIndex);
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+	case LMBD:
+		//获取窗口中的鼠标位置
+		int x = GET_X_LPARAM(key);
+		int y = GET_Y_LPARAM(key);
+		printf("Scene_MouseKeyEvent LeftMouseButtonDown: (%d, %d)\n", x, y);
+		//判断点击屏幕中心按元素大小的区域
+		if (x > (_getGameIns()->pCam->width / 2 - 25) && x < (_getGameIns()->pCam->width / 2 + 25) && y>(_getGameIns()->pCam->height / 2 - 25) && y < (_getGameIns()->pCam->height / 2 + 25))
+		{
+			printf("Scene_MouseKeyEvent -- Switch Level\n");
+			GameIns_OpenLevel(2);
+		}
+		break;
+	default:
+		break;
+	}
 }

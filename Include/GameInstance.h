@@ -17,6 +17,10 @@ void GameIns_Release();
 
 void GameIns_Tick(float delta);
 
+void GameIns_MouseKeyEvent(VMEVENT eventType,void* key);
+
 GameInstance* _getGameIns();
+
+void GameIns_OpenLevel(uint8_t levelID);
 
 void CreateMeshTest();

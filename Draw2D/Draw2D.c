@@ -33,8 +33,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_KEYDOWN:
 	{
-		//角色移动事件
-		Role_Move((char)wParam);
+		//键盘按下事件
+		GameEngine_MouseKeyEvent(KEYDOWN,wParam);
+
 		if ((char)wParam == '1')
 		{
 			printf("start save bmp\n");
@@ -60,7 +61,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				.bfReserved2 = 0,
 				.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)
 			};
-			const char* file = "C:\\Users\\DRF\\Desktop\\Temp\\quad.bmp";
+			const char* file = "C:\\Users\\DRF\\Desktop\\Temp\\level.bmp";
 			FILE* f = fopen(file, "wb");
 			// 写入文件头和信息头
 			fwrite(&file_header, 1, sizeof(file_header), f);
@@ -71,6 +72,35 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
+	case WM_KEYUP:
+		//键盘释放事件
+		GameEngine_MouseKeyEvent(KEYUP, wParam);
+		break;
+	case WM_LBUTTONDOWN:
+		/*int x = GET_X_LPARAM(lParam);
+		int y = GET_Y_LPARAM(lParam);
+		printf("LeftMouseButtonDown: (%d, %d)\n", x, y);*/
+		//鼠标左键按下事件
+		GameEngine_MouseKeyEvent(LMBD, lParam);
+		break;
+	case WM_LBUTTONUP:
+		//鼠标左键释事件
+		GameEngine_MouseKeyEvent(LMBU, wParam);
+		break;
+	case WM_RBUTTONDOWN:
+		//鼠标右键按下事件
+		GameEngine_MouseKeyEvent(RMBD, wParam);
+		break;
+	case WM_RBUTTONUP:
+		//鼠标右键释放事件
+		GameEngine_MouseKeyEvent(RMBU, wParam);
+		break;
+	case WM_MOUSEMOVE:
+		//int xPos = GET_X_LPARAM(lParam);
+		//int yPos = GET_Y_LPARAM(lParam);
+		//// 例如，打印鼠标位置到控制台或进行其他处理
+		//printf("--------- Mouse position: X=%d, Y=%d\n", xPos, yPos);
+		break;
 	case WM_DESTROY:
 	{
 		printf("WM_DESTROY\n");

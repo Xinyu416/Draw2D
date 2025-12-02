@@ -2,18 +2,17 @@
 #include "Mesh.h"
 #include "UserDefine.h"
 
-
 static GameInstance* _gameIns = NULL;
 void GameIns_Init() {
 	GameInstance* gameIns = _getGameIns();
-	gameIns->meshs = ArrayCreate(sizeof(Mesh));
 	gameIns->cMesh = NULL;
-	//CreateMeshTest();
+	gameIns->meshs = ArrayCreate(sizeof(Mesh));
 	Camera* cam = CreateCamera(700, 700.0f / 775.0f, 0, MakeVect2(0, 0), MakeVect2(1, 1));
 	gameIns->pCam = cam;
 
-	OPENLEVEL(gameIns, 1);
-	gameIns->pLevel->BeginPlay();
+	/*OpenStartLevel*/
+	GameIns_OpenLevel(2);
+	//CreateMeshTest();
 }
 
 void CreateMeshTest() {
@@ -65,13 +64,15 @@ void GameIns_Release() {
 }
 
 void GameIns_Tick(float delta) {
-	//旋转mesh
-	//for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
-	//{
-	//	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, i);
-	//	pmesh->rot += i * 2.f + 2.f;
-	//}
-	//_getGameIns()->cMesh->rot += 2.f;
+	if (_getGameIns()->pLevel != NULL)
+	{
+		_getGameIns()->pLevel->Tick(delta);
+	}
+}
+
+void GameIns_MouseKeyEvent(VMEVENT eventType,void* key) {
+	//键盘事件分发给Level
+	_getGameIns()->pLevel->MouseKeyEvent(eventType,key);
 }
 
 GameInstance* _getGameIns() {
@@ -79,4 +80,14 @@ GameInstance* _getGameIns() {
 		_gameIns = calloc(1, sizeof(GameInstance));
 	}
 	return _gameIns;
+}
+
+void GameIns_OpenLevel(uint8_t levelID) {
+	GameInstance* gameIns = _getGameIns();
+	if (gameIns->pLevel != NULL)
+	{
+		gameIns->pLevel->EndPlay();
+	}
+	OPENLEVEL(gameIns, levelID);
+	gameIns->pLevel->BeginPlay();
 }

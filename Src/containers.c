@@ -18,6 +18,10 @@ Array ArrayCreate(uint32_t elementSize) {
 /// <param name="arr"></param>
 void ArrayRelease(Array* arr) {
 
+	if (arr == NULL || arr->data == NULL)
+	{
+		return;
+	}
 	arr->length = 0;
 	arr->size = 0;
 	free(arr->data);
@@ -100,7 +104,7 @@ void ArrayInsert(Array* arr, void* element, uint32_t index) {
 	}
 	memcpy(arr->data + (index * arr->elementSize), element, arr->elementSize);
 	arr->length = arr->length + 1;
-	
+
 }
 
 /// <summary>

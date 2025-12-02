@@ -9,7 +9,7 @@
 #include "Define.h"
 #include "Mesh.h"
 #include "Texture.h"
-#include "Scene.h"
+//#include "Scene.h"
 
 /*引擎关闭事件*/
 typedef void (*GameEngineCloseEvent)();
@@ -106,7 +106,7 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID);
 
 Color4 UVTextureSample(float u,float v, uint32_t textureID);
 
-void Role_Move(char direction);
+void GameEngine_MouseKeyEvent(VMEVENT type,void* key);
 
 
 #endif // !__GAMEENGINE__

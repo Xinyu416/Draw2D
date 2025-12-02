@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <windowsx.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -7,12 +8,25 @@
 
 #define PI 3.14159
 
+typedef enum {
+	KEYDOWN = 1,	//键盘按下
+	KEYUP = 2,		//键盘释放
+	LMBD = 3,		//鼠标左键按下
+	LMBU = 4,		//鼠标左键抬起
+	RMBD = 5,		//鼠标右键按下
+	RMBU = 6		//鼠标右键抬起
+}VMEVENT;
+
 typedef void(*BeginPlayFn)();
 typedef void(*EndPlayFn)();
+typedef void(*TickFn)(float delta);
+typedef void(*MouseKeyEventFn)(VMEVENT eventType,void* key);
 
 typedef struct _Level {
 	BeginPlayFn BeginPlay;
 	EndPlayFn EndPlay;
+	TickFn Tick;
+	MouseKeyEventFn MouseKeyEvent;
 	uint8_t levelID;
 }Level;
 
@@ -211,7 +225,7 @@ inline void PrintMatrix(float* m) {
 }
 
 inline void PrintColor(Color4 c) {
-	printf("color:[%d,%d,%d,%d]\n",c.r,c.g,c.b,c.a);
+	printf("color:[%d,%d,%d,%d]\n", c.r, c.g, c.b, c.a);
 }
 
 

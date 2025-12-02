@@ -35,9 +35,8 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 
 	//Instance初始化
 	GameIns_Init();
-
 	//场景初始化
-	Scene_Init();
+	//Scene_Init();
 }
 
 void GameEngin_SceneLoop(float delta) {
@@ -149,7 +148,6 @@ void GameEngine_Render() {
 	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
 	{
 		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, i);
-
 		//Mesh* pmesh = _getGameIns()->cMesh;
 		//缩放旋转结果矩阵
 		Matrix srm = CreateStandardMatrix();
@@ -351,8 +349,9 @@ Color4 UVTextureSample(float u, float v, uint32_t tID) {
 
 }
 
-void Role_Move(char direction) {
-	float moveStep = 12.5f;
+void GameEngine_MouseKeyEvent(VMEVENT eventType, void* key) {
+	GameIns_MouseKeyEvent(eventType,key);
+	/*float moveStep = 12.5f;
 	float preMove = 0.f;
 	int mapIndex = 0;
 	switch (direction)
@@ -406,6 +405,5 @@ void Role_Move(char direction) {
 		break;
 	default:
 		break;
-	}
-
+	}*/
 }
