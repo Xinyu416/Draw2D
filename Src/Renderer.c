@@ -34,7 +34,6 @@ DWORD CALLBACK MyThreadFunction2(LPVOID lpParam) {
 }
 
 void ThreadTest() {
-
 	DWORD lpThreadId1 = 0;
 	DWORD lpThreadId2 = 0;
 	InitializeCriticalSection(&criticalSection);

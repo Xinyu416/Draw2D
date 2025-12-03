@@ -9,7 +9,6 @@
 #include "Define.h"
 #include "Mesh.h"
 #include "Texture.h"
-//#include "Scene.h"
 
 /*引擎关闭事件*/
 typedef void (*GameEngineCloseEvent)();
@@ -19,19 +18,6 @@ typedef void (*GameEngineWindowsCloseEvent)();
 
 /*窗口大小变化事件*/
 typedef void (*GameEngineResizeEvent)(uint32_t w, uint32_t h);
-
-/*窗口最大化事件*/
-typedef void (*GameEnginMaximizeEvent)();
-
-/*窗口最小化事件*/
-typedef void (*GameEnginMinimizeEvent)();
-
-/*场景循环事件*/
-typedef void(*GameEnginSceneLoopEvent)();
-
-/*渲染循环事件*/
-typedef void(*GameEnginRenderLoopEvent)();
-
 
 typedef struct {
 	GameEngineResizeEvent onResize;

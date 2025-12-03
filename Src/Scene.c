@@ -12,13 +12,15 @@ MapData* _getMapData() {
 
 void Scene_BeginPlay() {
 	printf("Scene_BeginPlay(),ID:%d\n", _getGameIns()->pLevel->levelID);
-	_getGameIns()->meshs = ArrayCreate(sizeof(Mesh));
+	GameIns_CreateMesh();
+	GameIns_CreateCamera(700, 700.0f / 775.0f, 0, MakeVect2(0, 0), MakeVect2(1, 1));
 	Scene_Init();
 }
 
 void Scene_EndPlay() {
 	printf("Scene_EndPlay(),ID:%d\n", _getGameIns()->pLevel->levelID);
-	ArrayRelease(&_getGameIns()->meshs);
+	GameIns_ReleaseMesh();
+	GameIns_ReleaseCamera();
 }
 
 void Scene_Tick(float delta) {

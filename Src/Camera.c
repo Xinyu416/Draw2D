@@ -8,7 +8,6 @@ Camera* CreateCamera(float width,float ratio, float rot, Vect2 pos, Vect2 scale)
 	cam->rot = rot;
 	cam->pos = pos;
 	GenerateCameraTM(cam);
-
 	return cam;
 }
 

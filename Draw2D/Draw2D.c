@@ -5,7 +5,7 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include <string.h>
-
+#include "Thread.h"
 #include "Queue.h"
 
 
@@ -34,7 +34,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 	{
 		//键盘按下事件
-		GameEngine_MouseKeyEvent(KEYDOWN,wParam);
+		GameEngine_MouseKeyEvent(KEYDOWN, wParam);
 
 		if ((char)wParam == '1')
 		{
@@ -266,7 +266,8 @@ int main()
 	//ThreadTest();
 	//Camera_Init();
 	//QueueTest();
-	//return;
+	Task_Main();
+	return;
 	HWND hwnd = CreateRenderWindow(700 + 16, 775 + 39);
 	if (hwnd == NULL)
 	{

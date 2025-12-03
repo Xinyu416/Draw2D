@@ -156,6 +156,7 @@
     <ClCompile Include="..\Src\Renderer.c" />
     <ClCompile Include="..\Src\Scene.c" />
     <ClCompile Include="..\Src\Texture.c" />
+    <ClCompile Include="..\Src\Thread.c" />
     <ClCompile Include="..\Src\threadTest.c" />
     <ClCompile Include="..\User\PlayLevel.c" />
     <ClCompile Include="..\User\StartLevel.c" />
@@ -174,6 +175,7 @@
     <ClInclude Include="..\Include\Renderer.h" />
     <ClInclude Include="..\Include\Scene.h" />
     <ClInclude Include="..\Include\Texture.h" />
+    <ClInclude Include="..\Include\Thread.h" />
     <ClInclude Include="..\User\PlayLevel.h" />
     <ClInclude Include="..\User\StartLevel.h" />
     <ClInclude Include="..\User\UserDefine.h" />

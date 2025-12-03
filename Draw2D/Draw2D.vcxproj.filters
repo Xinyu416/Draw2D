@@ -60,6 +60,9 @@
     <ClCompile Include="..\User\PlayLevel.c">
       <Filter>User</Filter>
     </ClCompile>
+    <ClCompile Include="..\Src\Thread.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\GameEngine.h">
@@ -103,6 +106,9 @@
     </ClInclude>
     <ClInclude Include="..\User\PlayLevel.h">
       <Filter>User</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Thread.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

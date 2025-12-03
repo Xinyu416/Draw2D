@@ -1,18 +1,20 @@
 #include "PlayLevel.h"
 #include "GameInstance.h"
+#include "GameEngine.h"
 
 void PlayLevel_BeginPlay() {
-	printf("PlayLevel_BeginPlay(),ID:%d\n", _getGameIns()->pLevel->levelID);
-	_getGameIns()->meshs = ArrayCreate(sizeof(Mesh));
+	/*创建Mesh*/
+	GameIns_CreateMesh();
+	/*创建Camera*/
+	GameIns_CreateCamera(300, 700.0f / 775.0f,0,MakeVect2(0,0),MakeVect2(1.f,1.f));
+	/*场景初始化*/
 	PlayLevelInit();
+	printf("PlayLevel_BeginPlay(),ID:%d\n", _getGameIns()->pLevel->levelID);
 }
 
 void PlayLevel_EndPlay() {
-	/*for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
-	{
-		ArrayDelete(&_getGameIns()->meshs, 0);
-	}*/
-	ArrayRelease(&_getGameIns()->meshs);
+	GameIns_ReleaseMesh();
+	GameIns_ReleaseCamera();
 	printf("PlayLevel_EndPlay(),ID:%d\n", _getGameIns()->pLevel->levelID);
 }
 
@@ -38,8 +40,10 @@ void PlayLevel_MouseKeyEvent(VMEVENT eventType, void* key) {
 		int y = GET_Y_LPARAM(key);
 		printf("LeftMouseButtonDown: (%d, %d)\n", x, y);
 		//判断点击屏幕中心按元素大小的区域
-		if (x > (_getGameIns()->pCam->width / 2 - 25) && x < (_getGameIns()->pCam->width / 2 + 25) && y>(_getGameIns()->pCam->height / 2 - 25) && y < (_getGameIns()->pCam->height / 2 + 25))
+		//if (x > (_getGameIns()->pCam->width / 2 - 25) && x < (_getGameIns()->pCam->width / 2 + 25) && y>(_getGameIns()->pCam->height / 2 - 25) && y < (_getGameIns()->pCam->height / 2 + 25))
+		if (x > (_getGameEngine()->width/ 2 - 25) && x < (_getGameEngine()->width / 2 + 25) && y>(_getGameEngine()->height / 2 - 25) && y < (_getGameEngine()->height / 2 + 25))
 		{
+			printf("Scene_MouseKeyEvent -- Switch Level\n");
 			GameIns_OpenLevel(3);
 		}
 		break;

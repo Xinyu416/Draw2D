@@ -11,6 +11,8 @@ typedef struct {
 	Level* pLevel;
 }GameInstance;
 
+GameInstance* _getGameIns();
+
 void GameIns_Init();
 
 void GameIns_Release();
@@ -19,8 +21,14 @@ void GameIns_Tick(float delta);
 
 void GameIns_MouseKeyEvent(VMEVENT eventType,void* key);
 
-GameInstance* _getGameIns();
-
 void GameIns_OpenLevel(uint8_t levelID);
+
+void GameIns_CreateMesh();
+
+void GameIns_ReleaseMesh();
+
+void GameIns_CreateCamera(float width, float ratio, float rot, Vect2 pos, Vect2 scale);
+
+void GameIns_ReleaseCamera();
 
 void CreateMeshTest();

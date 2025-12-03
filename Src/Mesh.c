@@ -35,6 +35,7 @@ Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geom
 }
 
 //通过index取到切块的uv图
+//category 为一张贴图只有一个元素时 除了背景都是单个贴图 背景为0
 Vect2* getUVbyType(uint8_t category,uint8_t index, uint32_t wNum, uint32_t hNum) {
 	//贴图为单种贴图单个元素时 uv值需要特殊计算
 	if (category > 0)

@@ -110,39 +110,6 @@ void GameEnginRenderLoop() {
 	printf("GameEnginRenderLoop\n");
 }
 
-Vect2 vp[3] = { 0 };
-Vect2 uv[3] = { 0 };
-Color4 col[3] = { 0 };
-uint8_t blend_b;
-uint8_t blend_g;
-uint8_t blend_r;
-uint8_t blend_a;
-Vect2 half;
-
-Vect2 p0;
-Vect2 p1;
-Vect2 p2;
-
-Vect2 A;
-Vect2 B;
-Vect2 C;
-
-float alpha;
-float beta;
-float gama;
-
-float uv_u;
-float uv_v;
-
-Color4 colPick;
-
-uint8_t blend_b;
-uint8_t blend_g;
-uint8_t blend_r;
-uint8_t blend_a;
-
-float colorAlpha;
-
 void GameEngine_Render() {
 
 	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
@@ -164,17 +131,11 @@ void GameEngine_Render() {
 		Multi2Matrix(mt.m, srm.m, srtm.m);
 		pmesh->tm = srtm;
 
-		//后期根据BoudingBox大小调整像素渲染区
-		/*Vect2 vp[3] = { 0 };
-		Vect2 uv[3] = { 0 };
-		Color4 col[3] = { 0 };
-		uint8_t blend_b;
-		uint8_t blend_g;
-		uint8_t blend_r;
-		uint8_t blend_a;*/
-
 		for (size_t v = 0; v < pmesh->geo.numOfQuad * 2; v++)
 		{
+			Vect2 uv[3] = { 0 };
+			Vect2 vp[3] = { 0 };
+			Color4 col[3] = { 0 };
 			uint32_t vi = v * 6;
 
 			uv[0] = MakeVect2(pmesh->geo.uvs[vi + 0], pmesh->geo.uvs[vi + 1]);
@@ -191,17 +152,17 @@ void GameEngine_Render() {
 			col[2] = MakeColor4(pmesh->geo.colors[vi * 2 + 8], pmesh->geo.colors[vi * 2 + 9], pmesh->geo.colors[vi * 2 + 10], pmesh->geo.colors[vi * 2 + 11]);
 
 
-			half = MakeVect2((float)_getGameEngine()->width / 2.f, (float)_getGameEngine()->height / 2.f);
+			Vect2 half = MakeVect2((float)_getGameEngine()->width / 2.f, (float)_getGameEngine()->height / 2.f);
 
 			//将mesh的顶点转换到相机空间 *相机的逆矩阵
-			p0 = Vect2MultMatrix(vp[0], _getGameIns()->pCam->tm.m);
-			p1 = Vect2MultMatrix(vp[1], _getGameIns()->pCam->tm.m);
-			p2 = Vect2MultMatrix(vp[2], _getGameIns()->pCam->tm.m);
+			Vect2 p0 = Vect2MultMatrix(vp[0], _getGameIns()->pCam->tm.m);
+			Vect2 p1 = Vect2MultMatrix(vp[1], _getGameIns()->pCam->tm.m);
+			Vect2 p2 = Vect2MultMatrix(vp[2], _getGameIns()->pCam->tm.m);
 
 			//计算画幅空间位置 （需要考虑偏移值）
-			A = AddVect2(MakeVect2((p0.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p0.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
-			B = AddVect2(MakeVect2((p1.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p1.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
-			C = AddVect2(MakeVect2((p2.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p2.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
+			Vect2 A = AddVect2(MakeVect2((p0.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p0.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
+			Vect2 B = AddVect2(MakeVect2((p1.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p1.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
+			Vect2 C = AddVect2(MakeVect2((p2.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p2.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
 
 			//遍历屏幕空间像素
 			for (size_t y = 0; y < _getGameEngine()->height; y++)
@@ -213,25 +174,25 @@ void GameEngine_Render() {
 					Vect2 pix = MakeVect2((float)x + 0.5f, (float)y + 0.5f);
 
 					//重心坐标值
-					alpha = (-(pix.x - B.x) * (C.y - B.y) + (pix.y - B.y) * (C.x - B.x)) / (-(A.x - B.x) * (C.y - B.y) + (A.y - B.y) * (C.x - B.x));
-					beta = (-(pix.x - C.x) * (A.y - C.y) + (pix.y - C.y) * (A.x - C.x)) / (-(B.x - C.x) * (A.y - C.y) + (B.y - C.y) * (A.x - C.x));
-					gama = 1.f - alpha - beta;
+					float alpha = (-(pix.x - B.x) * (C.y - B.y) + (pix.y - B.y) * (C.x - B.x)) / (-(A.x - B.x) * (C.y - B.y) + (A.y - B.y) * (C.x - B.x));
+					float beta = (-(pix.x - C.x) * (A.y - C.y) + (pix.y - C.y) * (A.x - C.x)) / (-(B.x - C.x) * (A.y - C.y) + (B.y - C.y) * (A.x - C.x));
+					float gama = 1.f - alpha - beta;
 
 					//判断点在三角形内还是外
 					if (alpha >= 0 && beta >= 0 && gama >= 0)
 					{
 						//通过顶点的uv值算出每个点的uv值
-						uv_u = alpha * uv[0].x + beta * uv[1].x + gama * uv[2].x;
-						uv_v = alpha * uv[0].y + beta * uv[1].y + gama * uv[2].y;
+						float uv_u = alpha * uv[0].x + beta * uv[1].x + gama * uv[2].x;
+						float uv_v = alpha * uv[0].y + beta * uv[1].y + gama * uv[2].y;
 
 						//贴图颜色采样
-						colPick = UVTextureSample(uv_u, uv_v, pmesh->mat.textureId);
+						Color4 colPick = UVTextureSample(uv_u, uv_v, pmesh->mat.textureId);
 
 						//重心坐标混合的顶点颜色值
-						blend_b = alpha * col[0].b + beta * col[1].b + gama * col[2].b;
-						blend_g = alpha * col[0].g + beta * col[1].g + gama * col[2].g;
-						blend_r = alpha * col[0].r + beta * col[1].r + gama * col[2].r;
-						blend_a = alpha * col[0].a + beta * col[1].a + gama * col[2].a;
+						uint8_t blend_b = alpha * col[0].b + beta * col[1].b + gama * col[2].b;
+						uint8_t blend_g = alpha * col[0].g + beta * col[1].g + gama * col[2].g;
+						uint8_t blend_r = alpha * col[0].r + beta * col[1].r + gama * col[2].r;
+						uint8_t blend_a = alpha * col[0].a + beta * col[1].a + gama * col[2].a;
 
 						colPick.b = (blend_b * colPick.b) / 255;
 						colPick.g = (blend_g * colPick.g) / 255;
@@ -240,7 +201,7 @@ void GameEngine_Render() {
 
 
 						//颜色混合 color*alpha + bg*(1-alpha)
-						colorAlpha = ((float)colPick.a / 255.f);
+						float colorAlpha = ((float)colPick.a / 255.f);
 						_getGameEngine()->bufferShow[index + 0] = colPick.b * colorAlpha + _getGameEngine()->bufferShow[index + 0] * (1.f - colorAlpha);
 						_getGameEngine()->bufferShow[index + 1] = colPick.g * colorAlpha + _getGameEngine()->bufferShow[index + 1] * (1.f - colorAlpha);
 						_getGameEngine()->bufferShow[index + 2] = colPick.r * colorAlpha + _getGameEngine()->bufferShow[index + 2] * (1.f - colorAlpha);
