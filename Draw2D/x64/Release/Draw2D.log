@@ -1,9 +1,30 @@
 ﻿  Thread.c
-C:\CProject\Draw2D\Src\Thread.c(53,20): warning C4018: “<”: 有符号/无符号不匹配
-C:\CProject\Draw2D\Src\Thread.c(131,10): warning C4098: “Task_Main”:“void”函数返回值
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Src\Thread.c(12,35): warning C4133: “函数”: 从“char [260]”到“LPCWSTR”的类型不兼容
+D:\QXY\cpp\Draw2D\Src\Thread.c(20,33): warning C4133: “函数”: 从“WCHAR [260]”到“const char *”的类型不兼容
+D:\QXY\cpp\Draw2D\Src\Thread.c(21,30): warning C4133: “函数”: 从“WCHAR [260]”到“const char *”的类型不兼容
+D:\QXY\cpp\Draw2D\Src\Thread.c(26,11): warning C4477: “printf”: 格式字符串“%s”需要类型“char *”的参数，但可变参数 1 拥有了类型“WCHAR *”
+D:\QXY\cpp\Draw2D\Src\Thread.c(26,11): message : 请考虑在格式字符串中使用“%ls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(26,11): message : 请考虑在格式字符串中使用“%lls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(26,11): message : 请考虑在格式字符串中使用“%Ls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(26,11): message : 请考虑在格式字符串中使用“%ws”
+D:\QXY\cpp\Draw2D\Src\Thread.c(29,11): warning C4477: “printf”: 格式字符串“%s”需要类型“char *”的参数，但可变参数 1 拥有了类型“WCHAR *”
+D:\QXY\cpp\Draw2D\Src\Thread.c(29,11): message : 请考虑在格式字符串中使用“%ls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(29,11): message : 请考虑在格式字符串中使用“%lls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(29,11): message : 请考虑在格式字符串中使用“%Ls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(29,11): message : 请考虑在格式字符串中使用“%ws”
+D:\QXY\cpp\Draw2D\Src\Thread.c(42,31): warning C4133: “函数”: 从“char [260]”到“LPCWSTR”的类型不兼容
+D:\QXY\cpp\Draw2D\Src\Thread.c(46,12): warning C4477: “printf”: 格式字符串“%s”需要类型“char *”的参数，但可变参数 1 拥有了类型“WCHAR *”
+D:\QXY\cpp\Draw2D\Src\Thread.c(46,12): message : 请考虑在格式字符串中使用“%ls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(46,12): message : 请考虑在格式字符串中使用“%lls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(46,12): message : 请考虑在格式字符串中使用“%Ls”
+D:\QXY\cpp\Draw2D\Src\Thread.c(46,12): message : 请考虑在格式字符串中使用“%ws”
+D:\QXY\cpp\Draw2D\Src\Thread.c(53,12): warning C4098: “fileOperate”:“void”函数返回值
+D:\QXY\cpp\Draw2D\Src\Thread.c(130,20): warning C4018: “<”: 有符号/无符号不匹配
+D:\QXY\cpp\Draw2D\Src\Thread.c(206,10): warning C4098: “Task_Main”:“void”函数返回值
   正在生成代码
-  2 of 84 functions ( 2.4%) were compiled, the rest were copied from previous compilation.
+  3 of 87 functions ( 3.4%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     2 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
-  Draw2D.vcxproj -> C:\CProject\Draw2D\x64\Release\Draw2D.exe
+  Draw2D.vcxproj -> D:\QXY\cpp\Draw2D\x64\Release\Draw2D.exe

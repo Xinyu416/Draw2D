@@ -1,52 +1,180 @@
+ï»¿#define _CRT_SECURE_NO_WARNINGS
 #include "Thread.h"
+#include "FileOperate.h"
+#include "Hash.h"
 
+#define BLOCKSIZE 1048576
 
-DWORD CALLBACK MyThreadTestFunction(LPVOID lpParam) {
+void fileOperate() {
+	const char* dir = "D:\\DS";
+	uint32_t filesCount = getDirFileCount(dir);
+	printf("fileOperate::filesNum:%d\n", filesCount);
+	char* filesName = (char*)malloc(MAX_PATH * filesCount);
+	getDirFileNames(dir, filesName);
+
+	//æ‰“å°æ–‡ä»¶åç§°
+	/*for (size_t i = 0; i < filesCount; i++)
+	{
+		printf("%s\n", (filesName + i * MAX_PATH));
+	}*/
+
+	//è¯»å–æ–‡ä»¶ç»™æ–‡ä»¶å†…å®¹hash
+	//const char* path = "D:\\DS\\Ellen Whitaker's Horse Life (Europe) (En,Fr,De,Es,It,Nl)(s.)(v.1.0).zip";
+	const char* path = "D:\\DS\\Fashion Dogz (Europe)(s.)(v.1.0).zip";
+	FILE* f = fopen(path, "rb");
+	if (f == NULL)
+	{
+		printf("FILE IS NULL\n");
+		return;
+	}
+	if (fseek(f, 0, SEEK_END) != 0) {
+		return;
+	}
+	long originSize = ftell(f);
+	printf("originSize:%d\n", originSize);
+
+	rewind(f);
+	uint8_t* data = (uint8_t*)malloc(originSize);
+	fread(data, 1, originSize, f);
+	fclose(f);
+
+	uint8_t hash[20];
+	sha1(data, originSize, hash);
+	for (uint32_t i = 0; i < 20; i++) {
+		printf("%02x", hash[i]);
+	}
+	printf("\n");
+}
+
+void doTaskStream(Thread* thread, uint8_t* data) {
+	const char* path = (thread->fileNameArr + (thread->toThreadMessage.taskIndex * MAX_PATH));
+	FILE* f = fopen(path, "rb");
+	if (f == NULL)
+	{
+		printf("FILE IS NULL\n");
+		return;
+	}
+
+	SHA1_CTX ctx;
+	sha1_init(&ctx);
+
+	uint32_t readLen = 0;
+	while (feof(f) == 0)
+	{
+		readLen = fread(data, 1, BLOCKSIZE, f);
+		sha1_update(&ctx, data, readLen);
+	}
+	fclose(f);
+
+	//printf("[%d]:path:%s -- ", thread->id, path);
+	uint8_t hash[20];
+	sha1_final(&ctx, hash);
+
+	/*for (uint32_t i = 0; i < 20; i++) {
+		printf("%02x", hash[i]);
+	}
+	printf("\n");*/
+}
+
+/// <summary>
+/// ä»»åŠ¡å†…å®¹
+/// </summary>
+/// <param name="thread"></param>
+void doTask(Thread* thread) {
+	const char* path = (thread->fileNameArr + (thread->toThreadMessage.taskIndex * MAX_PATH));
+	FILE* f = fopen(path, "rb");
+	if (f == NULL)
+	{
+		printf("FILE IS NULL\n");
+		return;
+	}
+	if (fseek(f, 0, SEEK_END) != 0) {
+		return;
+	}
+	long originSize = ftell(f);
+	rewind(f);
+	uint8_t* data = (uint8_t*)malloc(originSize);
+	fread(data, 1, originSize, f);
+	fclose(f);
+
+	printf("\n");
+	printf("[%d]:path:%s -- ", thread->id, path);
+	uint8_t hash[20];
+	sha1(data, originSize, hash);
+	for (uint32_t i = 0; i < 20; i++) {
+		printf("%02x", hash[i]);
+	}
+	printf("\n");
+	free(data);
+}
+
+DWORD CALLBACK threadMain(LPVOID lpParam) {
 	Thread* thread = (Thread*)lpParam;
 	DWORD lpThreadId = 0;
 	lpThreadId = GetCurrentThreadId();
-	//Ïß³Ì×¼±¸
+	//çº¿ç¨‹å‡†å¤‡
 	thread->fromThreadMessage = 1;
 	bool isRunning = true;
 	bool hasTask = false;
-
+	uint8_t* data = (uint8_t*)malloc(BLOCKSIZE);
 	while (isRunning) {
-		if (thread->toThreadMessage != 0)
+		if (thread->toThreadMessage.type != 0)
 		{
-			//ÊÕµ½Ö÷Ïß³Ì×öÈÎÎñÖ¸Áî
-			if (thread->toThreadMessage == 11)
+			//æ”¶åˆ°ä¸»çº¿ç¨‹åšä»»åŠ¡æŒ‡ä»¤
+			if (thread->toThreadMessage.type == 11)
 			{
 				hasTask = true;
+
 			}
-			//ÊÕµ½Ö÷Ïß³Ì¹Ø±ÕÖ¸Áî
-			if (thread->toThreadMessage == 12)
+			//æ”¶åˆ°ä¸»çº¿ç¨‹å…³é—­æŒ‡ä»¤
+			if (thread->toThreadMessage.type == 12)
 			{
 				isRunning = false;
 			}
-			thread->toThreadMessage = 0;
+			thread->toThreadMessage.type = 0;
 		}
 
 		if (hasTask)
 		{
-			Sleep(1000);
-			//ÈÎÎñÍê³É
-			//printf("[%d]:done\n", thread->id);
+			//åšä»»åŠ¡ è¯»å–æ–‡ä»¶å†…å®¹åŠ hash æ•´æ–‡ä»¶åŠ è½½
+			//doTask(thread);
+			//åšä»»åŠ¡ è¯»å–æ–‡ä»¶å†…å®¹åŠ hash æµå¼åŠ è½½
+			doTaskStream(thread, data);
+
 			hasTask = false;
 			thread->fromThreadMessage = 2;
 		}
-		//Sleep(100);
+		Sleep(20);
 	}
 
-	//ÈÎÎñ½áÊø
+	//ä»»åŠ¡ç»“æŸ
 	thread->fromThreadMessage = 3;
+	free(data);
 	printf("[%d]:thread main close!\n", thread->id);
 }
 
 void Task_Main() {
-	uint32_t taskNum = 100;
-	const uint32_t MAX_THREADS = 10;
+
+	//è·å–æ–‡ä»¶å¤¹æ–‡ä»¶åå¾—åˆ°æ–‡ä»¶åæ•°ç»„
+	const char* dir = "D:\\DS";
+	uint32_t filesCount = getDirFileCount(dir);
+	printf("getDirFileCount:%d\n", filesCount);
+	char* filesNameArr = (char*)malloc(MAX_PATH * filesCount);
+	getDirFileNames(dir, filesNameArr);
+	uint32_t taskIndex = 0;
+	/*for (size_t i = 0; i < filesCount; i++)
+	{
+		//æ‰“å°æ–‡ä»¶å
+		printf("%s\n", (filesNameArr + i * MAX_PATH));
+	}*/
+
+	//ä»»åŠ¡æ•°é‡
+	uint32_t taskNum = filesCount;
+	//æœ€å¤§çº¿ç¨‹æ•°
+	const uint32_t MAX_THREADS = 24;
 	Thread* threadArray = (Thread*)malloc(sizeof(Thread) * MAX_THREADS);
-	uint32_t threadCount = 0;
+	//æ´»è·ƒçº¿ç¨‹æ•°é‡
+	uint32_t activeThreadCount = 0;
 	bool isRunning = true;
 
 	Thread* thread = NULL;
@@ -54,69 +182,73 @@ void Task_Main() {
 	{
 		thread = threadArray + i;
 		thread->isActive = false;
-		thread->handle = CreateThread(NULL, 0, MyThreadTestFunction, thread, 0, &thread->id);
+		thread->handle = CreateThread(NULL, 0, threadMain, thread, 0, &thread->id);
 		printf("[main]:thread->id:%d\n", thread->id);
 		if (thread->handle != NULL)
 		{
+			thread->fileNameArr = filesNameArr;
+			thread->toThreadMessage.taskIndex = 0;
 			thread->isActive = true;
-			threadCount++;
+			activeThreadCount++;
 		}
 	}
 
-	printf("threadCompleteCount:%d\n", threadCount);
-	uint32_t taskCount = 0;
-	Thread* tmpThread = NULL;
+	printf("threadCompleteCount:%d\n", activeThreadCount);
+
 	while (isRunning) {
 		for (size_t i = 0; i < MAX_THREADS; i++)
 		{
-			tmpThread = threadArray + i;
-			if (tmpThread->handle != NULL && tmpThread->fromThreadMessage != 0)
+			thread = threadArray + i;
+			if (thread->isActive != false && thread->fromThreadMessage != 0)
 			{
-				//×ÓÏß³Ì×¼±¸
-				if (tmpThread->fromThreadMessage == 1)
+				//å­çº¿ç¨‹å‡†å¤‡
+				if (thread->fromThreadMessage == 1)
 				{
-					printf("[main]:thread ready, id:%d\n", tmpThread->id);
-					//¸ø×ÓÏß³Ì·¢ÈÎÎñ
-					tmpThread->toThreadMessage = 11;
-					if (taskNum > 0)taskNum--;
-					taskCount++;
+					printf("[main]:thread ready, id:%d\n", thread->id);
+					//ç»™å­çº¿ç¨‹å‘ä»»åŠ¡
+					thread->toThreadMessage.taskIndex = taskIndex;
+					taskIndex++;
+					taskNum--;
+					printf("[main]:taskIndex:%d\n", taskIndex);
+					thread->toThreadMessage.type = 11;
 				}
-				//×ÓÏß³ÌÍê³ÉÈÎÎñ
-				if (tmpThread->fromThreadMessage == 2)
+				//å­çº¿ç¨‹å®Œæˆä»»åŠ¡
+				if (thread->fromThreadMessage == 2)
 				{
-					printf("[main]:thread done,id:%d\n", tmpThread->id);
+					printf("[main]:thread done,id:%d\n", thread->id);
 					if (taskNum > 0)
 					{
-						taskCount++;
-						//ÏÂ·¢ĞÂÈÎÎñ
-						tmpThread->toThreadMessage = 11;
+						//ä¸‹å‘æ–°ä»»åŠ¡
+						thread->toThreadMessage.taskIndex = taskIndex;
 						taskNum--;
-						printf("[main]:taskNum:%d\n", taskNum);
+						taskIndex++;
+						printf("[Main]:done/remain/filesCount:%d/%d/%d\n", taskIndex, taskNum, filesCount);
+						thread->toThreadMessage.type = 11;
 					}
 					else {
-						//¹Ø±ÕÈÎÎñ
-						tmpThread->toThreadMessage = 12;
+						//å…³é—­ä»»åŠ¡
+						thread->toThreadMessage.type = 12;
 					}
 				}
-				//×ÓÏß³Ì¹Ø±Õ
-				if (tmpThread->fromThreadMessage == 3)
+				//å­çº¿ç¨‹å…³é—­
+				if (thread->fromThreadMessage == 3)
 				{
-					tmpThread->isActive = false;
-					threadCount--;
-					printf("[main]:thread[%d] closed\n", tmpThread->id);
+					thread->isActive = false;
+					activeThreadCount--;
+					printf("[main]:thread[%d] closed\n", thread->id);
 				}
 
-				tmpThread->fromThreadMessage = 0;
+				thread->fromThreadMessage = 0;
 			}
 		}
 
-		if (threadCount == 0)
+		if (activeThreadCount == 0)
 		{
 			isRunning = false;
 		}
 		Sleep(200);
 	}
-	printf("taskCount:%d\n",taskCount);
+
 
 	for (size_t i = 0; i < MAX_THREADS; i++)
 	{
@@ -128,5 +260,6 @@ void Task_Main() {
 	}
 
 	free(threadArray);
+	free(filesNameArr);
 	return 0;
 }

@@ -110,5 +110,11 @@
     <ClInclude Include="..\Include\Thread.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\FileOperate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Hash.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Include;$(SolutionDir)User;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Include;$(SolutionDir)User;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
@@ -167,9 +167,11 @@
     <ClInclude Include="..\Include\Camera.h" />
     <ClInclude Include="..\Include\containers.h" />
     <ClInclude Include="..\Include\Define.h" />
+    <ClInclude Include="..\Include\FileOperate.h" />
     <ClInclude Include="..\Include\Draw2D.h" />
     <ClInclude Include="..\Include\GameEngine.h" />
     <ClInclude Include="..\Include\GameInstance.h" />
+    <ClInclude Include="..\Include\Hash.h" />
     <ClInclude Include="..\Include\Mesh.h" />
     <ClInclude Include="..\Include\Queue.h" />
     <ClInclude Include="..\Include\Renderer.h" />
