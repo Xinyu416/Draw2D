@@ -159,7 +159,7 @@ void GameEngine_Render() {
 			Vect2 p1 = Vect2MultMatrix(vp[1], _getGameIns()->pCam->tm.m);
 			Vect2 p2 = Vect2MultMatrix(vp[2], _getGameIns()->pCam->tm.m);
 
-			//计算画幅空间位置 （需要考虑偏移值）
+			//顶点转世界计算画幅空间位置 （需要考虑偏移值）
 			Vect2 A = AddVect2(MakeVect2((p0.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p0.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
 			Vect2 B = AddVect2(MakeVect2((p1.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p1.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
 			Vect2 C = AddVect2(MakeVect2((p2.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p2.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
