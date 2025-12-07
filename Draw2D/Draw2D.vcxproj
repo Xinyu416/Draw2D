@@ -158,6 +158,7 @@
     <ClCompile Include="..\Src\Texture.c" />
     <ClCompile Include="..\Src\Thread.c" />
     <ClCompile Include="..\Src\threadTest.c" />
+    <ClCompile Include="..\Src\VMManage.c" />
     <ClCompile Include="..\User\PlayLevel.c" />
     <ClCompile Include="..\User\StartLevel.c" />
     <ClCompile Include="Draw2D.c" />
@@ -178,6 +179,7 @@
     <ClInclude Include="..\Include\Scene.h" />
     <ClInclude Include="..\Include\Texture.h" />
     <ClInclude Include="..\Include\Thread.h" />
+    <ClInclude Include="..\Include\VMManager.h" />
     <ClInclude Include="..\User\PlayLevel.h" />
     <ClInclude Include="..\User\StartLevel.h" />
     <ClInclude Include="..\User\UserDefine.h" />
