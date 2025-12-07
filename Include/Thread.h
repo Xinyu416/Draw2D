@@ -15,7 +15,6 @@ typedef struct {
 typedef struct {
 	Quad* taskArr;
 	uint32_t* taskCount;
-	Queue* taskQueue;
 }Task;
 
 typedef struct {
