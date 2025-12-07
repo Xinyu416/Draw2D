@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "Define.h"
 #include "Mesh.h"
+#include "Queue.h"
 
 typedef struct {
 	uint8_t type;
@@ -14,6 +15,7 @@ typedef struct {
 typedef struct {
 	Quad* taskArr;
 	uint32_t* taskCount;
+	Queue* taskQueue;
 }Task;
 
 typedef struct {

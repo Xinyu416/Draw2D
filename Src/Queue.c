@@ -34,14 +34,14 @@ void EnQueue(Queue* Q, void* element) {
 	memcpy(Q->data + (Q->tail * Q->elementSize), element, Q->elementSize);
 	Q->tail = next_tail;
 	Q->count++;
-	PrintQueue(Q);
+	//PrintQueue(Q);
 }
 
 uint8_t* DeQueue(Queue* Q) {
 	if (Q == NULL || Q->data == NULL) {
 		return NULL;
 	}
-	printf("DeQueue\n");
+	//printf("DeQueue\n");
 	if ( Q->count == 0)
 	{
 		printf("DeQueue 空队列 无法出队\n");
@@ -50,7 +50,7 @@ uint8_t* DeQueue(Queue* Q) {
 	uint8_t* item = Q->data + (Q->head * Q->elementSize);
 	Q->head = (Q->head + 1) % Q->length;
 	Q->count--;
-	PrintQueue(Q);
+	//PrintQueue(Q);
 	return item;
 }
 

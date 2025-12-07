@@ -3,49 +3,10 @@
 #include "FileOperate.h"
 #include "Hash.h"
 
+
+
 #define BLOCKSIZE 1048576
-#define TASKCOUNT 10000000
-
-void fileOperate() {
-	const char* dir = "D:\\DS";
-	uint32_t filesCount = getDirFileCount(dir);
-	printf("fileOperate::filesNum:%d\n", filesCount);
-	char* filesName = (char*)malloc(MAX_PATH * filesCount);
-	getDirFileNames(dir, filesName);
-
-	//打印文件名称
-	/*for (size_t i = 0; i < filesCount; i++)
-	{
-		printf("%s\n", (filesName + i * MAX_PATH));
-	}*/
-
-	//读取文件给文件内容hash
-	//const char* path = "D:\\DS\\Ellen Whitaker's Horse Life (Europe) (En,Fr,De,Es,It,Nl)(s.)(v.1.0).zip";
-	const char* path = "D:\\DS\\Fashion Dogz (Europe)(s.)(v.1.0).zip";
-	FILE* f = fopen(path, "rb");
-	if (f == NULL)
-	{
-		printf("FILE IS NULL\n");
-		return;
-	}
-	if (fseek(f, 0, SEEK_END) != 0) {
-		return;
-	}
-	long originSize = ftell(f);
-	printf("originSize:%d\n", originSize);
-
-	rewind(f);
-	uint8_t* data = (uint8_t*)malloc(originSize);
-	fread(data, 1, originSize, f);
-	fclose(f);
-
-	uint8_t hash[20];
-	sha1(data, originSize, hash);
-	for (uint32_t i = 0; i < 20; i++) {
-		printf("%02x", hash[i]);
-	}
-	printf("\n");
-}
+#define TASKCOUNT 30000000
 
 void doTaskStream(Thread* thread, uint8_t* data) {
 	const char* path = (thread->fileNameArr + (thread->toThreadMessage.taskIndex * MAX_PATH));
@@ -67,7 +28,6 @@ void doTaskStream(Thread* thread, uint8_t* data) {
 	}
 	fclose(f);
 
-	//printf("[%d]:path:%s -- ", thread->id, path);
 	uint8_t hash[20];
 	sha1_final(&ctx, hash);
 
@@ -75,38 +35,6 @@ void doTaskStream(Thread* thread, uint8_t* data) {
 		printf("%02x", hash[i]);
 	}
 	printf("\n");*/
-}
-
-/// <summary>
-/// 任务内容
-/// </summary>
-/// <param name="thread"></param>
-void doTask(Thread* thread) {
-	const char* path = (thread->fileNameArr + (thread->toThreadMessage.taskIndex * MAX_PATH));
-	FILE* f = fopen(path, "rb");
-	if (f == NULL)
-	{
-		printf("FILE IS NULL\n");
-		return;
-	}
-	if (fseek(f, 0, SEEK_END) != 0) {
-		return;
-	}
-	long originSize = ftell(f);
-	rewind(f);
-	uint8_t* data = (uint8_t*)malloc(originSize);
-	fread(data, 1, originSize, f);
-	fclose(f);
-
-	printf("\n");
-	printf("[%d]:path:%s -- ", thread->id, path);
-	uint8_t hash[20];
-	sha1(data, originSize, hash);
-	for (uint32_t i = 0; i < 20; i++) {
-		printf("%02x", hash[i]);
-	}
-	printf("\n");
-	free(data);
 }
 
 DWORD CALLBACK threadMain(LPVOID lpParam) {
@@ -137,8 +65,6 @@ DWORD CALLBACK threadMain(LPVOID lpParam) {
 
 		if (hasTask)
 		{
-			//做任务 读取文件内容加hash 整文件加载
-			//doTask(thread);
 			//做任务 读取文件内容加hash 流式加载
 			doTaskStream(thread, data);
 
@@ -168,7 +94,6 @@ void _Task_Main() {
 		//打印文件名
 		printf("%s\n", (filesNameArr + i * MAX_PATH));
 	}*/
-
 	//任务数量
 	uint32_t taskNum = filesCount;
 	//最大线程数
@@ -288,15 +213,22 @@ void _Task_Main() {
 
 
 
+
+
+
+
 static CRITICAL_SECTION criticalSection_task;
 static CRITICAL_SECTION criticalSection_result;
 
 DWORD CALLBACK threadMain_task(MyThread* thread) {
+
 	//mesh 信息
 	DWORD lpThreadId = 0;
 	lpThreadId = GetCurrentThreadId();
+	printf("[%d]:thread start!\n", lpThreadId);
 	//线程准备
 	thread->fromThreadMessage = 1;
+
 	bool isRunning = true;
 	uint32_t* taskCount = thread->task.taskCount;
 	uint32_t* resultCount = thread->result.resultCount;
@@ -310,12 +242,13 @@ DWORD CALLBACK threadMain_task(MyThread* thread) {
 	Multi2Matrix(mr.m, ms.m, srm.m);
 	Multi2Matrix(mt.m, srm.m, srtm.m);
 	Matrix tm = srtm;
+	Matrix ctm = CreateStandardMatrix();
 	printf("[%d] taskCount/ResultCount/Total -- %lu/%d/%d\n", lpThreadId, *taskCount, *resultCount, TASKCOUNT);
+	printf("[%d]:thread->task.taskQueue.count:%d\n", lpThreadId, thread->task.taskQueue->count);
 
 	Quad quad;
 	while (isRunning) {
 		quadIndex = -1;
-
 		EnterCriticalSection(&criticalSection_task);
 		if (*taskCount > 0) {
 			*taskCount = *taskCount - 1;
@@ -323,19 +256,19 @@ DWORD CALLBACK threadMain_task(MyThread* thread) {
 		}
 		LeaveCriticalSection(&criticalSection_task);
 
-		if (quadIndex >= 0)
-		{
-			Quad q = thread->task.taskArr[quadIndex];
+		if (quadIndex >= 0) {
+			//Quad q = thread->task.taskArr[quadIndex];
+			Quad* q = (Quad*)DeQueue(thread->task.taskQueue);
 			Vect2 vp[6] = { 0 };
 			//顶点从模型空间转换成世界空间
 			for (size_t i = 0; i < 6; i++) {
-				vp[i] = Vect2MultMatrix(q.vertices[i], tm.m);
+				vp[i] = Vect2MultMatrix(q->vertices[i], tm.m);
 			}
 			Vect2 half = MakeVect2(400.f / 2.f, 300.f / 2.f);
 			Vect2 p[6] = { 0 };
 			//顶点转换到相机空间 *相机的逆矩阵 替代值
 			for (size_t j = 0; j < 6; j++) {
-				p[j] = Vect2MultMatrix(vp[j], tm.m);
+				p[j] = Vect2MultMatrix(vp[j], ctm.m);
 			}
 			//顶点转世界 计算画幅空间位置 （需要考虑偏移值）
 			for (size_t k = 0; k < 6; k++) {
@@ -347,6 +280,8 @@ DWORD CALLBACK threadMain_task(MyThread* thread) {
 			thread->result.resultArr[*resultCount] = quad;
 			*resultCount = *resultCount + 1;
 			LeaveCriticalSection(&criticalSection_result);
+
+			thread->fromThreadMessage = 2;
 		}
 		else {
 			isRunning = false;
@@ -358,6 +293,11 @@ DWORD CALLBACK threadMain_task(MyThread* thread) {
 	thread->fromThreadMessage = 3;
 	printf("[%d]:thread main close!\n", thread->id);
 }
+
+
+
+
+
 
 void Task_Main() {
 
@@ -375,18 +315,30 @@ void Task_Main() {
 	*(myResult.resultCount) = 0;
 
 	printf("myResult Count:%d\n", *(myResult.resultCount));
+	Queue Q = CreateQueue(TASKCOUNT, sizeof(Quad));
+
+	Queue* taskQueue = (Queue*)malloc(sizeof(Queue));
+	taskQueue->count = Q.count;
+	taskQueue->data = Q.data;
+	taskQueue->elementSize = Q.elementSize;
+	taskQueue->head = Q.head;
+	taskQueue->length = Q.length;
+	taskQueue->tail = Q.tail;
 
 
 	//初始化任务块
 	for (size_t i = 0; i < TASKCOUNT; i++)
 	{
-		Quad* q = myTask.taskArr + i;
+		//Quad* q = myTask.taskArr + i;
+		Quad q;
 		Vect2 vert[6];
 		for (size_t j = 0; j < 6; j++)
 		{
 			vert[j] = MakeVect2((float)(rand() % 1000), (float)(rand() % 1000));
-			q->vertices[j] = vert[j];
+			q.vertices[j] = vert[j];
+			//队列塞入元素
 		}
+		EnQueue(taskQueue, &q);
 		*(myTask.taskCount) = *(myTask.taskCount) + 1;
 	}
 
@@ -394,7 +346,7 @@ void Task_Main() {
 	printf("myTask Count:%d\n", *(myTask.taskCount));
 
 	//最大线程数
-	const uint32_t MAX_THREADS = 24;
+	const uint32_t MAX_THREADS = 8;
 	MyThread* threadArray = (MyThread*)malloc(sizeof(MyThread) * MAX_THREADS);
 	//活跃线程数量
 	uint32_t activeThreadCount = 0;
@@ -407,6 +359,7 @@ void Task_Main() {
 		thread->isActive = false;
 		thread->task = myTask;
 		thread->result = myResult;
+		thread->task.taskQueue = taskQueue;
 		printf("[main]:thread->id:%d\n", thread->id);
 		thread->handle = CreateThread(NULL, 0, threadMain_task, thread, 0, &thread->id);
 		if (thread->handle != NULL)
@@ -416,9 +369,12 @@ void Task_Main() {
 		}
 	}
 
-	printf("threadCompleteCount:%d\n", activeThreadCount);
+	printf("activeThreadCount:%d\n", activeThreadCount);
 
 	while (isRunning) {
+
+		printf("isRunning -- myTask Count:%d\n", *(myTask.taskCount));
+
 		for (size_t i = 0; i < MAX_THREADS; i++)
 		{
 			thread = threadArray + i;
@@ -445,7 +401,7 @@ void Task_Main() {
 		}
 
 		printf("[Main]Task/Result/Total:%d/%d/%d\n", *(myTask.taskCount), *(myResult.resultCount), TASKCOUNT);
-		Sleep(1000);
+		Sleep(10);
 	}
 
 	for (size_t i = 0; i < MAX_THREADS; i++)
