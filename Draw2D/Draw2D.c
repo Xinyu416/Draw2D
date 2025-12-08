@@ -7,6 +7,7 @@
 #include <string.h>
 #include "Thread.h"
 #include "Queue.h"
+#include "VMManager.h"
 
 
 //窗口过程函数(消息回调)
@@ -266,7 +267,10 @@ int main()
 	//ThreadTest();
 	//Camera_Init();
 	//QueueTest();
-	Task_Main();
+	//Task_Main();
+	uint8_t offset = _getAliagnOffset(9);
+	printf("offset:%d\n", offset);
+
 	return;
 	HWND hwnd = CreateRenderWindow(700 + 16, 775 + 39);
 	if (hwnd == NULL)
