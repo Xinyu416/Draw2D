@@ -29,27 +29,27 @@ void PlayLevel_Tick(float delta) {
 
 void PlayLevel_MouseKeyEvent(VMEVENT eventType, void* key) {
 	//接收处理键盘事件
-	switch (eventType)
-	{
-	case KEYDOWN:
-		printf("PlayLevel_MouseKeyEvent type:%d, key:%c\n", eventType, (char)key);
-		break;
-	case LMBD:
-		//获取窗口中的鼠标位置
-		int x = GET_X_LPARAM(key);
-		int y = GET_Y_LPARAM(key);
-		printf("LeftMouseButtonDown: (%d, %d)\n", x, y);
-		//判断点击屏幕中心按元素大小的区域
-		//if (x > (_getGameIns()->pCam->width / 2 - 25) && x < (_getGameIns()->pCam->width / 2 + 25) && y>(_getGameIns()->pCam->height / 2 - 25) && y < (_getGameIns()->pCam->height / 2 + 25))
-		if (x > (_getGameEngine()->width/ 2 - 25) && x < (_getGameEngine()->width / 2 + 25) && y>(_getGameEngine()->height / 2 - 25) && y < (_getGameEngine()->height / 2 + 25))
-		{
-			printf("Scene_MouseKeyEvent -- Switch Level\n");
-			GameIns_OpenLevel(3);
-		}
-		break;
-	default:
-		break;
-	}
+	//switch (eventType)
+	//{
+	//case KEYDOWN:
+	//	printf("PlayLevel_MouseKeyEvent type:%d, key:%c\n", eventType, (char)key);
+	//	break;
+	//case LMBD:
+	//	//获取窗口中的鼠标位置
+	//	int x = GET_X_LPARAM(key);
+	//	int y = GET_Y_LPARAM(key);
+	//	printf("LeftMouseButtonDown: (%d, %d)\n", x, y);
+	//	//判断点击屏幕中心按元素大小的区域
+	//	//if (x > (_getGameIns()->pCam->width / 2 - 25) && x < (_getGameIns()->pCam->width / 2 + 25) && y>(_getGameIns()->pCam->height / 2 - 25) && y < (_getGameIns()->pCam->height / 2 + 25))
+	//	if (x > (_getGameEngine()->width/ 2 - 25) && x < (_getGameEngine()->width / 2 + 25) && y>(_getGameEngine()->height / 2 - 25) && y < (_getGameEngine()->height / 2 + 25))
+	//	{
+	//		printf("Scene_MouseKeyEvent -- Switch Level\n");
+	//		GameIns_OpenLevel(3);
+	//	}
+	//	break;
+	//default:
+	//	break;
+	//}
 }
 
 void PlayLevelInit() {

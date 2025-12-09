@@ -63,7 +63,7 @@
     <ClCompile Include="..\Src\Thread.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\VMManage.c">
+    <ClCompile Include="..\Src\MemManage.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,7 +119,7 @@
     <ClInclude Include="..\Include\Hash.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\VMManager.h">
+    <ClInclude Include="..\Include\MemManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

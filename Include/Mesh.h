@@ -16,6 +16,7 @@ typedef struct {
 
 typedef struct {
 	//改为三角面
+	uint32_t id;
 	float* vertices; //12*quad  顶点数组			8byte(64位操作系统指针是8字节)
 	float* uvs;		 //12*quad  顶点uv数组		8byte	
 	uint8_t* colors; //24*quad 顶点颜色数组		8byte 

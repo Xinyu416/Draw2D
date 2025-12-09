@@ -19,7 +19,7 @@ void GameIns_Init() {
 	/*创建Camera，场景初始创建*/
 	//GameIns_CreateCamera(700, 700.0f / 775.0f, 0, MakeVect2(0, 0), MakeVect2(1, 1));
 	/*OpenStartLevel*/
-	GameIns_OpenLevel(2);
+	//GameIns_OpenLevel(2);
 }
 
 void GameIns_Release() {

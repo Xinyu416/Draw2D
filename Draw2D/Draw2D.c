@@ -7,7 +7,7 @@
 #include <string.h>
 #include "Thread.h"
 #include "Queue.h"
-#include "VMManager.h"
+#include "MemManager.h"
 
 
 //窗口过程函数(消息回调)
@@ -45,14 +45,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			BITMAPINFO bmi;
 			memset(&bmi, 0, sizeof(BITMAPINFO)); // 初始化结构体
 			bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER); // 设置位图信息头大小
-			bmi.bmiHeader.biWidth = (LONG)GameEngine_GetFrameWidth(); // 位图宽度
-			bmi.bmiHeader.biHeight = -(LONG)GameEngine_GetFrameHeight(); // 负值表示顶向下位图
+			bmi.bmiHeader.biWidth = (LONG)Renderer_GetFrameWidth(); // 位图宽度
+			bmi.bmiHeader.biHeight = -(LONG)Renderer_GetFrameHeight(); // 负值表示顶向下位图
 			bmi.bmiHeader.biPlanes = 1; // 位图平面数，必须为1
-			bmi.bmiHeader.biBitCount = (WORD)GameEngine_GetFrameBytepp() * 8; // 每像素位数
+			bmi.bmiHeader.biBitCount = (WORD)Renderer_GetFrameBytepp() * 8; // 每像素位数
 			bmi.bmiHeader.biCompression = BI_RGB; // 无压缩
 			ReleaseDC(hwnd, hdc);
 
-			uint32_t image_size = GameEngine_GetFrameWidth() * GameEngine_GetFrameHeight() * GameEngine_GetFrameBytepp();
+			uint32_t image_size = Renderer_GetFrameWidth() * Renderer_GetFrameHeight() * Renderer_GetFrameBytepp();
 			uint32_t file_size = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + image_size;
 			// 初始化文件头
 			BITMAPFILEHEADER file_header = {
@@ -67,7 +67,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			// 写入文件头和信息头
 			fwrite(&file_header, 1, sizeof(file_header), f);
 			fwrite(&bmi, 1, sizeof(BITMAPINFO), f);
-			fwrite(GameEngine_GetFrameData(), 1, image_size, f);
+			//fwrite(GameEngine_GetFrameData(), 1, image_size, f);
 			fclose(f);
 			printf("save bmp\n");
 		}
@@ -160,8 +160,8 @@ HWND CreateRenderWindow(uint32_t width, uint32_t height) {
 
 /*buffer显示*/
 void SendBufferToDisplay(HWND hwnd, BITMAPINFO bmi, uint8_t* frameBuffer) {
-	uint32_t width = GameEngine_GetFrameWidth();
-	uint32_t height = GameEngine_GetFrameHeight();
+	uint32_t width = Renderer_GetFrameWidth();
+	uint32_t height = Renderer_GetFrameHeight();
 
 	HDC hdc = GetDC(hwnd);
 	// 将位图数据传输到设备上下文
@@ -178,100 +178,46 @@ void SendBufferToDisplay(HWND hwnd, BITMAPINFO bmi, uint8_t* frameBuffer) {
 	ReleaseDC(hwnd, hdc);
 }
 
-void MatrixTest() {
-	//测试点
-	Vect2 pos = MakeVect2(40, 80);
-
-	//缩放旋转结果矩阵
-	Matrix srm = CreateStandardMatrix();
-	//缩放旋转位移结果矩阵
-	Matrix srtm = CreateStandardMatrix();
-
-	//缩放
-	Matrix ms = MakeScaMatrix(-4, 2);
-	//旋转
-	Matrix mr = MakeRotMatrix(Deg2Rad(50));
-	//位移
-	Matrix mt = MakeTranslataMatrix(100, 200);
-
-	//分开算
-	Vect2 vs = Vect2MultMatrix(pos, ms.m);
-	Vect2 vsr = Vect2MultMatrix(vs, mr.m);
-	Vect2 vsrt = Vect2MultMatrix(vsr, mt.m);
-	PrintVect2(vsrt);
-
-	//一起算
-	Multi2Matrix(mr.m, ms.m, srm.m);
-	Multi2Matrix(mt.m, srm.m, srtm.m);
-	Vect2 ov = Vect2MultMatrix(pos, srtm.m);
-	PrintVect2(ov);
-}
-
-//逆时针原则
-void MeshTest() {
-	//create Quad
-	Quad quad1 = { 0 };
-	quad1.vertices[0] = MakeVect2(0, 0);
-	quad1.vertices[1] = MakeVect2(100, 0);
-	quad1.vertices[2] = MakeVect2(100, 100);
-	quad1.vertices[3] = MakeVect2(0, 100);
-	quad1.uvs[0] = MakeVect2(0, 0);
-	quad1.uvs[1] = MakeVect2(0.2, 0.3);
-	quad1.uvs[2] = MakeVect2(0.8, 0.5);
-	quad1.uvs[3] = MakeVect2(1, 1);
-	quad1.color[0] = MakeColor4(100, 100, 100, 100);
-	quad1.color[1] = MakeColor4(200, 200, 200, 200);
-	quad1.color[2] = MakeColor4(150, 150, 150, 150);
-	quad1.color[3] = MakeColor4(10, 10, 10, 10);
-
-	Quad quad2 = { 0 };
-	quad2.vertices[0] = MakeVect2(10, 10);
-	quad2.vertices[1] = MakeVect2(20, 10);
-	quad2.vertices[2] = MakeVect2(20, 20);
-	quad2.vertices[3] = MakeVect2(10, 20);
-	quad2.color[0] = MakeColor4(100, 100, 100, 100);
-	quad2.color[1] = MakeColor4(200, 200, 200, 200);
-	quad2.color[2] = MakeColor4(150, 150, 150, 150);
-	quad2.color[3] = MakeColor4(10, 10, 10, 10);
-
-	Geometry geo = CreateGeometry(4);
-	GeometryAddQuad(&geo, quad1);
-	GeometryAddQuad(&geo, quad2);
-
-	printf("num:%d\n", geo.numOfQuad);
-
-	//test point in or out
-	Quad quad3 = { 0 };
-	quad3.vertices[0] = MakeVect2(10, 10);
-	quad3.vertices[1] = MakeVect2(30, 10);
-	quad3.vertices[2] = MakeVect2(30, 30);
-	quad3.vertices[3] = MakeVect2(10, 30);
-	quad3.color[0] = MakeColor4(100, 100, 100, 100);
-	quad3.color[1] = MakeColor4(200, 200, 200, 200);
-	quad3.color[2] = MakeColor4(150, 150, 150, 150);
-	quad3.color[3] = MakeColor4(10, 10, 10, 10);
-
-	GeometryAddQuad(&geo, quad3);
-
-	Matrix tm = CreateStandardMatrix();
-	Material mat = { .color = MakeColor4(255,255,255,255),.textureId = 1 };
-	Mesh mesh = CreateMesh(1, MakeVect2(1, 1), 50.f, MakeVect2(1, 1), geo, tm, mat);
-
-	PrintMesh(&mesh);
-}
-
 int main()
 {
-	//MeshTest();
-	//GameIns_Init();
-	//ThreadTest();
-	//Camera_Init();
-	//QueueTest();
 	//Task_Main();
-	uint8_t offset = _getAliagnOffset(9);
-	printf("offset:%d\n", offset);
 
-	return;
+	//printf("MemManager size:%lu\n",sizeof(MemManager));
+	//printf("uint32_t size:%lu\n",sizeof(uint32_t));
+
+	//MemManager memM = Mem_Create(40);
+	//PrintMemManager(&memM);
+	//uint8_t* a = (uint8_t*)Mem_AllocateStatic(&memM, sizeof(uint8_t));
+	////ClearMemStatic(&memM);
+	//uint16_t* ca = (uint16_t*)Mem_AllocateStatic(&memM, sizeof(uint16_t)*3);
+	//uint32_t* aa = (uint32_t*)Mem_AllocateStatic(&memM, sizeof(uint32_t));
+	//ca[0] = 0xAABB;
+	//ca[1] = 0xCCDD;
+	//ca[2] = 0xABCD;
+	//uint8_t* c = (uint8_t*)Mem_AllocateDynamic(&memM, sizeof(uint8_t));
+
+	//Mem_ClearDynamic(&memM);
+	//PrintMemManager(&memM);
+	//Color4* cc = (Color4*)Mem_AllocateDynamic(&memM, sizeof(Color4));
+	//uint8_t* dd = (uint8_t*)Mem_AllocateDynamic(&memM, sizeof(uint8_t));
+	//uint32_t* d = (uint32_t*)Mem_AllocateDynamic(&memM, sizeof(uint32_t));
+	//*a = 0xaa;
+	//*aa = 0xcccc;
+	//*c = 0xcc;
+	//cc->r = 0xdd;
+	//cc->g = 0xdc;
+	//cc->b = 0xdb;
+	//cc->a = 0xda;
+	//*dd = 0xaa;
+	//*d = 0xee;
+	//PrintMemManager(&memM);
+	//PrintMemData(&memM);
+	//Mem_Release(&memM);
+
+	//return;
+
+
+
 	HWND hwnd = CreateRenderWindow(700 + 16, 775 + 39);
 	if (hwnd == NULL)
 	{
@@ -294,7 +240,9 @@ int main()
 
 	/*引擎初始化*/
 	uint8_t fps = 30;
-	GameEngineInit(width, height, fps, bytepp);
+	Renderer_FrameBufferCreate(width, height, bytepp);
+	Renderer_Create();
+	GameEngineInit(/*width, height,*/ fps/*, bytepp*/);
 
 	/*显示窗口*/
 	ShowWindow(hwnd, SW_SHOW);
@@ -315,10 +263,10 @@ void AppLoop(HWND hwnd) {
 	BITMAPINFO bmi;
 	memset(&bmi, 0, sizeof(BITMAPINFO)); // 初始化结构体
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER); // 设置位图信息头大小
-	bmi.bmiHeader.biWidth = (LONG)GameEngine_GetFrameWidth(); // 位图宽度
-	bmi.bmiHeader.biHeight = -(LONG)GameEngine_GetFrameHeight(); // 负值表示顶向下位图
+	bmi.bmiHeader.biWidth = (LONG)Renderer_GetFrameWidth(); // 位图宽度
+	bmi.bmiHeader.biHeight = -(LONG)Renderer_GetFrameHeight(); // 负值表示顶向下位图
 	bmi.bmiHeader.biPlanes = 1; // 位图平面数，必须为1
-	bmi.bmiHeader.biBitCount = (WORD)GameEngine_GetFrameBytepp() * 8; // 每像素位数
+	bmi.bmiHeader.biBitCount = (WORD)Renderer_GetFrameBytepp() * 8; // 每像素位数
 	bmi.bmiHeader.biCompression = BI_RGB; // 无压缩
 	ReleaseDC(hwnd, hdc);
 
@@ -341,7 +289,7 @@ void AppLoop(HWND hwnd) {
 		QueryPerformanceCounter(&lastTime);
 
 		/*帧开始时发送画面数据供显示 帧间处理画面数据*/
-		SendBufferToDisplay(hwnd, bmi, GameEngine_GetFrameData());
+		SendBufferToDisplay(hwnd, bmi, Renderer_GetFrameBuffer());
 
 
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))

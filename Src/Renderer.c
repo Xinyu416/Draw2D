@@ -1,77 +1,153 @@
 #include "Renderer.h"
 
-DWORD CALLBACK MyThreadFunction(LPVOID lpParam);
-CRITICAL_SECTION criticalSection;
+typedef struct {
+	float* vertices;		//2*3  顶点数组			8byte(64位操作系统指针是8字节)
+	float* uvs;				//2*3  顶点uv数组		8byte	
+	float* bboxes;			//1*2  边界盒			8byte
+	float* clipVertices;	//2*3  裁切空间点信息		8byte
+	uint32_t numOfVetices;  //*3   顶点数			4byte
+	uint32_t id;			//	   顶点id			4byte
+}Geometry;
 
-DWORD CALLBACK MyThreadFunction(LPVOID lpParam) {
-	DWORD lpThreadId = 0;
-	lpThreadId = GetCurrentThreadId();
-	Sleep(3000);
-	for (size_t i = 0; i < 5; i++)
+typedef struct {
+	uint8_t* pixels;
+	uint32_t width;
+	uint32_t height;
+	uint32_t id;
+	uint8_t bpp;
+	uint8_t block[3];
+}Texture;
+
+static Renderer* _renderer = NULL;
+
+Renderer* _getRenderer() {
+	if (_renderer == NULL)
 	{
-		// 访问共享资源
-		EnterCriticalSection(&criticalSection);
-		// 修改共享资源...
-		printf("[%d]:sleep\n", lpThreadId);
-		LeaveCriticalSection(&criticalSection);
-		Sleep(2000);
+		_renderer = (Renderer*)calloc(1, sizeof(Renderer));
 	}
-	return 0;
+	return _renderer;
 }
 
-DWORD CALLBACK MyThreadFunction2(LPVOID lpParam) {
-	DWORD lpThreadId = 0;
-	lpThreadId = GetCurrentThreadId();
-	Sleep(3000);
-	for (size_t i = 0; i < 5; i++)
-	{
-		EnterCriticalSection(&criticalSection);
-		printf("[%d]:function2\n", lpThreadId);
-		LeaveCriticalSection(&criticalSection);
-		Sleep(2000);
-	}
-	return 0;
+void Renderer_FrameBufferCreate(uint32_t width, uint32_t height, uint8_t bytepp) {
+	uint8_t* data = (uint8_t*)malloc(width * height * bytepp);
+	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp };
+	_getRenderer()->frameBuffer = FB;
 }
 
-void ThreadTest() {
-	DWORD lpThreadId1 = 0;
-	DWORD lpThreadId2 = 0;
-	InitializeCriticalSection(&criticalSection);
-	HANDLE  hThread1 = CreateThread(NULL, 0, MyThreadFunction, NULL, 0, lpThreadId1);
-	HANDLE  hThread2 = CreateThread(NULL, 0, MyThreadFunction2, NULL, 0, lpThreadId2);
-	if (hThread1 != NULL)
-	{
-		WaitForSingleObject(hThread1, INFINITE);
-		CloseHandle(hThread1);
-	}
-
-	if (hThread2 != NULL)
-	{
-		WaitForSingleObject(hThread2, INFINITE);
-		CloseHandle(hThread2);
-	}
-	DeleteCriticalSection(&criticalSection);
-	return;
+void Renderer_FrameBufferRelease() {
+	if (_getRenderer()->frameBuffer.buffer == NULL)return NULL;
+	free(_getRenderer()->frameBuffer.buffer);
 }
 
-void MakeTask() {
-	const uint32_t MAX_THREADS = 10;
-	DWORD* dwThreadIdArray = (DWORD*)malloc(sizeof(DWORD) * MAX_THREADS);
-	HANDLE* hThreadArray = (HANDLE*)malloc(sizeof(HANDLE) * MAX_THREADS);
+uint8_t* Renderer_GetFrameBuffer() {
+	return _getRenderer()->frameBuffer.buffer;
+}
 
-	for (int i = 0; i < MAX_THREADS; i++)
+uint32_t Renderer_GetFrameWidth() {
+	return _getRenderer()->frameBuffer.width;
+}
+
+uint32_t Renderer_GetFrameHeight() {
+	return _getRenderer()->frameBuffer.height;
+}
+
+uint32_t Renderer_GetFrameBytepp() {
+	return _getRenderer()->frameBuffer.bytepp;
+}
+
+void Renderer_Create() {
+	Renderer* renderer = _getRenderer();
+	//创建texture数组
+	renderer->textures = ArrayCreate(sizeof(Texture));
+	//创建obj数组
+	renderer->objcects = ArrayCreate(sizeof(Geometry));
+
+	//创建内存管理器128MB
+	renderer->memM = Mem_Create(128 * 1024 * 1024);
+	//背景色
+	renderer->frameBuffer.backgroudColor = MakeColor4(255, 255, 0, 255);
+}
+
+void Renderer_Release(Renderer* render, uint8_t type) {
+	if (render == NULL)return;
+	switch (type)
 	{
-		hThreadArray[i] = CreateThread(NULL, 0, MyThreadFunction, NULL, 0, &dwThreadIdArray[i]);
-		if (hThreadArray[i] == NULL)
+	case 0:
+		//全部释放
+		Mem_Release(&render->memM);
+		break;
+	case 1:
+		//释放静态内存
+		Mem_ClearStatic(&render->memM);
+		break;
+	case 2:
+		//释放动态内存
+		Mem_ClearDynamic(&render->memM);
+	default:
+		break;
+	}
+}
+
+void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeight, uint8_t bytepp) {
+	Texture* texture = (Texture*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(Texture));
+
+	uint8_t* data = (uint8_t*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(uint8_t) * inWidth * inHeight * bytepp);
+	PrintMemManager(&_getRenderer()->memM);
+	memcpy(data, inPixels, inWidth * inHeight * bytepp);
+
+	texture->id = _getRenderer()->textures.length + 1;
+	texture->bpp = bytepp;
+	texture->pixels = data;
+	texture->width = inWidth;
+	texture->height = inHeight;
+
+	ArrayPush(&_getRenderer()->textures, texture);
+}
+
+void Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices) {
+	//几何体结构体数据
+	Geometry* obj = (Geometry*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(Geometry));
+	//顶点数据
+	float* vertices = (float*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+	memcpy(vertices, inVertices, sizeof(float) * inNumOfVetices * 2);
+	//uv 数据
+	float* uvs = (float*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+	memcpy(uvs, inUvs, sizeof(float) * inNumOfVetices * 2);
+	//为边界盒数据准备的空间
+	float* bboxes = (float*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices / 3 * 2);
+	//为裁切空间点数据准备的空间
+	float* clipVertices = (float*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+
+
+	obj->vertices = vertices;
+	obj->uvs = uvs;
+	obj->bboxes = bboxes;
+	obj->clipVertices = clipVertices;
+	obj->numOfVetices = inNumOfVetices;
+	obj->id = _getRenderer()->objcects.length + 1;
+
+	ArrayPush(&_getRenderer()->objcects, obj);
+}
+
+void Renderer_Tick(float delta) {
+	Renderer_DrawBg();
+}
+
+void Renderer_Render() {
+
+}
+
+void Renderer_DrawBg() {
+	for (size_t y = 0; y < _getRenderer()->frameBuffer.height; y++)
+	{
+		for (size_t x = 0; x < _getRenderer()->frameBuffer.width; x++)
 		{
-			ExitProcess(3);
+			size_t index = y * _getRenderer()->frameBuffer.width * _getRenderer()->frameBuffer.bytepp + x * _getRenderer()->frameBuffer.bytepp;
+
+			_getRenderer()->frameBuffer.buffer[index + 0] = _getRenderer()->frameBuffer.backgroudColor.b;
+			_getRenderer()->frameBuffer.buffer[index + 1] = _getRenderer()->frameBuffer.backgroudColor.g;
+			_getRenderer()->frameBuffer.buffer[index + 2] = _getRenderer()->frameBuffer.backgroudColor.r;
+			_getRenderer()->frameBuffer.buffer[index + 3] = _getRenderer()->frameBuffer.backgroudColor.a;
 		}
 	}
-
-	WaitForMultipleObjects(MAX_THREADS, hThreadArray, TRUE, INFINITE);
-	for (int i = 0; i < MAX_THREADS; i++)
-	{
-		CloseHandle(hThreadArray[i]);
-	}
-	return 0;
 }

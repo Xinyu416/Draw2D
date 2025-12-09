@@ -1,4 +1,31 @@
-﻿  Draw2D.c
+﻿  GameEngine.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(240,79): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(275,67): warning C4244: “函数”: 从“WORD”转换到“const uint8_t”，可能丢失数据
+  GameInstance.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+  Scene.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Scene.c(147,41): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Scene.c(147,44): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Scene.c(199,8): warning C4101: “offset”: 未引用的局部变量
+  Texture.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Texture.c(4,1): warning C4090: “初始化”: 不同的“const”限定符
+  PlayLevel.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\User\PlayLevel.c(59,8): warning C4101: “offset”: 未引用的局部变量
+  Draw2D.c
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
 D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
 D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
@@ -9,14 +36,11 @@ D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(89,34): warning C4022: “GameEngine_MouseKeyE
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(93,34): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(97,34): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(142,11): warning C4047: “return”:“HWND”与“int”的间接级别不同
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(219,30): warning C4305: “函数”: 从“double”到“const float”截断
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(219,35): warning C4305: “函数”: 从“double”到“const float”截断
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(220,30): warning C4305: “函数”: 从“double”到“const float”截断
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(363,99): warning C4244: “=”: 从“double”转换到“DWORD”，可能丢失数据
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(368,71): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(311,99): warning C4244: “=”: 从“double”转换到“DWORD”，可能丢失数据
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(316,71): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
   正在生成代码
-  2 of 83 functions ( 2.4%) were compiled, the rest were copied from previous compilation.
+  1 of 47 functions ( 2.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    2 functions had inline decision re-evaluated but remain unchanged
+    1 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
   Draw2D.vcxproj -> D:\QXY\cpp\Draw2D\x64\Release\Draw2D.exe

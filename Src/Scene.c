@@ -45,8 +45,10 @@ void Scene_Init() {
 }
 
 void SetMapData() {
-	uint32_t wNum = _getGameEngine()->width / GridSize;
-	uint32_t hNum = _getGameEngine()->height / GridSize;
+	//uint32_t wNum = _getGameEngine()->width / GridSize;
+	//uint32_t hNum = _getGameEngine()->height / GridSize;
+	uint32_t wNum = 28;
+	uint32_t hNum = 31;
 	uint32_t* typeData = malloc(sizeof(uint32_t) * wNum * hNum);
 	//7 豆子 8 特殊道具 1-6 地形
 	uint32_t data[28 * 31] = {
