@@ -242,6 +242,7 @@ int main()
 	uint8_t fps = 30;
 	Renderer_FrameBufferCreate(width, height, bytepp);
 	Renderer_Create();
+
 	GameEngineInit(/*width, height,*/ fps/*, bytepp*/);
 
 	/*显示窗口*/

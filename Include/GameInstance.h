@@ -31,4 +31,3 @@ void GameIns_CreateCamera(float width, float ratio, float rot, Vect2 pos, Vect2 
 
 void GameIns_ReleaseCamera();
 
-void CreateMeshTest();

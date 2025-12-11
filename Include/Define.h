@@ -20,7 +20,7 @@ typedef enum {
 typedef void(*BeginPlayFn)();
 typedef void(*EndPlayFn)();
 typedef void(*TickFn)(float delta);
-typedef void(*MouseKeyEventFn)(VMEVENT eventType,void* key);
+typedef void(*MouseKeyEventFn)(VMEVENT eventType, void* key);
 
 typedef struct _Level {
 	BeginPlayFn BeginPlay;

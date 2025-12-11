@@ -1,6 +1,7 @@
 #pragma once
 #include "PlayLevel.h"
 #include "Define.h"
+#include "Renderer.h"
 
 #define OPENPLAYLEVEL(ins,lvID){\
 PlayLevel* play = (PlayLevel*)malloc(sizeof(PlayLevel));\

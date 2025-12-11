@@ -69,8 +69,13 @@ void PlayLevelInit() {
 	//Vect2 pos = MakeVect2(_getGameIns()->pCam->pos.x - GridSize * 4, _getGameIns()->pCam->pos.y - GridSize * 4);
 	Vect2 pos = MakeVect2(0, 0);
 	Mesh mesh = CreateMesh(4, pos, -90, MakeVect2(1.f, 1.f), geo, tm, mat);
-	ArrayPush(&_getGameIns()->meshs, &mesh);
 
+	//向渲染器提交点数据(返回id供mesh更新点数据)
+	uint32_t objID = Renderer_SubmitObject(mesh.geo.vertices,mesh.geo.uvs,mesh.geo.numOfQuad*6,0);
+	mesh.id = objID;
+
+	ArrayPush(&_getGameIns()->meshs, &mesh);
 	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
 	_getGameIns()->cMesh = pmesh;
+
 }
