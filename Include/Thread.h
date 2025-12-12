@@ -40,6 +40,5 @@ typedef struct {
 	Msg toThreadMessage;
 	Task task;
 	Result result;
-
 }MyThread;
 

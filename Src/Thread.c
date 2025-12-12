@@ -244,7 +244,7 @@ DWORD CALLBACK threadMain_task(MyThread* thread) {
 	Multi2Matrix(mt.m, srm.m, srtm.m);
 	Matrix tm = srtm;
 	Matrix ctm = CreateStandardMatrix();
-	printf("[%d] taskCount/ResultCount/Total -- %lu/%d/%d\n", lpThreadId, *taskCount, *resultCount, TASKCOUNT);
+	//printf("[%d] taskCount/ResultCount/Total -- %lu/%d/%d\n", lpThreadId, *taskCount, *resultCount, TASKCOUNT);
 
 	Quad quad;
 	while (isRunning) {
@@ -253,12 +253,12 @@ DWORD CALLBACK threadMain_task(MyThread* thread) {
 			if (thread->toThreadMessage.type == 11)
 			{
 				hasTask = true;
-				printf("[%d]---------thread->toThreadMessage.type == 11\n", lpThreadId);
+				//printf("[%d]---------thread->toThreadMessage.type == 11\n", lpThreadId);
 			}
 			//收到主线程关闭指令
 			if (thread->toThreadMessage.type == 12)
 			{
-				printf("[%d]---------thread->toThreadMessage.type == 12\n", lpThreadId);
+				//printf("[%d]---------thread->toThreadMessage.type == 12\n", lpThreadId);
 				//hasTask = false;
 				//isRunning = false;
 			}

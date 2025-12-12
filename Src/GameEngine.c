@@ -22,14 +22,14 @@ void GameEngineInit(/*uint32_t width, uint32_t height,*/ uint8_t fps/*, uint8_t 
 	const char* path4 = "C:\\Users\\DRF\\Desktop\\Temp\\role03.bmp";
 	Texture tex1 = GameEngine_LoadTexture(path1, 1);
 	Texture tex2 = GameEngine_LoadTexture(path2, 2);
-	Texture tex3 = GameEngine_LoadTexture(path3, 2);
-	Texture tex4 = GameEngine_LoadTexture(path4, 2);
+	Texture tex3 = GameEngine_LoadTexture(path3, 3);
+	Texture tex4 = GameEngine_LoadTexture(path4, 4);
 
 	//提交贴图数据
-	Renderer_SubmitTexture(tex1.data,tex1.width,tex1.height,tex1.bpp/8);
+	Renderer_SubmitTexture(tex1.data,tex1.width,tex1.height,tex1.bpp);
 	Renderer_SubmitTexture(tex2.data,tex2.width,tex2.height,tex2.bpp);
 	Renderer_SubmitTexture(tex3.data,tex3.width,tex3.height,tex3.bpp);
-	//Renderer_SubmitTexture(tex4.data,tex4.width,tex4.height,tex4.bpp);
+	Renderer_SubmitTexture(tex4.data,tex4.width,tex4.height,tex4.bpp);
 
 	Array arr = ArrayCreate(sizeof(Texture));
 	ArrayPush(&arr, &tex1);
@@ -41,8 +41,6 @@ void GameEngineInit(/*uint32_t width, uint32_t height,*/ uint8_t fps/*, uint8_t 
 
 	//Instance初始化
 	GameIns_Init();
-	//场景初始化
-	//Scene_Init();
 }
 
 void GameEngin_SceneLoop(float delta) {
@@ -269,14 +267,12 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID) {
 	uint32_t stride = ((((info.biWidth * info.biBitCount) + 31) & ~31) >> 3);
 	uint32_t biSizeImage = abs(info.biHeight) * stride;
 
-	uint8_t count = info.biBitCount / 8;
-	//printf("GameEngine_LoadTexture:: count:%d\n", count);
-	uint8_t* bgrcolors = (uint8_t*)malloc(info.biWidth * info.biHeight * count);
+	uint8_t bytepp = info.biBitCount / 8;
+	uint8_t* bgrcolors = (uint8_t*)malloc(info.biWidth * info.biHeight * bytepp);
 	for (size_t y = 0; y < info.biHeight; y++)
 	{
-		fread(bgrcolors + y * info.biWidth * count, 1, stride, rbmp);
+		fread(bgrcolors + y * info.biWidth * bytepp, 1, stride, rbmp);
 	}
-
 	return TextureCreate(info.biWidth, info.biHeight, info.biBitCount, bgrcolors, textureID);
 
 }
@@ -303,8 +299,7 @@ Color4 UVTextureSample(float u, float v, uint32_t tID) {
 	uint8_t g = texture->data[index + 1];
 	uint8_t b = texture->data[index + 0];
 
-	uint8_t a = 255;
-	a = bytepp > 3 ? texture->data[index + 3] : 255;
+	uint8_t a =  bytepp > 3 ? texture->data[index + 3] : 255;
 
 	out = MakeColor4(r, g, b, a);
 	return out;

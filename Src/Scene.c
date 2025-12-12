@@ -189,6 +189,12 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 	Matrix tm = CreateStandardMatrix();
 	Material mat = { .color = MakeColor4(10,255,255,255),.textureId = textureId };
 	Mesh mesh = CreateMesh(textureId, _getGameIns()->pCam->pos, 0, MakeVect2(1.f, 1.f), geo, tm, mat);
+
+	//向渲染器提交点数据(返回id供mesh更新点数据)
+	uint32_t objID = Renderer_SubmitObject(mesh.geo.vertices, mesh.geo.uvs, mesh.geo.numOfQuad * 6, 0);
+	mesh.id = objID;
+	printf("mesh.geo.numOfVertices:%d\n", mesh.geo.numOfQuad * 6);
+
 	ArrayPush(&_getGameIns()->meshs, &mesh);
 }
 

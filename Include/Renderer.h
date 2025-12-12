@@ -8,6 +8,20 @@
 #include "Define.h"
 #include "GameInstance.h"
 
+
+typedef struct {
+	uint8_t type;
+	uint32_t taskIndex;
+}Message;
+
+typedef struct {
+	DWORD id;
+	HANDLE handle;
+	bool isActive;
+	uint8_t fromThreadMessage;
+	Message toThreadMessage;
+}RendererThread;
+
 typedef struct {
 	uint8_t* buffer;
 	uint32_t width;
@@ -15,7 +29,6 @@ typedef struct {
 	uint8_t bytepp;
 	Color4 backgroudColor;
 }FrameBuffer;
-
 
 typedef struct {
 	MemManager memM;
@@ -51,7 +64,7 @@ uint32_t Renderer_GetFrameHeight();
 uint32_t Renderer_GetFrameBytepp();
 
 /*提交贴图数据*/
-void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeight, uint8_t bytepp);
+void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeight, uint8_t bpp);
 
 /*提交点数据*/
 uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t objID);
@@ -61,6 +74,13 @@ void Renderer_Tick(float delta);
 
 void Renderer_Render();
 
+/*每帧渲染背景*/
 void Renderer_DrawBg();
 
+/*贴图采样器*/
 Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID);
+
+/*渲染主线程*/
+void Renderer_TaskMain();
+
+void Renderer_ThreadMain(RendererThread* thread);

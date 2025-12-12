@@ -14,7 +14,7 @@ GameInstance* _getGameIns() {
 void GameIns_Init() {
 	GameInstance* gameIns = _getGameIns();
 
-	GameIns_OpenLevel(2);
+	GameIns_OpenLevel(3);
 }
 
 void GameIns_Release() {

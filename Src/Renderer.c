@@ -68,7 +68,7 @@ void Renderer_Create() {
 	_getRenderer()->objcects = ArrayCreate(sizeof(Geo));
 
 	//背景色
-	_getRenderer()->frameBuffer.backgroudColor = MakeColor4(0, 255, 0, 255);
+	_getRenderer()->frameBuffer.backgroudColor = MakeColor4(0, 0, 0, 255);
 }
 
 void Renderer_Release(Renderer* render, uint8_t type) {
@@ -91,15 +91,15 @@ void Renderer_Release(Renderer* render, uint8_t type) {
 	}
 }
 
-void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeight, uint8_t bytepp) {
-	printf("inWidth:%d,inHeight:%d,bytepp:%d\n", inWidth, inHeight, bytepp);
+void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeight, uint8_t bpp) {
+	printf("inWidth:%d,inHeight:%d,bytepp:%d\n", inWidth, inHeight, bpp);
 	Tex* texture = (Tex*)Mem_AllocateStatic(&(_getRenderer()->memM), sizeof(Tex));
 	if (texture == NULL)
 	{
 		printf("texture is NULL\n");
 		return;
 	}
-	uint8_t* data = (uint8_t*)Mem_AllocateStatic(&(_getRenderer()->memM), sizeof(uint8_t) * inWidth * inHeight * bytepp);
+	uint8_t* data = (uint8_t*)Mem_AllocateStatic(&(_getRenderer()->memM), sizeof(uint8_t) * inWidth * inHeight * bpp / 8);
 	if (data == NULL)
 	{
 		printf("data is NULL\n");
@@ -107,13 +107,13 @@ void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeig
 	}
 	PrintMemManager(&(_getRenderer()->memM));
 
-	memcpy(data, inPixels, inWidth * inHeight * bytepp);
+	memcpy(data, inPixels, inWidth * inHeight * bpp / 8);
 
 	printf("_getRenderer()->textures.length:%d\n", _getRenderer()->textures.length);
 
 	texture->id = _getRenderer()->textures.length + 1;
 	texture->pixels = data;
-	texture->bpp = bytepp;
+	texture->bpp = bpp;
 	texture->width = inWidth;
 	texture->height = inHeight;
 
@@ -224,7 +224,7 @@ void Renderer_Render() {
 						float uv_v = alpha * uv[0].y + beta * uv[1].y + gama * uv[2].y;
 
 						//贴图颜色采样
-						Color4 colPick = Renderer_UVTextureSample(uv_u, uv_v, 3);
+						Color4 colPick = Renderer_UVTextureSample(uv_u, uv_v, 1);
 
 						//颜色混合 color*alpha + bg*(1-alpha)
 						float colorAlpha = ((float)colPick.a / 255.f);
@@ -286,4 +286,103 @@ Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID) {
 
 	out = MakeColor4(r, g, b, a);
 	return out;
+}
+
+void Renderer_TaskMain() {
+
+	const uint8_t maxThreadCount = 4;
+	uint8_t activeThreadCount = 0;
+	RendererThread* rendererThreadArr = (RendererThread*)malloc(sizeof(RendererThread) * maxThreadCount);
+	RendererThread* thread = NULL;
+	for (size_t i = 0; i < maxThreadCount; i++)
+	{
+		thread = rendererThreadArr + i;
+		thread->isActive = false;
+		thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
+		if (thread != NULL)
+		{
+			thread->isActive = true;
+			activeThreadCount++;
+		}
+	}
+
+	bool isRunning = true;
+	while (isRunning)
+	{
+		for (size_t i = 0; i < maxThreadCount; i++)
+		{
+			thread = rendererThreadArr + i;
+			if (thread->isActive != false && thread->fromThreadMessage != 0)
+			{
+				if (thread->fromThreadMessage == 1)
+				{
+					//Ready
+
+					//DoTask
+					thread->toThreadMessage.type = 11;
+				}
+				if (thread->fromThreadMessage == 2)
+				{
+					//Complete
+
+
+				}
+				if (thread->fromThreadMessage == 3)
+				{
+					//Over
+
+					activeThreadCount--;
+				}
+				thread->fromThreadMessage = 0;
+			}
+
+		}
+
+
+		if (activeThreadCount == 0)
+		{
+			isRunning = false;
+		}
+		Sleep(20);
+	}
+}
+
+void Renderer_ThreadMain(RendererThread* thread) {
+
+	DWORD threadId = thread->id;
+	printf("[%d]: threadMain\n", threadId);
+	bool isRunning = true;
+	bool hasTask = false;
+
+	while (isRunning)
+	{
+		if (thread->toThreadMessage.type != 0)
+		{
+			if (thread->toThreadMessage.type == 11)
+			{
+				//can doTask
+				hasTask = true;
+			}
+			if (thread->toThreadMessage.type == 12)
+			{
+				//close 
+			}
+			thread->toThreadMessage.type = 0;
+		}
+
+		while (hasTask)
+		{
+			//doTask
+
+			/*if (true)
+			{
+
+			}
+			else
+			{
+				hasTask = false;
+			}*/
+		}
+	}
+
 }
