@@ -3,19 +3,12 @@
 
 
 GameEngine* _gameEngne = NULL;
-//UV UVTexture;
-void GameEngineInit(/*uint32_t width, uint32_t height,*/ uint8_t fps/*, uint8_t bytepp*/) {
+void GameEngineInit(uint8_t fps) {
 	GameEngine* gameengine = _getGameEngine();
 	gameengine->fps = fps;
 	gameengine->gameIsRuning = true;
-	//gameengine->bytepp = bytepp;
-	//gameengine->width = width;
-	//gameengine->height = height;
-	//gameengine->backgroudColor = MakeColor4(0, 0, 0, 255);
-	//gameengine->bufferShow = (uint8_t*)malloc(width * height * bytepp);
 
 	//创建贴图数据
-
 	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
 	const char* path2 = "C:\\Users\\DRF\\Desktop\\Temp\\bean.bmp";
 	const char* path3 = "C:\\Users\\DRF\\Desktop\\Temp\\item.bmp";
@@ -37,7 +30,6 @@ void GameEngineInit(/*uint32_t width, uint32_t height,*/ uint8_t fps/*, uint8_t 
 	ArrayPush(&arr, &tex3);
 	ArrayPush(&arr, &tex4);
 	gameengine->texture = arr;
-
 
 	//Instance初始化
 	GameIns_Init();

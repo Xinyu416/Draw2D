@@ -6,7 +6,7 @@ void PlayLevel_BeginPlay() {
 	/*创建Mesh*/
 	GameIns_CreateMesh();
 	/*创建Camera*/
-	GameIns_CreateCamera(300, 700.0f / 775.0f,0,MakeVect2(0,0),MakeVect2(1.f,1.f));
+	GameIns_CreateCamera(300, 700.0f / 775.0f, 0, MakeVect2(0, 0), MakeVect2(1.f, 1.f));
 	/*场景初始化*/
 	PlayLevelInit();
 	printf("PlayLevel_BeginPlay(),ID:%d\n", _getGameIns()->pLevel->levelID);
@@ -71,7 +71,7 @@ void PlayLevelInit() {
 	Mesh mesh = CreateMesh(4, pos, -90, MakeVect2(1.f, 1.f), geo, tm, mat);
 
 	//向渲染器提交点数据(返回id供mesh更新点数据)
-	uint32_t objID = Renderer_SubmitObject(mesh.geo.vertices,mesh.geo.uvs,mesh.geo.numOfQuad*6,0);
+	uint32_t objID = Renderer_SubmitObject(mesh.geo.vertices, mesh.geo.uvs, mesh.geo.numOfQuad * 6, 0);
 	mesh.id = objID;
 
 	ArrayPush(&_getGameIns()->meshs, &mesh);

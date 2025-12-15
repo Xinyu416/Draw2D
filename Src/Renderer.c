@@ -123,17 +123,17 @@ void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeig
 uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t objID) {
 
 	//几何体结构体数据
-	Geo* obj = (Geo*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(Geo));
+	Geo* obj = (Geo*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(Geo));
 	//顶点数据
-	float* vertices = (float*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+	float* vertices = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
 	memcpy(vertices, inVertices, sizeof(float) * inNumOfVetices * 2);
 	//uv 数据
-	float* uvs = (float*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+	float* uvs = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
 	memcpy(uvs, inUvs, sizeof(float) * inNumOfVetices * 2);
 	//为边界盒数据准备的空间
-	float* bboxes = (float*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices / 3 * 2);
+	float* bboxes = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices / 3 * 2);
 	//为裁切空间点数据准备的空间
-	float* clipVertices = (float*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+	float* clipVertices = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
 
 	obj->vertices = vertices;
 	obj->uvs = uvs;
