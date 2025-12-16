@@ -18,6 +18,16 @@ typedef struct {
 	uint8_t block[3];	//							3byte
 }Tex;
 
+typedef struct {
+	uint32_t id; //4byte
+	Vect2 pos; //8byte
+	Matrix tm; //36byte
+	float rot; //4byte
+	Vect2 scale; //8byte
+	Material mat;//5byte
+	uint8_t block[3];
+}RMesh;
+
 static Renderer* _renderer = NULL;
 
 Renderer* _getRenderer() {
@@ -69,47 +79,35 @@ void Renderer_Create() {
 
 	//背景色
 	_getRenderer()->frameBuffer.backgroudColor = MakeColor4(0, 0, 0, 255);
+
 }
 
-void Renderer_Release(Renderer* render, uint8_t type) {
-	if (render == NULL)return;
+void Renderer_Release(uint8_t type) {
+	if (_getRenderer() == NULL)return;
 	switch (type)
 	{
 	case 0:
 		//全部释放
-		Mem_Release(&render->memM);
+		Mem_Release(&(_getRenderer()->memM));
 		break;
 	case 1:
 		//释放静态内存
-		Mem_ClearStatic(&render->memM);
+		Mem_ClearStatic(&(_getRenderer()->memM));
 		break;
 	case 2:
 		//释放动态内存
-		Mem_ClearDynamic(&render->memM);
+		Mem_ClearDynamic(&(_getRenderer()->memM));
 	default:
 		break;
 	}
 }
 
 void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeight, uint8_t bpp) {
-	printf("inWidth:%d,inHeight:%d,bytepp:%d\n", inWidth, inHeight, bpp);
 	Tex* texture = (Tex*)Mem_AllocateStatic(&(_getRenderer()->memM), sizeof(Tex));
-	if (texture == NULL)
-	{
-		printf("texture is NULL\n");
-		return;
-	}
+	if (texture == NULL)return;
 	uint8_t* data = (uint8_t*)Mem_AllocateStatic(&(_getRenderer()->memM), sizeof(uint8_t) * inWidth * inHeight * bpp / 8);
-	if (data == NULL)
-	{
-		printf("data is NULL\n");
-		return;
-	}
-	PrintMemManager(&(_getRenderer()->memM));
-
+	if (data == NULL)return;
 	memcpy(data, inPixels, inWidth * inHeight * bpp / 8);
-
-	printf("_getRenderer()->textures.length:%d\n", _getRenderer()->textures.length);
 
 	texture->id = _getRenderer()->textures.length + 1;
 	texture->pixels = data;
@@ -122,19 +120,26 @@ void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeig
 
 uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t objID) {
 
-	//几何体结构体数据
-	Geo* obj = (Geo*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(Geo));
 	//顶点数据
 	float* vertices = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+	if (vertices == NULL)return;
 	memcpy(vertices, inVertices, sizeof(float) * inNumOfVetices * 2);
+
 	//uv 数据
 	float* uvs = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+	if (uvs == NULL)return;
 	memcpy(uvs, inUvs, sizeof(float) * inNumOfVetices * 2);
+
 	//为边界盒数据准备的空间
 	float* bboxes = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices / 3 * 2);
+	if (bboxes == NULL) return;
+
 	//为裁切空间点数据准备的空间
 	float* clipVertices = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
+	if (clipVertices == NULL) return;
 
+	//几何体结构体数据
+	Geo* obj = (Geo*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(Geo));
 	obj->vertices = vertices;
 	obj->uvs = uvs;
 	obj->bboxes = bboxes;
@@ -150,6 +155,25 @@ uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOf
 	ArrayPush(&_getRenderer()->objcects, obj);
 	return objID;
 }
+
+void Renderer_SubmitCamera(Camera cam) {
+	Camera* pCam = (Camera*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(Camera));
+	if (pCam == NULL)return;
+	memcpy(pCam, &cam, sizeof(Camera));
+}
+
+void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material mat) {
+	RMesh* pRmesh = (RMesh*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(RMesh));
+	if (pRmesh == NULL)return;
+	pRmesh->pos = pos;
+	pRmesh->tm = tm;
+	pRmesh->rot = rot;
+	pRmesh->scale = scale;
+	pRmesh->mat = mat;
+	pRmesh->id = _getRenderer()->RenderMeshs.length + 1;
+	ArrayPush(&_getRenderer()->RenderMeshs, pRmesh);
+}
+
 
 void Renderer_Tick(float delta) {
 	Renderer_DrawBg();
@@ -174,7 +198,7 @@ void Renderer_Render() {
 		Multi2Matrix(mr.m, ms.m, srm.m);
 		Multi2Matrix(mt.m, srm.m, srtm.m);
 
-
+		//以三角面为单位（三个点一组）
 		for (size_t v = 0; v < geo->numOfVetices / 3; v++)
 		{
 			Vect2 uv[3] = { 0 };
@@ -202,11 +226,25 @@ void Renderer_Render() {
 			Vect2 B = AddVect2(MakeVect2((p1.x / _getGameIns()->pCam->width) * (float)Renderer_GetFrameWidth(), (p1.y / _getGameIns()->pCam->height) * (float)Renderer_GetFrameHeight()), half);
 			Vect2 C = AddVect2(MakeVect2((p2.x / _getGameIns()->pCam->width) * (float)Renderer_GetFrameWidth(), (p2.y / _getGameIns()->pCam->height) * (float)Renderer_GetFrameHeight()), half);
 
+			//计算boundingBox大小 
+			float x_min = fminf(fminf(A.x, B.x), C.x);
+			float x_max = fmaxf(fmaxf(A.x, B.x), C.x);
+			float y_min = fminf(fminf(A.y, B.y), C.y);
+			float y_max = fmaxf(fmaxf(A.y, B.y), C.y);
+
+			//左下到右上 两个点
+			//Vect2 leftDown = MakeVect2(x_min, y_min);
+			//Vect2 rightTop = MakeVect2(x_max, y_max);
+
+
 			//遍历屏幕空间像素
 			for (size_t y = 0; y < Renderer_GetFrameHeight(); y++)
 			{
 				for (size_t x = 0; x < Renderer_GetFrameWidth(); x++)
 				{
+					//像素在boundingBox内才计算 否则跳过
+					if (!(x >= x_min && x <= x_max && y >= y_min && y <= y_max))continue;
+
 					size_t index = y * Renderer_GetFrameWidth() * Renderer_GetFrameBytepp() + x * Renderer_GetFrameBytepp();
 					//bgr buffer像素坐标 偏移到每个像素中心去除锯齿
 					Vect2 pix = MakeVect2((float)x + 0.5f, (float)y + 0.5f);
@@ -241,6 +279,7 @@ void Renderer_Render() {
 					}
 				}
 			}
+
 		}
 	}
 }
@@ -260,9 +299,21 @@ void Renderer_DrawBg() {
 	}
 }
 
+Tex* Renderer_GetTextureByID(uint32_t tID) {
+	for (size_t i = 0; i < &(_getRenderer()->textures).length; i++)
+	{
+		Tex* texture = (Tex*)GetArrayElementByIndex(&(_getRenderer()->textures), i);
+		if (texture->id = tID)
+		{
+			return texture;
+		}
+	}
+}
+
 Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID) {
 	Color4 out = MakeColor4(0, 0, 0, 0);
-	Tex* texture = (Tex*)GetArrayElementByIndex(&_getRenderer()->textures, tID - 1);
+
+	Tex* texture = Renderer_GetTextureByID(tID);
 	u = fmaxf(0.0f, fminf(1.0f, u));
 	v = fmaxf(0.0f, fminf(1.0f, v));
 	uint32_t tw = texture->width;
@@ -288,9 +339,44 @@ Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID) {
 	return out;
 }
 
-void Renderer_TaskMain() {
+void Renderer_ThreadMain(RendererThread* thread) {
 
-	const uint8_t maxThreadCount = 4;
+	DWORD threadId = thread->id;
+	printf("[%d]: threadMain\n", threadId);
+	bool isRunning = true;
+	bool hasTask = false;
+
+	while (isRunning)
+	{
+		if (thread->toThreadMessage.type != 0)
+		{
+			if (thread->toThreadMessage.type == 11)
+			{
+				//can doTask
+				hasTask = true;
+			}
+			if (thread->toThreadMessage.type == 12)
+			{
+				//close 
+			}
+			thread->toThreadMessage.type = 0;
+		}
+
+		while (hasTask)
+		{
+			//doTask
+			/*EnterCriticalSection(&criticalSection_render);
+
+
+			LeaveCriticalSection(&criticalSection_render);*/
+
+		}
+	}
+
+}
+
+void Renderer_TaskMain() {
+	const uint8_t maxThreadCount = 1;
 	uint8_t activeThreadCount = 0;
 	RendererThread* rendererThreadArr = (RendererThread*)malloc(sizeof(RendererThread) * maxThreadCount);
 	RendererThread* thread = NULL;
@@ -345,44 +431,15 @@ void Renderer_TaskMain() {
 		}
 		Sleep(20);
 	}
-}
 
-void Renderer_ThreadMain(RendererThread* thread) {
-
-	DWORD threadId = thread->id;
-	printf("[%d]: threadMain\n", threadId);
-	bool isRunning = true;
-	bool hasTask = false;
-
-	while (isRunning)
+	for (size_t i = 0; i < maxThreadCount; i++)
 	{
-		if (thread->toThreadMessage.type != 0)
+		thread = rendererThreadArr + i;
+		if (thread != NULL)
 		{
-			if (thread->toThreadMessage.type == 11)
-			{
-				//can doTask
-				hasTask = true;
-			}
-			if (thread->toThreadMessage.type == 12)
-			{
-				//close 
-			}
-			thread->toThreadMessage.type = 0;
-		}
-
-		while (hasTask)
-		{
-			//doTask
-
-			/*if (true)
-			{
-
-			}
-			else
-			{
-				hasTask = false;
-			}*/
+			CloseHandle(thread->handle);
 		}
 	}
 
+	free(rendererThreadArr);
 }

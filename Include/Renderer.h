@@ -35,6 +35,8 @@ typedef struct {
 	FrameBuffer frameBuffer;
 	Array textures;
 	Array objcects;
+	Array RenderMeshs;
+	Camera camera;
 }Renderer;
 
 Renderer* _getRenderer();
@@ -49,7 +51,7 @@ void Renderer_FrameBufferRelease();
 void Renderer_Create();
 
 /*释放渲染器*/
-void Renderer_Release(Renderer* render,uint8_t type);
+void Renderer_Release( uint8_t type);
 
 /*获取buffer*/
 uint8_t* Renderer_GetFrameBuffer();
@@ -68,6 +70,12 @@ void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeig
 
 /*提交点数据*/
 uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t objID);
+
+/*提交相机数据*/
+void Renderer_SubmitCamera(Camera cam);
+
+/*提交Mesh数据*/
+void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material mat);
 
 /*每帧执行*/
 void Renderer_Tick(float delta);

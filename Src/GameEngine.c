@@ -7,6 +7,9 @@ void GameEngineInit(uint8_t fps) {
 	GameEngine* gameengine = _getGameEngine();
 	gameengine->fps = fps;
 	gameengine->gameIsRuning = true;
+	gameengine->criticalSection_render = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
+
+	InitializeCriticalSection(gameengine->criticalSection_render);
 
 	//创建贴图数据
 	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
@@ -19,10 +22,10 @@ void GameEngineInit(uint8_t fps) {
 	Texture tex4 = GameEngine_LoadTexture(path4, 4);
 
 	//提交贴图数据
-	Renderer_SubmitTexture(tex1.data,tex1.width,tex1.height,tex1.bpp);
-	Renderer_SubmitTexture(tex2.data,tex2.width,tex2.height,tex2.bpp);
-	Renderer_SubmitTexture(tex3.data,tex3.width,tex3.height,tex3.bpp);
-	Renderer_SubmitTexture(tex4.data,tex4.width,tex4.height,tex4.bpp);
+	Renderer_SubmitTexture(tex1.data, tex1.width, tex1.height, tex1.bpp);
+	Renderer_SubmitTexture(tex2.data, tex2.width, tex2.height, tex2.bpp);
+	Renderer_SubmitTexture(tex3.data, tex3.width, tex3.height, tex3.bpp);
+	Renderer_SubmitTexture(tex4.data, tex4.width, tex4.height, tex4.bpp);
 
 	Array arr = ArrayCreate(sizeof(Texture));
 	ArrayPush(&arr, &tex1);
@@ -38,9 +41,26 @@ void GameEngineInit(uint8_t fps) {
 void GameEngin_SceneLoop(float delta) {
 
 	GameIns_Tick(delta);
-	Renderer_Tick(delta);
-	//GameEngine_DrawBg();
+
+	//拿锁
+	EnterCriticalSection(_getGameEngine()->criticalSection_render);
+	//提交相机和mesh信息
+	Renderer_SubmitCamera(*(_getGameIns()->pCam));
+	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
+	{
+		Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, i);
+		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat);
+	}
+	//解锁
+	LeaveCriticalSection(_getGameEngine()->criticalSection_render);
+
+
+
+	GameEngine_DrawBg();
 	//GameEngine_Render();
+	
+	//每帧清除动态内存
+	Renderer_Release(2);
 }
 
 void EngineClose() {
@@ -67,22 +87,6 @@ GameEngine* _getGameEngine() {
 	}
 	return _gameEngne;
 }
-//
-//uint8_t* GameEngine_GetFrameData() {
-//	return _getGameEngine()->bufferShow;
-//}
-//
-//uint32_t GameEngine_GetFrameWidth() {
-//	return _getGameEngine()->width;
-//}
-//
-//uint32_t GameEngine_GetFrameHeight() {
-//	return _getGameEngine()->height;
-//}
-//
-//uint32_t GameEngine_GetFrameBytepp() {
-//	return _getGameEngine()->bytepp;
-//}
 
 uint8_t GameEngine_GetFPS() {
 	return _getGameEngine()->fps;
@@ -97,136 +101,41 @@ bool GameEngine_IsRuning() {
 	return _getGameEngine()->gameIsRuning;
 }
 
+void GameEngine_SubmitMeshAndCamera() {
+	//拿锁
+	EnterCriticalSection(_getGameEngine()->criticalSection_render);
+
+	//提交相机和mesh信息
+	Renderer_SubmitCamera(*(_getGameIns()->pCam));
+	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
+	{
+		Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, i);
+		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat);
+	}
+
+	//解锁
+	LeaveCriticalSection(_getGameEngine()->criticalSection_render);
+}
+
 void GameEnginRenderLoop() {
 	printf("GameEnginRenderLoop\n");
 }
-//
-//void GameEngine_Render() {
-//
-//	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
-//	{
-//		Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, i);
-//		//Mesh* pmesh = _getGameIns()->cMesh;
-//		//缩放旋转结果矩阵
-//		Matrix srm = CreateStandardMatrix();
-//		//缩放旋转位移结果矩阵
-//		Matrix srtm = CreateStandardMatrix();
-//		//缩放
-//		Matrix ms = MakeScaMatrix(pmesh->scale.x, pmesh->scale.y);
-//		//旋转
-//		Matrix mr = MakeRotMatrix(Deg2Rad(pmesh->rot));
-//		//位移
-//		Matrix mt = MakeTranslataMatrix(pmesh->pos.x, pmesh->pos.y);
-//		//一起算
-//		Multi2Matrix(mr.m, ms.m, srm.m);
-//		Multi2Matrix(mt.m, srm.m, srtm.m);
-//		pmesh->tm = srtm;
-//
-//		for (size_t v = 0; v < pmesh->geo.numOfQuad * 2; v++)
-//		{
-//			Vect2 uv[3] = { 0 };
-//			Vect2 vp[3] = { 0 };
-//			Color4 col[3] = { 0 };
-//			uint32_t vi = v * 6;
-//
-//			uv[0] = MakeVect2(pmesh->geo.uvs[vi + 0], pmesh->geo.uvs[vi + 1]);
-//			uv[1] = MakeVect2(pmesh->geo.uvs[vi + 2], pmesh->geo.uvs[vi + 3]);
-//			uv[2] = MakeVect2(pmesh->geo.uvs[vi + 4], pmesh->geo.uvs[vi + 5]);
-//
-//			//顶点从模型空间转换成世界空间
-//			vp[0] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 0], pmesh->geo.vertices[vi + 1]), pmesh->tm.m);
-//			vp[1] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 2], pmesh->geo.vertices[vi + 3]), pmesh->tm.m);
-//			vp[2] = Vect2MultMatrix(MakeVect2(pmesh->geo.vertices[vi + 4], pmesh->geo.vertices[vi + 5]), pmesh->tm.m);
-//
-//			col[0] = MakeColor4(pmesh->geo.colors[vi * 2 + 0], pmesh->geo.colors[vi * 2 + 1], pmesh->geo.colors[vi * 2 + 1], pmesh->geo.colors[vi * 2 + 3]);
-//			col[1] = MakeColor4(pmesh->geo.colors[vi * 2 + 4], pmesh->geo.colors[vi * 2 + 5], pmesh->geo.colors[vi * 2 + 6], pmesh->geo.colors[vi * 2 + 7]);
-//			col[2] = MakeColor4(pmesh->geo.colors[vi * 2 + 8], pmesh->geo.colors[vi * 2 + 9], pmesh->geo.colors[vi * 2 + 10], pmesh->geo.colors[vi * 2 + 11]);
-//
-//
-//			Vect2 half = MakeVect2((float)_getGameEngine()->width / 2.f, (float)_getGameEngine()->height / 2.f);
-//
-//			//将mesh的顶点转换到相机空间 *相机的逆矩阵
-//			Vect2 p0 = Vect2MultMatrix(vp[0], _getGameIns()->pCam->tm.m);
-//			Vect2 p1 = Vect2MultMatrix(vp[1], _getGameIns()->pCam->tm.m);
-//			Vect2 p2 = Vect2MultMatrix(vp[2], _getGameIns()->pCam->tm.m);
-//
-//			//顶点转世界计算画幅空间位置 （需要考虑偏移值）
-//			Vect2 A = AddVect2(MakeVect2((p0.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p0.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
-//			Vect2 B = AddVect2(MakeVect2((p1.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p1.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
-//			Vect2 C = AddVect2(MakeVect2((p2.x / _getGameIns()->pCam->width) * (float)_getGameEngine()->width, (p2.y / _getGameIns()->pCam->height) * (float)_getGameEngine()->height), half);
-//
-//			//遍历屏幕空间像素
-//			for (size_t y = 0; y < _getGameEngine()->height; y++)
-//			{
-//				for (size_t x = 0; x < _getGameEngine()->width; x++)
-//				{
-//					size_t index = y * _getGameEngine()->width * _getGameEngine()->bytepp + x * _getGameEngine()->bytepp;
-//					//bgr buffer像素坐标 偏移到每个像素中心去除锯齿
-//					Vect2 pix = MakeVect2((float)x + 0.5f, (float)y + 0.5f);
-//
-//					//重心坐标值
-//					float alpha = (-(pix.x - B.x) * (C.y - B.y) + (pix.y - B.y) * (C.x - B.x)) / (-(A.x - B.x) * (C.y - B.y) + (A.y - B.y) * (C.x - B.x));
-//					float beta = (-(pix.x - C.x) * (A.y - C.y) + (pix.y - C.y) * (A.x - C.x)) / (-(B.x - C.x) * (A.y - C.y) + (B.y - C.y) * (A.x - C.x));
-//					float gama = 1.f - alpha - beta;
-//
-//					//判断点在三角形内还是外
-//					if (alpha >= 0 && beta >= 0 && gama >= 0)
-//					{
-//						//通过顶点的uv值算出每个点的uv值
-//						float uv_u = alpha * uv[0].x + beta * uv[1].x + gama * uv[2].x;
-//						float uv_v = alpha * uv[0].y + beta * uv[1].y + gama * uv[2].y;
-//
-//						//贴图颜色采样
-//						Color4 colPick = UVTextureSample(uv_u, uv_v, pmesh->mat.textureId);
-//
-//						//重心坐标混合的顶点颜色值
-//						uint8_t blend_b = alpha * col[0].b + beta * col[1].b + gama * col[2].b;
-//						uint8_t blend_g = alpha * col[0].g + beta * col[1].g + gama * col[2].g;
-//						uint8_t blend_r = alpha * col[0].r + beta * col[1].r + gama * col[2].r;
-//						uint8_t blend_a = alpha * col[0].a + beta * col[1].a + gama * col[2].a;
-//
-//						colPick.b = (blend_b * colPick.b) / 255;
-//						colPick.g = (blend_g * colPick.g) / 255;
-//						colPick.r = (blend_r * colPick.r) / 255;
-//						colPick.a = (blend_a * colPick.a) / 255;
-//
-//
-//						//颜色混合 color*alpha + bg*(1-alpha)
-//						float colorAlpha = ((float)colPick.a / 255.f);
-//						_getGameEngine()->bufferShow[index + 0] = colPick.b * colorAlpha + _getGameEngine()->bufferShow[index + 0] * (1.f - colorAlpha);
-//						_getGameEngine()->bufferShow[index + 1] = colPick.g * colorAlpha + _getGameEngine()->bufferShow[index + 1] * (1.f - colorAlpha);
-//						_getGameEngine()->bufferShow[index + 2] = colPick.r * colorAlpha + _getGameEngine()->bufferShow[index + 2] * (1.f - colorAlpha);
-//
-//					}
-//					else
-//					{
-//						_getGameEngine()->bufferShow[index + 0] = _getGameEngine()->bufferShow[index + 0] + _getGameEngine()->backgroudColor.b;
-//						_getGameEngine()->bufferShow[index + 1] = _getGameEngine()->bufferShow[index + 1] + _getGameEngine()->backgroudColor.g;
-//						_getGameEngine()->bufferShow[index + 2] = _getGameEngine()->bufferShow[index + 2] + _getGameEngine()->backgroudColor.r;
-//					}
-//				}
-//			}
-//		}
-//	}
-//}
-//
-//void GameEngine_DrawBg() {
-//
-//	for (size_t y = 0; y < _getGameEngine()->height; y++)
-//	{
-//		for (size_t x = 0; x < _getGameEngine()->width; x++)
-//		{
-//			size_t index = y * _getGameEngine()->width * _getGameEngine()->bytepp + x * _getGameEngine()->bytepp;
-//
-//			_getGameEngine()->bufferShow[index + 0] = _getGameEngine()->backgroudColor.b;
-//			_getGameEngine()->bufferShow[index + 1] = _getGameEngine()->backgroudColor.g;
-//			_getGameEngine()->bufferShow[index + 2] = _getGameEngine()->backgroudColor.r;
-//			_getGameEngine()->bufferShow[index + 3] = _getGameEngine()->backgroudColor.a;
-//		}
-//	}
-//}
+
+void GameEngine_Render() {
+
+}
+
+void GameEngine_DrawBg() {
+
+	Renderer_DrawBg();
+}
+
+
 
 void GameEngine_Release() {
+
+	DeleteCriticalSection(_getGameEngine()->criticalSection_render);
+
 	if (_gameEngne)
 	{
 		uint32_t length = GetArrayElementCount(&_getGameEngine()->texture);
@@ -254,7 +163,7 @@ Texture GameEngine_LoadTexture(const char* path, uint32_t textureID) {
 	struct tagBITMAPINFOHEADER info;
 	fread(&head, 1, sizeof(struct tagBITMAPFILEHEADER), rbmp);
 	fread(&info, 1, sizeof(struct tagBITMAPINFOHEADER), rbmp);
-	
+
 	//一行像素补齐到DWORD对齐的值
 	uint32_t stride = ((((info.biWidth * info.biBitCount) + 31) & ~31) >> 3);
 	uint32_t biSizeImage = abs(info.biHeight) * stride;
@@ -291,68 +200,70 @@ Color4 UVTextureSample(float u, float v, uint32_t tID) {
 	uint8_t g = texture->data[index + 1];
 	uint8_t b = texture->data[index + 0];
 
-	uint8_t a =  bytepp > 3 ? texture->data[index + 3] : 255;
+	uint8_t a = bytepp > 3 ? texture->data[index + 3] : 255;
 
 	out = MakeColor4(r, g, b, a);
 	return out;
 
 }
 
+void 
+
 void GameEngine_MouseKeyEvent(VMEVENT eventType, void* key) {
-	GameIns_MouseKeyEvent(eventType,key);
-	/*float moveStep = 12.5f;
-	float preMove = 0.f;
-	int mapIndex = 0;
-	switch (direction)
-	{
-	case 'W':
+	GameIns_MouseKeyEvent(eventType, key);
+	//float moveStep = 12.5f;
+	//float preMove = 0.f;
+	//int mapIndex = 0;
+	//switch ((char)key)
+	//{
+	//case 'W':
 
-		printf("向上移动\n");
-		preMove = _getGameIns()->cMesh->pos.y - moveStep;
-		PrintVect2(_getGameIns()->cMesh->pos);
-		mapIndex = getMapDataByPos(MakeVect2(_getGameIns()->cMesh->pos.x, preMove));
-		if (mapIndex > -1)
-		{
-			_getGameIns()->cMesh->pos.y = preMove;
-			_getGameIns()->cMesh->rot = -90.f;
-			ChangeBeanColor(mapIndex);
-		}
-		break;
-	case 'A':
-		printf("向左移动\n");
-		preMove = _getGameIns()->cMesh->pos.x - moveStep;
-		mapIndex = getMapDataByPos(MakeVect2(preMove, _getGameIns()->cMesh->pos.y));
-		if (mapIndex > -1)
-		{
-			_getGameIns()->cMesh->pos.x = preMove;
-			_getGameIns()->cMesh->rot = 180.f;
-			ChangeBeanColor(mapIndex);
-		}
+	//	printf("向上移动\n");
+	//	preMove = _getGameIns()->cMesh->pos.y - moveStep;
+	//	PrintVect2(_getGameIns()->cMesh->pos);
+	//	mapIndex = getMapDataByPos(MakeVect2(_getGameIns()->cMesh->pos.x, preMove));
+	//	if (mapIndex > -1)
+	//	{
+	//		_getGameIns()->cMesh->pos.y = preMove;
+	//		_getGameIns()->cMesh->rot = -90.f;
+	//		//ChangeBeanColor(mapIndex);
+	//	}
+	//	break;
+	//case 'A':
+	//	printf("向左移动\n");
+	//	preMove = _getGameIns()->cMesh->pos.x - moveStep;
+	//	mapIndex = getMapDataByPos(MakeVect2(preMove, _getGameIns()->cMesh->pos.y));
+	//	if (mapIndex > -1)
+	//	{
+	//		_getGameIns()->cMesh->pos.x = preMove;
+	//		_getGameIns()->cMesh->rot = 180.f;
+	//		//ChangeBeanColor(mapIndex);
+	//	}
 
-		break;
-	case 'S':
-		printf("向下移动\n");
-		preMove = _getGameIns()->cMesh->pos.y + moveStep;
-		mapIndex = getMapDataByPos(MakeVect2(_getGameIns()->cMesh->pos.x, preMove));
-		if (mapIndex > -1)
-		{
-			_getGameIns()->cMesh->pos.y = preMove;
-			_getGameIns()->cMesh->rot = 90.f;
-			ChangeBeanColor(mapIndex);
-		}
-		break;
-	case 'D':
-		printf("向右移动\n");
-		preMove = _getGameIns()->cMesh->pos.x + moveStep;
-		mapIndex = getMapDataByPos(MakeVect2(preMove, _getGameIns()->cMesh->pos.y));
-		if (mapIndex > -1)
-		{
-			_getGameIns()->cMesh->pos.x = preMove;
-			_getGameIns()->cMesh->rot = 0.f;
-			ChangeBeanColor(mapIndex);
-		}
-		break;
-	default:
-		break;
-	}*/
+	//	break;
+	//case 'S':
+	//	printf("向下移动\n");
+	//	preMove = _getGameIns()->cMesh->pos.y + moveStep;
+	//	mapIndex = getMapDataByPos(MakeVect2(_getGameIns()->cMesh->pos.x, preMove));
+	//	if (mapIndex > -1)
+	//	{
+	//		_getGameIns()->cMesh->pos.y = preMove;
+	//		_getGameIns()->cMesh->rot = 90.f;
+	//		//ChangeBeanColor(mapIndex);
+	//	}
+	//	break;
+	//case 'D':
+	//	printf("向右移动\n");
+	//	preMove = _getGameIns()->cMesh->pos.x + moveStep;
+	//	mapIndex = getMapDataByPos(MakeVect2(preMove, _getGameIns()->cMesh->pos.y));
+	//	if (mapIndex > -1)
+	//	{
+	//		_getGameIns()->cMesh->pos.x = preMove;
+	//		_getGameIns()->cMesh->rot = 0.f;
+	//		//ChangeBeanColor(mapIndex);
+	//	}
+	//	break;
+	//default:
+	//	break;
+	//}
 }

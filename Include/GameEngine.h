@@ -16,6 +16,7 @@ typedef struct {
 	uint8_t fps;
 	bool gameIsRuning;
 	Array texture;
+	CRITICAL_SECTION* criticalSection_render;
 }GameEngine;
 
 /*³¡¾°Ñ­»·*/
@@ -46,6 +47,8 @@ GameEngine* _getGameEngine();
 uint8_t GameEngine_GetFPS();
 
 bool GameEngine_IsRuning();
+
+void GameEngine_SubmitMeshAndCamera();
 
 void GameEngine_Render();
 
