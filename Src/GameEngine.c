@@ -8,6 +8,14 @@ void GameEngineInit(uint8_t fps) {
 	gameengine->fps = fps;
 	gameengine->gameIsRuning = true;
 	gameengine->criticalSection_render = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
+	gameengine->msgAssist = CreateMessageAssistant();
+
+	//创建线程
+	//RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
+	//thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
+	//
+	//Message send = { .type = MESSAGE_TYPE1,.data[0] = 1 };
+	//Message back = SendMessageToThread(gameengine->msgAssist, send, true);
 
 	InitializeCriticalSection(gameengine->criticalSection_render);
 
@@ -36,6 +44,9 @@ void GameEngineInit(uint8_t fps) {
 
 	//Instance初始化
 	GameIns_Init();
+
+	//创建渲染子线程
+	//Renderer_TaskMain();
 }
 
 void GameEngin_SceneLoop(float delta) {
@@ -44,21 +55,20 @@ void GameEngin_SceneLoop(float delta) {
 
 	//拿锁
 	EnterCriticalSection(_getGameEngine()->criticalSection_render);
-	//提交相机和mesh信息
+	//每帧提交相机和mesh信息
 	Renderer_SubmitCamera(*(_getGameIns()->pCam));
 	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
 	{
 		Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, i);
-		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat);
+		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat,m->id);
 	}
 	//解锁
 	LeaveCriticalSection(_getGameEngine()->criticalSection_render);
 
-
-
 	GameEngine_DrawBg();
-	//GameEngine_Render();
 	
+	//Renderer_Tick(delta);
+
 	//每帧清除动态内存
 	Renderer_Release(2);
 }
@@ -101,22 +111,6 @@ bool GameEngine_IsRuning() {
 	return _getGameEngine()->gameIsRuning;
 }
 
-void GameEngine_SubmitMeshAndCamera() {
-	//拿锁
-	EnterCriticalSection(_getGameEngine()->criticalSection_render);
-
-	//提交相机和mesh信息
-	Renderer_SubmitCamera(*(_getGameIns()->pCam));
-	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
-	{
-		Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, i);
-		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat);
-	}
-
-	//解锁
-	LeaveCriticalSection(_getGameEngine()->criticalSection_render);
-}
-
 void GameEnginRenderLoop() {
 	printf("GameEnginRenderLoop\n");
 }
@@ -130,10 +124,9 @@ void GameEngine_DrawBg() {
 	Renderer_DrawBg();
 }
 
-
-
 void GameEngine_Release() {
 
+	//删除锁
 	DeleteCriticalSection(_getGameEngine()->criticalSection_render);
 
 	if (_gameEngne)
@@ -206,8 +199,6 @@ Color4 UVTextureSample(float u, float v, uint32_t tID) {
 	return out;
 
 }
-
-void 
 
 void GameEngine_MouseKeyEvent(VMEVENT eventType, void* key) {
 	GameIns_MouseKeyEvent(eventType, key);

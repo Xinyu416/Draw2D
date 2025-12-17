@@ -9,14 +9,28 @@
 #include "Define.h"
 #include "Mesh.h"
 #include "Texture.h"
-#include "Renderer.h"
+//#include "Renderer.h"
+
+typedef struct {
+	uint8_t type;
+	uint8_t data[7];
+}Message;
+
+typedef struct  {
+	CRITICAL_SECTION* pToLock;
+	CRITICAL_SECTION* pFromLock;
+	Message toThreadMessage;
+	Message fromThreadMessage;
+}MessageAssistant;
 
 typedef struct {
 	/*显示缓冲区*/
 	uint8_t fps;
 	bool gameIsRuning;
 	Array texture;
-	CRITICAL_SECTION* criticalSection_render;
+	CRITICAL_SECTION* criticalSection_render; //锁
+	MessageAssistant* msgAssist; //消息助手
+
 }GameEngine;
 
 /*场景循环*/
@@ -47,8 +61,6 @@ GameEngine* _getGameEngine();
 uint8_t GameEngine_GetFPS();
 
 bool GameEngine_IsRuning();
-
-void GameEngine_SubmitMeshAndCamera();
 
 void GameEngine_Render();
 

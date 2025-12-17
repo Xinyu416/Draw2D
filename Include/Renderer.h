@@ -4,15 +4,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <MemManager.h>
-//#include <containers.h>
 #include "Define.h"
 #include "GameInstance.h"
+#include "Queue.h"
+#include "GameEngine.h";
 
-
-typedef struct {
-	uint8_t type;
-	uint32_t taskIndex;
-}Message;
+#define MESSAGE_NONE 0
+#define MESSAGE_TYPE1 1
+#define MESSAGE_TYPE2 2
+#define MESSAGE_TYPE3 3
 
 typedef struct {
 	DWORD id;
@@ -20,6 +20,7 @@ typedef struct {
 	bool isActive;
 	uint8_t fromThreadMessage;
 	Message toThreadMessage;
+	uint32_t* resultCount;
 }RendererThread;
 
 typedef struct {
@@ -37,6 +38,7 @@ typedef struct {
 	Array objcects;
 	Array RenderMeshs;
 	Camera camera;
+
 }Renderer;
 
 Renderer* _getRenderer();
@@ -69,13 +71,13 @@ uint32_t Renderer_GetFrameBytepp();
 void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeight, uint8_t bpp);
 
 /*提交点数据*/
-uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t objID);
+uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t inObjID);
 
 /*提交相机数据*/
 void Renderer_SubmitCamera(Camera cam);
 
 /*提交Mesh数据*/
-void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material mat);
+void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material mat,uint32_t meshID);
 
 /*每帧执行*/
 void Renderer_Tick(float delta);
@@ -92,3 +94,24 @@ Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID);
 void Renderer_TaskMain();
 
 void Renderer_ThreadMain(RendererThread* thread);
+
+
+
+
+
+
+
+
+//消息机制
+MessageAssistant* CreateMessageAssistant();
+
+void ReleaseMessageAssistant(MessageAssistant* assistant);
+
+Message SendMessageToThread(MessageAssistant* assistant,Message msg, const bool isblock);
+
+Message SendMessageToMain(MessageAssistant* assistant, Message msg, const bool isblock);
+
+Message GetMessageFromThread(MessageAssistant* assistant, const bool isblock);
+
+Message GetMessageToThread(MessageAssistant* assistant, const bool isblock);
+

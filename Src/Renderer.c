@@ -118,25 +118,26 @@ void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeig
 	ArrayPush(&_getRenderer()->textures, texture);
 }
 
-uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t objID) {
+uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t inObjID) {
 
+	uint32_t objID = inObjID;
 	//顶点数据
 	float* vertices = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
-	if (vertices == NULL)return;
+	if (vertices == NULL)return NULL;
 	memcpy(vertices, inVertices, sizeof(float) * inNumOfVetices * 2);
 
 	//uv 数据
 	float* uvs = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
-	if (uvs == NULL)return;
+	if (uvs == NULL)return NULL;
 	memcpy(uvs, inUvs, sizeof(float) * inNumOfVetices * 2);
 
 	//为边界盒数据准备的空间
 	float* bboxes = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices / 3 * 2);
-	if (bboxes == NULL) return;
+	if (bboxes == NULL) return NULL;
 
 	//为裁切空间点数据准备的空间
 	float* clipVertices = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
-	if (clipVertices == NULL) return;
+	if (clipVertices == NULL) return NULL;
 
 	//几何体结构体数据
 	Geo* obj = (Geo*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(Geo));
@@ -145,12 +146,10 @@ uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOf
 	obj->bboxes = bboxes;
 	obj->clipVertices = clipVertices;
 	obj->numOfVetices = inNumOfVetices;
-	if (objID == 0)
+	if (inObjID == 0)
 	{
-		obj->id = _getRenderer()->objcects.length + 1;
-		//创建buffer
+		objID = _getRenderer()->objcects.length + 1;
 	}
-	//修改buffer
 	obj->id = objID;
 	ArrayPush(&_getRenderer()->objcects, obj);
 	return objID;
@@ -162,7 +161,7 @@ void Renderer_SubmitCamera(Camera cam) {
 	memcpy(pCam, &cam, sizeof(Camera));
 }
 
-void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material mat) {
+void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material mat, uint32_t meshID) {
 	RMesh* pRmesh = (RMesh*)Mem_AllocateDynamic(&_getRenderer()->memM, sizeof(RMesh));
 	if (pRmesh == NULL)return;
 	pRmesh->pos = pos;
@@ -170,17 +169,17 @@ void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material 
 	pRmesh->rot = rot;
 	pRmesh->scale = scale;
 	pRmesh->mat = mat;
-	pRmesh->id = _getRenderer()->RenderMeshs.length + 1;
+	pRmesh->id = meshID;
 	ArrayPush(&_getRenderer()->RenderMeshs, pRmesh);
 }
 
-
 void Renderer_Tick(float delta) {
-	Renderer_DrawBg();
-	Renderer_Render();
+	//Renderer_DrawBg();
+	//Renderer_Render();
 }
 
 void Renderer_Render() {
+
 	//for (size_t i = 0; i < GetArrayElementCount(&_getRenderer()->objcects); i++)
 	{
 		Geo* geo = (Geo*)GetArrayElementByIndex(&_getRenderer()->objcects, 0);
@@ -279,7 +278,6 @@ void Renderer_Render() {
 					}
 				}
 			}
-
 		}
 	}
 }
@@ -308,6 +306,7 @@ Tex* Renderer_GetTextureByID(uint32_t tID) {
 			return texture;
 		}
 	}
+	return NULL;
 }
 
 Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID) {
@@ -339,16 +338,19 @@ Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID) {
 	return out;
 }
 
+
 void Renderer_ThreadMain(RendererThread* thread) {
 
 	DWORD threadId = thread->id;
 	printf("[%d]: threadMain\n", threadId);
 	bool isRunning = true;
 	bool hasTask = false;
-
 	while (isRunning)
 	{
-		if (thread->toThreadMessage.type != 0)
+		//清空framebuffer
+		Renderer_DrawBg();
+
+		if (_getGameEngine()->msgAssist->toThreadMessage.type != MESSAGE_NONE)
 		{
 			if (thread->toThreadMessage.type == 11)
 			{
@@ -376,70 +378,190 @@ void Renderer_ThreadMain(RendererThread* thread) {
 }
 
 void Renderer_TaskMain() {
-	const uint8_t maxThreadCount = 1;
-	uint8_t activeThreadCount = 0;
-	RendererThread* rendererThreadArr = (RendererThread*)malloc(sizeof(RendererThread) * maxThreadCount);
-	RendererThread* thread = NULL;
-	for (size_t i = 0; i < maxThreadCount; i++)
-	{
-		thread = rendererThreadArr + i;
-		thread->isActive = false;
-		thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
-		if (thread != NULL)
-		{
-			thread->isActive = true;
-			activeThreadCount++;
-		}
-	}
+
+	RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
+	thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
+
+	thread->resultCount = 0;
+	uint32_t* resultCount = (uint32_t*)malloc(sizeof(uint32_t));
+	uint32_t taskCount = 0;
+	//Queue RMeshs = CreateQueue(_getRenderer()->RenderMeshs.length, sizeof(RMesh));
+	//for (size_t i = 0; i < _getRenderer()->RenderMeshs.length; i++)
+	//{
+	//	EnQueue(&RMeshs, GetArrayElementByIndex(&_getRenderer()->RenderMeshs, i));
+	//}
+	//RMesh* rmesh = (RMesh*)DeQueue(&RMeshs);
+	//for (size_t i = 0; i < _getRenderer()->objcects.length; i++)
+	//{
+	//	Geo* geo = (Geo*)GetArrayElementByIndex(&_getRenderer()->objcects, i);
+	//	if (geo->id == rmesh->id)
+	//	{
+	//		//取顶点数据
+	//		taskCount = geo->numOfVetices;
+	//	}
+	//}
 
 	bool isRunning = true;
 	while (isRunning)
 	{
-		for (size_t i = 0; i < maxThreadCount; i++)
+		if (thread->fromThreadMessage != 0)
 		{
-			thread = rendererThreadArr + i;
-			if (thread->isActive != false && thread->fromThreadMessage != 0)
+			if (thread->fromThreadMessage == 1)
 			{
-				if (thread->fromThreadMessage == 1)
-				{
-					//Ready
+				//Ready
 
-					//DoTask
-					thread->toThreadMessage.type = 11;
-				}
-				if (thread->fromThreadMessage == 2)
-				{
-					//Complete
-
-
-				}
-				if (thread->fromThreadMessage == 3)
-				{
-					//Over
-
-					activeThreadCount--;
-				}
-				thread->fromThreadMessage = 0;
+				//DoTask
+				thread->toThreadMessage.type = 11;
 			}
+			if (thread->fromThreadMessage == 2)
+			{
+				//Complete
+			}
+			if (thread->fromThreadMessage == 3)
+			{
+				//Over
 
+			}
+			thread->fromThreadMessage = 0;
 		}
 
+		//if (*resultCount == taskCount)
+		//{
+		//	RMesh* rmesh = (RMesh*)DeQueue(&RMeshs);
+		//	for (size_t i = 0; i < _getRenderer()->objcects.length; i++)
+		//	{
+		//		Geo* geo = (Geo*)GetArrayElementByIndex(&_getRenderer()->objcects, i);
+		//		if (geo->id == rmesh->id)
+		//		{
+		//			//取顶点数据
+		//			taskCount = geo->numOfVetices;
+		//			*resultCount = 0;
+		//			thread->toThreadMessage.type = 11;
+		//		}
+		//	}
+		//}
 
-		if (activeThreadCount == 0)
-		{
-			isRunning = false;
-		}
+		//条件触发
+		//isRunning = false;
 		Sleep(20);
 	}
 
-	for (size_t i = 0; i < maxThreadCount; i++)
-	{
-		thread = rendererThreadArr + i;
-		if (thread != NULL)
-		{
-			CloseHandle(thread->handle);
-		}
-	}
+	CloseHandle(thread->handle);
 
-	free(rendererThreadArr);
+}
+
+
+
+
+
+
+
+
+
+
+
+/*创建消息助手*/
+MessageAssistant* CreateMessageAssistant() {
+	MessageAssistant* assistant = (MessageAssistant*)malloc(sizeof(MessageAssistant));
+	assistant->pFromLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
+	assistant->pToLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
+	assistant->fromThreadMessage.type = MESSAGE_NONE;
+
+	return assistant;
+}
+
+/*释放消息助手*/
+void ReleaseMessageAssistant(MessageAssistant* assistant) {
+	if (assistant == NULL)return;
+	if (assistant->pFromLock != NULL)free(assistant->pFromLock);
+	if (assistant->pToLock != NULL)free(assistant->pToLock);
+	free(assistant);
+}
+
+/*给子线程发消息*/
+Message SendMessageToThread(MessageAssistant* assistant, Message msg, const bool isblock) {
+
+	EnterCriticalSection(assistant->pToLock);
+	assistant->toThreadMessage = msg;
+	LeaveCriticalSection(assistant->pToLock);
+
+	Message ret = { .type = MESSAGE_NONE,.data = {0} };
+
+	while (isblock)
+	{
+		EnterCriticalSection(assistant->pFromLock);
+		if (assistant->fromThreadMessage.type == msg.type)
+		{
+			ret = msg;
+			assistant->fromThreadMessage.type = MESSAGE_NONE;
+			EnterCriticalSection(assistant->pFromLock);
+			return ret;
+		}
+		EnterCriticalSection(assistant->pFromLock);
+		Sleep(1);
+	}
+	return ret;
+}
+
+/*给主线程发消息*/
+Message SendMessageToMain(MessageAssistant* assistant, Message msg, const bool isblock) {
+	EnterCriticalSection(assistant->pFromLock);
+	assistant->fromThreadMessage = msg;
+	LeaveCriticalSection(assistant->pFromLock);
+
+	Message ret = { .type = MESSAGE_NONE,.data = {0} };
+
+	while (isblock)
+	{
+		EnterCriticalSection(assistant->pToLock);
+		if (assistant->toThreadMessage.type == msg.type)
+		{
+			ret = msg;
+			assistant->toThreadMessage.type = MESSAGE_NONE;
+			LeaveCriticalSection(assistant->pToLock);
+			return ret;
+		}
+		LeaveCriticalSection(assistant->pToLock);
+		Sleep(1);
+	}
+	return ret;
+}
+
+/*从子线程获取消息*/
+Message GetMessageFromThread(MessageAssistant* assistant, const bool isblock) {
+	Message ret = { .type = MESSAGE_NONE,.data = {0} };
+
+	while (true) {
+		EnterCriticalSection(assistant->pFromLock);
+		if (assistant->fromThreadMessage.type != MESSAGE_NONE)
+		{
+			ret = assistant->fromThreadMessage;
+			assistant->fromThreadMessage.type = MESSAGE_NONE;
+			LeaveCriticalSection(assistant->pFromLock);
+			return ret;
+		}
+		LeaveCriticalSection(assistant->pFromLock);
+		if (!isblock)break;
+		Sleep(1);
+	}
+	return ret;
+}
+
+/*从主线程获取消息*/
+Message GetMessageToThread(MessageAssistant* assistant, const bool isblock) {
+	Message ret = { .type = MESSAGE_NONE,.data = {0} };
+	while (true) {
+		EnterCriticalSection(assistant->pToLock);
+		if (assistant->toThreadMessage.type != MESSAGE_NONE)
+		{
+			ret = assistant->toThreadMessage;
+			assistant->toThreadMessage.type = MESSAGE_NONE;
+			LeaveCriticalSection(assistant->pToLock);
+			return ret;
+		}
+		LeaveCriticalSection(assistant->pToLock);
+		if (!isblock)break;
+		Sleep(1);
+	}
+	return ret;
 }

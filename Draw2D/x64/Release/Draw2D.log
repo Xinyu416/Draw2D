@@ -2,58 +2,19 @@
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
 D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
 D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Renderer.h(90,4): error C2143: 语法错误: 缺少“{”(在“*”的前面)
-D:\QXY\cpp\Draw2D\Src\GameEngine.c(101,60): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\GameEngine.c(247,79): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\GameEngine.c(280,67): warning C4244: “函数”: 从“WORD”转换到“const uint8_t”，可能丢失数据
-  GameInstance.c
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
-D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Renderer.h(90,4): error C2143: 语法错误: 缺少“{”(在“*”的前面)
-  Renderer.c
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
-D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Renderer.h(90,4): error C2143: 语法错误: 缺少“{”(在“*”的前面)
-D:\QXY\cpp\Draw2D\Src\Renderer.c(48,60): warning C4098: “Renderer_FrameBufferRelease”:“void”函数返回值
-D:\QXY\cpp\Draw2D\Src\Renderer.c(139,23): warning C4033: “Renderer_SubmitObject”必须返回值
-D:\QXY\cpp\Draw2D\Src\Renderer.c(144,18): warning C4033: “Renderer_SubmitObject”必须返回值
-D:\QXY\cpp\Draw2D\Src\Renderer.c(149,22): warning C4033: “Renderer_SubmitObject”必须返回值
-D:\QXY\cpp\Draw2D\Src\Renderer.c(153,28): warning C4033: “Renderer_SubmitObject”必须返回值
-D:\QXY\cpp\Draw2D\Src\Renderer.c(283,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Renderer.c(284,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Renderer.c(285,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Renderer.c(220,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Renderer.c(316,6): error C2371: “Renderer_GetTextureByID”: 重定义；不同的基类型
-D:\QXY\cpp\Draw2D\Include\Renderer.h(90): message : 参见“Renderer_GetTextureByID”的声明
-D:\QXY\cpp\Draw2D\Src\Renderer.c(317,59): warning C4047: “<”:“size_t”与“uint32_t *”的间接级别不同
-D:\QXY\cpp\Draw2D\Src\Renderer.c(319,77): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Renderer.c(330,1): warning C4133: “初始化”: 从“int *”到“Tex *”的类型不兼容
-D:\QXY\cpp\Draw2D\Src\Renderer.c(401,61): warning C4133: “函数”: 从“void (__cdecl *)(RendererThread *)”到“LPTHREAD_START_ROUTINE”的类型不兼容
-  Scene.c
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
-D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Renderer.h(90,4): error C2143: 语法错误: 缺少“{”(在“*”的前面)
-D:\QXY\cpp\Draw2D\Src\Scene.c(147,41): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Scene.c(147,44): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-  PlayLevel.c
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
-D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Renderer.h(90,4): error C2143: 语法错误: 缺少“{”(在“*”的前面)
-  Draw2D.c
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
-D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Renderer.h(90,4): error C2143: 语法错误: 缺少“{”(在“*”的前面)
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(38,37): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(78,35): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(85,34): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(89,34): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(93,34): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(97,34): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(142,11): warning C4047: “return”:“HWND”与“int”的间接级别不同
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(312,99): warning C4244: “=”: 从“double”转换到“DWORD”，可能丢失数据
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(317,71): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(11,48): warning C4013: “CreateMessageAssistant”未定义；假设外部返回 int
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(11,50): warning C4047: “=”:“MessageAssistant *”与“int”的间接级别不同
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(33,24): warning C4013: “Renderer_SubmitTexture”未定义；假设外部返回 int
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(59,23): warning C4013: “Renderer_SubmitCamera”未定义；假设外部返回 int
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(62,60): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(63,22): warning C4013: “Renderer_SubmitMesh”未定义；假设外部返回 int
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(73,18): warning C4013: “Renderer_Release”未定义；假设外部返回 int
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(124,17): warning C4013: “Renderer_DrawBg”未定义；假设外部返回 int
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(137,79): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\GameEngine.c(170,67): warning C4244: “函数”: 从“WORD”转换到“const uint8_t”，可能丢失数据
+  正在生成代码
+  33 of 98 functions (33.7%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    6 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  Draw2D.vcxproj -> D:\QXY\cpp\Draw2D\x64\Release\Draw2D.exe
