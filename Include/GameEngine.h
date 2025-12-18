@@ -11,12 +11,19 @@
 #include "Texture.h"
 //#include "Renderer.h"
 
-typedef struct {
+
+#define MESSAGE_NONE 0
+#define MESSAGE_TYPE1 1
+#define MESSAGE_TYPE2 2
+#define MESSAGE_TYPE3 3
+
+
+typedef struct message{
 	uint8_t type;
 	uint8_t data[7];
 }Message;
 
-typedef struct  {
+typedef struct messageAssistant {
 	CRITICAL_SECTION* pToLock;
 	CRITICAL_SECTION* pFromLock;
 	Message toThreadMessage;

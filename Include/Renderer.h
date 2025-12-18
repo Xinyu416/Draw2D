@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef __REDERER__
+#define __REDERER__
+
 #include <windows.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -9,10 +13,6 @@
 #include "Queue.h"
 #include "GameEngine.h";
 
-#define MESSAGE_NONE 0
-#define MESSAGE_TYPE1 1
-#define MESSAGE_TYPE2 2
-#define MESSAGE_TYPE3 3
 
 typedef struct {
 	DWORD id;
@@ -115,3 +115,4 @@ Message GetMessageFromThread(MessageAssistant* assistant, const bool isblock);
 
 Message GetMessageToThread(MessageAssistant* assistant, const bool isblock);
 
+#endif

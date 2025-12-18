@@ -79,7 +79,6 @@ void Renderer_Create() {
 
 	//背景色
 	_getRenderer()->frameBuffer.backgroudColor = MakeColor4(0, 0, 0, 255);
-
 }
 
 void Renderer_Release(uint8_t type) {
@@ -338,13 +337,13 @@ Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID) {
 	return out;
 }
 
-
 void Renderer_ThreadMain(RendererThread* thread) {
 
 	DWORD threadId = thread->id;
 	printf("[%d]: threadMain\n", threadId);
 	bool isRunning = true;
 	bool hasTask = false;
+
 	while (isRunning)
 	{
 		//清空framebuffer
@@ -352,27 +351,40 @@ void Renderer_ThreadMain(RendererThread* thread) {
 
 		if (_getGameEngine()->msgAssist->toThreadMessage.type != MESSAGE_NONE)
 		{
-			if (thread->toThreadMessage.type == 11)
+			switch (_getGameEngine()->msgAssist->toThreadMessage.type)
 			{
-				//can doTask
+			case MESSAGE_TYPE1:
 				hasTask = true;
+				_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_TYPE1;
+
+				//创建渲染子线程
+
+				break;
+			case MESSAGE_TYPE2:
+				_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_TYPE2;
+
+				break;
+			case MESSAGE_TYPE3:
+				hasTask = false;
+				_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_TYPE3;
+
+				//结束渲染子线程
+				break;
+			default:
+				break;
 			}
-			if (thread->toThreadMessage.type == 12)
-			{
-				//close 
-			}
-			thread->toThreadMessage.type = 0;
+			_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_NONE;
 		}
 
 		while (hasTask)
 		{
 			//doTask
-			/*EnterCriticalSection(&criticalSection_render);
-
-
-			LeaveCriticalSection(&criticalSection_render);*/
-
+			
 		}
+
+		EnterCriticalSection(_getGameEngine()->criticalSection_render);
+		//等待
+		LeaveCriticalSection(_getGameEngine()->criticalSection_render);
 	}
 
 }
@@ -404,25 +416,24 @@ void Renderer_TaskMain() {
 	bool isRunning = true;
 	while (isRunning)
 	{
-		if (thread->fromThreadMessage != 0)
+		uint8_t fromThreadMsg = _getGameEngine()->msgAssist->fromThreadMessage.type;
+		if (fromThreadMsg != MESSAGE_NONE)
 		{
-			if (thread->fromThreadMessage == 1)
+			if (fromThreadMsg == MESSAGE_TYPE1)
 			{
-				//Ready
-
-				//DoTask
-				thread->toThreadMessage.type = 11;
+				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_TYPE1;
 			}
-			if (thread->fromThreadMessage == 2)
+			if (fromThreadMsg == MESSAGE_TYPE2)
 			{
-				//Complete
+				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_TYPE2;
+			
 			}
-			if (thread->fromThreadMessage == 3)
+			if (fromThreadMsg == MESSAGE_TYPE3)
 			{
-				//Over
-
+				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_TYPE3;
+			
 			}
-			thread->fromThreadMessage = 0;
+			_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_NONE;
 		}
 
 		//if (*resultCount == taskCount)
@@ -443,7 +454,7 @@ void Renderer_TaskMain() {
 
 		//条件触发
 		//isRunning = false;
-		Sleep(20);
+		Sleep(10);
 	}
 
 	CloseHandle(thread->handle);
@@ -466,6 +477,7 @@ MessageAssistant* CreateMessageAssistant() {
 	assistant->pFromLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 	assistant->pToLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 	assistant->fromThreadMessage.type = MESSAGE_NONE;
+	assistant->toThreadMessage.type = MESSAGE_NONE;
 
 	return assistant;
 }

@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "GameEngine.h"
 
+#include "Renderer.h"
 
 GameEngine* _gameEngne = NULL;
 void GameEngineInit(uint8_t fps) {
@@ -11,13 +12,15 @@ void GameEngineInit(uint8_t fps) {
 	gameengine->msgAssist = CreateMessageAssistant();
 
 	//创建线程
-	//RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
-	//thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
-	//
-	//Message send = { .type = MESSAGE_TYPE1,.data[0] = 1 };
-	//Message back = SendMessageToThread(gameengine->msgAssist, send, true);
+	/*RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
+	thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
+	
+	Message send = { .type = MESSAGE_TYPE1,.data[0] = 1 };
+	Message back = SendMessageToThread(gameengine->msgAssist, send, true);
 
 	InitializeCriticalSection(gameengine->criticalSection_render);
+	InitializeCriticalSection(gameengine->msgAssist->pFromLock);
+	InitializeCriticalSection(gameengine->msgAssist->pToLock);*/
 
 	//创建贴图数据
 	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
