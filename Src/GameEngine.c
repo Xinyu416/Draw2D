@@ -1,26 +1,36 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "GameEngine.h"
-
 #include "Renderer.h"
 
 GameEngine* _gameEngne = NULL;
-void GameEngineInit(uint8_t fps) {
+void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp) {
 	GameEngine* gameengine = _getGameEngine();
 	gameengine->fps = fps;
+	gameengine->width = width;
+	gameengine->height = height;
+	gameengine->bytepp = bytepp;
 	gameengine->gameIsRuning = true;
 	gameengine->criticalSection_render = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 	gameengine->msgAssist = CreateMessageAssistant();
 
 	//创建线程
-	/*RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
+	RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
 	thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
 	
-	Message send = { .type = MESSAGE_TYPE1,.data[0] = 1 };
-	Message back = SendMessageToThread(gameengine->msgAssist, send, true);
+	//发送消息到渲染线程
+	Message sendToChild = { .type = MESSAGE_START,.data[0] = 1 };
+	sendToChild.data[1] = width;
+	sendToChild.data[2] = height;
+	sendToChild.data[3] = bytepp;
+
+	printf("GameEngine -- send\n");
+	Message back = SendMessageToThread(gameengine->msgAssist, sendToChild, true);
+
+	printf("GameEngine -- back\n");
+
 
 	InitializeCriticalSection(gameengine->criticalSection_render);
-	InitializeCriticalSection(gameengine->msgAssist->pFromLock);
-	InitializeCriticalSection(gameengine->msgAssist->pToLock);*/
+	
 
 	//创建贴图数据
 	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
@@ -47,17 +57,15 @@ void GameEngineInit(uint8_t fps) {
 
 	//Instance初始化
 	GameIns_Init();
-
-	//创建渲染子线程
-	//Renderer_TaskMain();
+	
 }
 
 void GameEngin_SceneLoop(float delta) {
 
+	printf("GameEngine Tick Start\n");
+	
 	GameIns_Tick(delta);
 
-	//拿锁
-	EnterCriticalSection(_getGameEngine()->criticalSection_render);
 	//每帧提交相机和mesh信息
 	Renderer_SubmitCamera(*(_getGameIns()->pCam));
 	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
@@ -65,15 +73,10 @@ void GameEngin_SceneLoop(float delta) {
 		Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, i);
 		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat,m->id);
 	}
-	//解锁
-	LeaveCriticalSection(_getGameEngine()->criticalSection_render);
-
-	GameEngine_DrawBg();
 	
-	//Renderer_Tick(delta);
-
-	//每帧清除动态内存
-	Renderer_Release(2);
+	//GameEngine_DrawBg();
+	printf("GameEngine Tick End\n");
+	
 }
 
 void EngineClose() {
@@ -105,6 +108,18 @@ uint8_t GameEngine_GetFPS() {
 	return _getGameEngine()->fps;
 }
 
+uint32_t GameEngine_GetFrameWidth() {
+	return _getGameEngine()->width;
+}
+
+uint32_t GameEngine_GetFrameHeight() {
+	return _getGameEngine()->height;
+}
+
+uint32_t GameEngine_GetFrameBytepp() {
+	return _getGameEngine()->bytepp;
+}
+
 Array GameEngine_GetTextureArr() {
 	return _getGameEngine()->texture;
 }
@@ -124,7 +139,7 @@ void GameEngine_Render() {
 
 void GameEngine_DrawBg() {
 
-	Renderer_DrawBg();
+	//Renderer_DrawBg();
 }
 
 void GameEngine_Release() {
@@ -132,8 +147,14 @@ void GameEngine_Release() {
 	//删除锁
 	DeleteCriticalSection(_getGameEngine()->criticalSection_render);
 
+	Message sendToChild = { .type = MESSAGE_CLOSE,.data[0] = 1 };
+	printf("GameEngine Release\n");
+	Message back = SendMessageToThread(_getGameEngine()->msgAssist, sendToChild, true);
+
 	if (_gameEngne)
 	{
+		//释放消息助手
+		ReleaseMessageAssistant(_gameEngne->msgAssist);
 		uint32_t length = GetArrayElementCount(&_getGameEngine()->texture);
 		for (size_t i = 0; i < length; i++)
 		{

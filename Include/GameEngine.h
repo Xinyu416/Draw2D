@@ -13,14 +13,14 @@
 
 
 #define MESSAGE_NONE 0
-#define MESSAGE_TYPE1 1
+#define MESSAGE_START 1
 #define MESSAGE_TYPE2 2
-#define MESSAGE_TYPE3 3
+#define MESSAGE_CLOSE 3
 
 
 typedef struct message{
 	uint8_t type;
-	uint8_t data[7];
+	uint32_t data[7];
 }Message;
 
 typedef struct messageAssistant {
@@ -33,6 +33,10 @@ typedef struct messageAssistant {
 typedef struct {
 	/*显示缓冲区*/
 	uint8_t fps;
+	uint32_t width;
+	uint32_t height;
+	uint8_t bytepp;
+	Color4 backgroudColor;
 	bool gameIsRuning;
 	Array texture;
 	CRITICAL_SECTION* criticalSection_render; //锁
@@ -59,13 +63,19 @@ void onWindowsMax();
 void onWindowsMin();
 
 /*引擎初始化*/
-void GameEngineInit(uint8_t fps);
+void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp);
 
 /*获取单例对象*/
 GameEngine* _getGameEngine();
 
 /*获取帧率*/
 uint8_t GameEngine_GetFPS();
+
+uint32_t GameEngine_GetFrameWidth();
+
+uint32_t GameEngine_GetFrameHeight();
+
+uint32_t GameEngine_GetFrameBytepp();
 
 bool GameEngine_IsRuning();
 

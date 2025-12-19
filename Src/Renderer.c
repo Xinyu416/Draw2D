@@ -38,11 +38,11 @@ Renderer* _getRenderer() {
 	return _renderer;
 }
 
-void Renderer_FrameBufferCreate(uint32_t width, uint32_t height, uint8_t bytepp) {
-	uint8_t* data = (uint8_t*)malloc(width * height * bytepp);
-	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp };
-	_getRenderer()->frameBuffer = FB;
-}
+//void Renderer_FrameBufferCreate(uint32_t width, uint32_t height, uint8_t bytepp) {
+//	uint8_t* data = (uint8_t*)malloc(width * height * bytepp);
+//	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp };
+//	_getRenderer()->frameBuffer = FB;
+//}
 
 void Renderer_FrameBufferRelease() {
 	if (_getRenderer()->frameBuffer.buffer == NULL)return NULL;
@@ -65,15 +65,18 @@ uint32_t Renderer_GetFrameBytepp() {
 	return _getRenderer()->frameBuffer.bytepp;
 }
 
-void Renderer_Create() {
+void Renderer_Initialize(uint32_t width, uint32_t height, uint8_t bytepp) {
+
+	uint8_t* data = (uint8_t*)malloc(width * height * bytepp);
+	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp };
+	_getRenderer()->frameBuffer = FB;
+
 	//创建内存管理器128MB
 	_getRenderer()->memM = Mem_Create(128 * 1024 * 1024);
 
 	//创建texture数组
 	_getRenderer()->textures = ArrayCreate(sizeof(Tex));
 
-	printf("Renderer_Create\n");
-	PrintArray(&_getRenderer()->textures);
 	//创建obj数组
 	_getRenderer()->objcects = ArrayCreate(sizeof(Geo));
 
@@ -81,7 +84,7 @@ void Renderer_Create() {
 	_getRenderer()->frameBuffer.backgroudColor = MakeColor4(0, 0, 0, 255);
 }
 
-void Renderer_Release(uint8_t type) {
+void Renderer_ReleaseMEM(uint8_t type) {
 	if (_getRenderer() == NULL)return;
 	switch (type)
 	{
@@ -99,6 +102,16 @@ void Renderer_Release(uint8_t type) {
 	default:
 		break;
 	}
+}
+
+void Renderer_Release() {
+	if (_getRenderer() == NULL)return;
+	Renderer_ReleaseMEM(0);
+	free(_getRenderer()->frameBuffer.buffer);
+	ArrayRelease(&(_getRenderer()->objcects));
+	ArrayRelease(&(_getRenderer()->textures));
+	ArrayRelease(&(_getRenderer()->RenderMeshs));
+	free(_getRenderer());
 }
 
 void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeight, uint8_t bpp) {
@@ -170,11 +183,6 @@ void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material 
 	pRmesh->mat = mat;
 	pRmesh->id = meshID;
 	ArrayPush(&_getRenderer()->RenderMeshs, pRmesh);
-}
-
-void Renderer_Tick(float delta) {
-	//Renderer_DrawBg();
-	//Renderer_Render();
 }
 
 void Renderer_Render() {
@@ -340,52 +348,51 @@ Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID) {
 void Renderer_ThreadMain(RendererThread* thread) {
 
 	DWORD threadId = thread->id;
-	printf("[%d]: threadMain\n", threadId);
-	bool isRunning = true;
-	bool hasTask = false;
+	//printf("[%d]: threadMain\n", threadId);
+	Message fromMain = GetMessageToThread(_getGameEngine()->msgAssist, true);
 
-	while (isRunning)
+	uint32_t width = fromMain.data[1];
+	uint32_t height = fromMain.data[2];
+	uint32_t bytepp = fromMain.data[3];
+
+	printf("fromMain type: %d,width:%d,height:%d,bytepp:%d\n", fromMain.type, width, height, bytepp);
+	Renderer_Initialize(width, height, bytepp);
+
+
+	Message sendToMain = { .type = MESSAGE_START,.data[0] = 1 };
+	SendMessageToMain(_getGameEngine()->msgAssist, sendToMain, false);
+
+	while (true)
 	{
-		//清空framebuffer
+		EnterCriticalSection(_getGameEngine()->criticalSection_render);
+
+		LeaveCriticalSection(_getGameEngine()->criticalSection_render);
+		Message m = GetMessageToThread(_getGameEngine()->msgAssist, false);
+		if (m.type == MESSAGE_CLOSE)
+		{
+			break;
+		}
+		printf("Renderer Tick Start\n");
 		Renderer_DrawBg();
 
-		if (_getGameEngine()->msgAssist->toThreadMessage.type != MESSAGE_NONE)
-		{
-			switch (_getGameEngine()->msgAssist->toThreadMessage.type)
-			{
-			case MESSAGE_TYPE1:
-				hasTask = true;
-				_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_TYPE1;
+		//渲染Mesh
 
-				//创建渲染子线程
-
-				break;
-			case MESSAGE_TYPE2:
-				_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_TYPE2;
-
-				break;
-			case MESSAGE_TYPE3:
-				hasTask = false;
-				_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_TYPE3;
-
-				//结束渲染子线程
-				break;
-			default:
-				break;
-			}
-			_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_NONE;
-		}
-
-		while (hasTask)
-		{
-			//doTask
-			
-		}
-
+		Renderer_ReleaseMEM(2);
 		EnterCriticalSection(_getGameEngine()->criticalSection_render);
-		//等待
+
 		LeaveCriticalSection(_getGameEngine()->criticalSection_render);
+
+		printf("Renderer Tick End\n");
+		//每帧清除动态内存
+		Sleep(10);
 	}
+
+	//释放
+	Renderer_Release();
+	//发送关闭消息到主线程
+	Message sendToMainClose = { .type = MESSAGE_CLOSE,.data[0] = 1 };
+	printf("Renderer::will Close\n");
+	SendMessageToMain(_getGameEngine()->msgAssist, sendToMainClose, false);
 
 }
 
@@ -394,7 +401,6 @@ void Renderer_TaskMain() {
 	RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
 	thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
 
-	thread->resultCount = 0;
 	uint32_t* resultCount = (uint32_t*)malloc(sizeof(uint32_t));
 	uint32_t taskCount = 0;
 	//Queue RMeshs = CreateQueue(_getRenderer()->RenderMeshs.length, sizeof(RMesh));
@@ -419,19 +425,19 @@ void Renderer_TaskMain() {
 		uint8_t fromThreadMsg = _getGameEngine()->msgAssist->fromThreadMessage.type;
 		if (fromThreadMsg != MESSAGE_NONE)
 		{
-			if (fromThreadMsg == MESSAGE_TYPE1)
+			if (fromThreadMsg == MESSAGE_START)
 			{
-				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_TYPE1;
+				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_START;
 			}
 			if (fromThreadMsg == MESSAGE_TYPE2)
 			{
 				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_TYPE2;
-			
+
 			}
-			if (fromThreadMsg == MESSAGE_TYPE3)
+			if (fromThreadMsg == MESSAGE_CLOSE)
 			{
-				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_TYPE3;
-			
+				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_CLOSE;
+
 			}
 			_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_NONE;
 		}
@@ -478,6 +484,9 @@ MessageAssistant* CreateMessageAssistant() {
 	assistant->pToLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 	assistant->fromThreadMessage.type = MESSAGE_NONE;
 	assistant->toThreadMessage.type = MESSAGE_NONE;
+	/*初始化锁*/
+	InitializeCriticalSection(assistant->pToLock);
+	InitializeCriticalSection(assistant->pFromLock);
 
 	return assistant;
 }
@@ -485,8 +494,14 @@ MessageAssistant* CreateMessageAssistant() {
 /*释放消息助手*/
 void ReleaseMessageAssistant(MessageAssistant* assistant) {
 	if (assistant == NULL)return;
-	if (assistant->pFromLock != NULL)free(assistant->pFromLock);
-	if (assistant->pToLock != NULL)free(assistant->pToLock);
+	if (assistant->pFromLock != NULL) {
+		DeleteCriticalSection(assistant->pFromLock);
+		free(assistant->pFromLock);
+	}
+	if (assistant->pToLock != NULL) {
+		DeleteCriticalSection(assistant->pToLock);
+		free(assistant->pToLock);
+	}
 	free(assistant);
 }
 
@@ -501,15 +516,14 @@ Message SendMessageToThread(MessageAssistant* assistant, Message msg, const bool
 
 	while (isblock)
 	{
-		EnterCriticalSection(assistant->pFromLock);
 		if (assistant->fromThreadMessage.type == msg.type)
 		{
+			EnterCriticalSection(assistant->pFromLock);
 			ret = msg;
 			assistant->fromThreadMessage.type = MESSAGE_NONE;
-			EnterCriticalSection(assistant->pFromLock);
+			LeaveCriticalSection(assistant->pFromLock);
 			return ret;
 		}
-		EnterCriticalSection(assistant->pFromLock);
 		Sleep(1);
 	}
 	return ret;
@@ -525,15 +539,14 @@ Message SendMessageToMain(MessageAssistant* assistant, Message msg, const bool i
 
 	while (isblock)
 	{
-		EnterCriticalSection(assistant->pToLock);
 		if (assistant->toThreadMessage.type == msg.type)
 		{
+			EnterCriticalSection(assistant->pToLock);
 			ret = msg;
 			assistant->toThreadMessage.type = MESSAGE_NONE;
 			LeaveCriticalSection(assistant->pToLock);
 			return ret;
 		}
-		LeaveCriticalSection(assistant->pToLock);
 		Sleep(1);
 	}
 	return ret;
@@ -544,15 +557,14 @@ Message GetMessageFromThread(MessageAssistant* assistant, const bool isblock) {
 	Message ret = { .type = MESSAGE_NONE,.data = {0} };
 
 	while (true) {
-		EnterCriticalSection(assistant->pFromLock);
 		if (assistant->fromThreadMessage.type != MESSAGE_NONE)
 		{
+			EnterCriticalSection(assistant->pFromLock);
 			ret = assistant->fromThreadMessage;
 			assistant->fromThreadMessage.type = MESSAGE_NONE;
 			LeaveCriticalSection(assistant->pFromLock);
 			return ret;
 		}
-		LeaveCriticalSection(assistant->pFromLock);
 		if (!isblock)break;
 		Sleep(1);
 	}
@@ -563,15 +575,14 @@ Message GetMessageFromThread(MessageAssistant* assistant, const bool isblock) {
 Message GetMessageToThread(MessageAssistant* assistant, const bool isblock) {
 	Message ret = { .type = MESSAGE_NONE,.data = {0} };
 	while (true) {
-		EnterCriticalSection(assistant->pToLock);
 		if (assistant->toThreadMessage.type != MESSAGE_NONE)
 		{
+			EnterCriticalSection(assistant->pToLock);
 			ret = assistant->toThreadMessage;
 			assistant->toThreadMessage.type = MESSAGE_NONE;
 			LeaveCriticalSection(assistant->pToLock);
 			return ret;
 		}
-		LeaveCriticalSection(assistant->pToLock);
 		if (!isblock)break;
 		Sleep(1);
 	}

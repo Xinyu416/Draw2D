@@ -240,10 +240,7 @@ int main()
 
 	/*引擎初始化*/
 	uint8_t fps = 30;
-	Renderer_FrameBufferCreate(width, height, bytepp);
-	Renderer_Create();
-
-	GameEngineInit(/*width, height,*/ fps/*, bytepp*/);
+	GameEngineInit(width, height, fps, bytepp);
 
 	/*显示窗口*/
 	ShowWindow(hwnd, SW_SHOW);
@@ -305,6 +302,9 @@ void AppLoop(HWND hwnd) {
 			// 游戏主循环，可以在这里处理输入状态
 			// 例如检查键盘/鼠标的当前状态
 		}
+		printf("Window Tick Start\n");
+		//拿锁
+		EnterCriticalSection(_getGameEngine()->criticalSection_render);
 		/*场景循环*/
 		GameEngin_SceneLoop(delta);
 
@@ -316,6 +316,8 @@ void AppLoop(HWND hwnd) {
 		QueryPerformanceCounter(&frameEndTime);
 		delta = (float)(frameEndTime.QuadPart - lastTime.QuadPart) * invFreq;
 		//printf("deltatime:%f\n", delta);
+		LeaveCriticalSection(_getGameEngine()->criticalSection_render);
+		printf("Window Tick End\n");
 	}
 }
 

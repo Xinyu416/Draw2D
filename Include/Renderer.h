@@ -17,11 +17,20 @@
 typedef struct {
 	DWORD id;
 	HANDLE handle;
+	/*bool isActive;
+	uint8_t fromThreadMessage;
+	Message toThreadMessage;
+	uint32_t* resultCount;*/
+}RendererThread;
+
+typedef struct {
+	DWORD id;
+	HANDLE handle;
 	bool isActive;
 	uint8_t fromThreadMessage;
 	Message toThreadMessage;
 	uint32_t* resultCount;
-}RendererThread;
+}RendererChildThread;
 
 typedef struct {
 	uint8_t* buffer;
@@ -44,16 +53,18 @@ typedef struct {
 Renderer* _getRenderer();
 
 /*创建缓冲区*/
-void Renderer_FrameBufferCreate(uint32_t width, uint32_t height, uint8_t bytepp);
+//void Renderer_FrameBufferCreate(uint32_t width, uint32_t height, uint8_t bytepp);
 
 /*释放缓冲区*/
 void Renderer_FrameBufferRelease();
 
 /*创建渲染器*/
-void Renderer_Create();
+void Renderer_Initialize(uint32_t width, uint32_t height, uint8_t bytepp);
 
-/*释放渲染器*/
-void Renderer_Release( uint8_t type);
+/*释放渲染器内存*/
+void Renderer_ReleaseMEM( uint8_t type);
+
+void Renderer_Release();
 
 /*获取buffer*/
 uint8_t* Renderer_GetFrameBuffer();
@@ -78,9 +89,6 @@ void Renderer_SubmitCamera(Camera cam);
 
 /*提交Mesh数据*/
 void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material mat,uint32_t meshID);
-
-/*每帧执行*/
-void Renderer_Tick(float delta);
 
 void Renderer_Render();
 
