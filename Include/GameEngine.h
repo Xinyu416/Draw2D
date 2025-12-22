@@ -16,6 +16,7 @@
 #define MESSAGE_START 1
 #define MESSAGE_TYPE2 2
 #define MESSAGE_CLOSE 3
+#define MESSAGE_RENDEROVER 4
 
 
 typedef struct message{
@@ -39,16 +40,15 @@ typedef struct {
 	Color4 backgroudColor;
 	bool gameIsRuning;
 	Array texture;
-	CRITICAL_SECTION* criticalSection_render; //锁
 	MessageAssistant* msgAssist; //消息助手
-
+	bool isRenderingFinish;
 }GameEngine;
 
 /*场景循环*/
-void GameEngin_SceneLoop(float delta);
+void GameEngine_SceneLoop(float delta);
 
 /*渲染循环*/
-void GameEnginRenderLoop();
+void GameEngineRenderLoop();
 
 /*引擎关闭*/
 void EngineClose();

@@ -95,6 +95,8 @@ void Renderer_Render();
 /*Ã¿Ö¡äÖÈ¾±³¾°*/
 void Renderer_DrawBg();
 
+void Renderer_Clear();
+
 /*ÌùÍ¼²ÉÑùÆ÷*/
 Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID);
 
@@ -115,12 +117,12 @@ MessageAssistant* CreateMessageAssistant();
 
 void ReleaseMessageAssistant(MessageAssistant* assistant);
 
-Message SendMessageToThread(MessageAssistant* assistant,Message msg, const bool isblock);
+Message MsgAssistant_SendMsgToThread(MessageAssistant* assistant,Message msg, const bool isblock);
 
-Message SendMessageToMain(MessageAssistant* assistant, Message msg, const bool isblock);
+Message MsgAssistant_SendMsgToMain(MessageAssistant* assistant, Message msg, const bool isblock);
 
-Message GetMessageFromThread(MessageAssistant* assistant, const bool isblock);
+Message MsgAssistant_GetMsgFromThread(MessageAssistant* assistant, const bool isblock);
 
-Message GetMessageToThread(MessageAssistant* assistant, const bool isblock);
+Message MsgAssistant_GetMsgToThread(MessageAssistant* assistant, const bool isblock);
 
 #endif

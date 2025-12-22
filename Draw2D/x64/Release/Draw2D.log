@@ -10,8 +10,8 @@ D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(89,34): warning C4022: “GameEngine_MouseKeyE
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(93,34): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(97,34): warning C4022: “GameEngine_MouseKeyEvent”: 指针与实参 2 不匹配
 D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(142,11): warning C4047: “return”:“HWND”与“int”的间接级别不同
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(312,99): warning C4244: “=”: 从“double”转换到“DWORD”，可能丢失数据
-D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(317,71): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(310,99): warning C4244: “=”: 从“double”转换到“DWORD”，可能丢失数据
+D:\QXY\cpp\Draw2D\Draw2D\Draw2D.c(315,71): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
   正在生成代码
   2 of 101 functions ( 2.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation

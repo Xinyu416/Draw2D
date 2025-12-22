@@ -68,7 +68,7 @@ uint32_t Renderer_GetFrameBytepp() {
 void Renderer_Initialize(uint32_t width, uint32_t height, uint8_t bytepp) {
 
 	uint8_t* data = (uint8_t*)malloc(width * height * bytepp);
-	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp };
+	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp,.backgroudColor = MakeColor4(0.f,0.f,0.f,0.f)};
 	_getRenderer()->frameBuffer = FB;
 
 	//创建内存管理器128MB
@@ -304,6 +304,13 @@ void Renderer_DrawBg() {
 	}
 }
 
+void Renderer_Clear() {
+	//清空buffer （画背景）
+	Renderer_DrawBg();
+	//释放动态内存
+	Renderer_ReleaseMEM(2);
+}
+
 Tex* Renderer_GetTextureByID(uint32_t tID) {
 	for (size_t i = 0; i < &(_getRenderer()->textures).length; i++)
 	{
@@ -349,8 +356,7 @@ void Renderer_ThreadMain(RendererThread* thread) {
 
 	DWORD threadId = thread->id;
 	//printf("[%d]: threadMain\n", threadId);
-	Message fromMain = GetMessageToThread(_getGameEngine()->msgAssist, true);
-
+	Message fromMain = MsgAssistant_GetMsgToThread(_getGameEngine()->msgAssist, true);
 	uint32_t width = fromMain.data[1];
 	uint32_t height = fromMain.data[2];
 	uint32_t bytepp = fromMain.data[3];
@@ -358,33 +364,27 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	printf("fromMain type: %d,width:%d,height:%d,bytepp:%d\n", fromMain.type, width, height, bytepp);
 	Renderer_Initialize(width, height, bytepp);
 
-
+	//向主线程发送的消息
 	Message sendToMain = { .type = MESSAGE_START,.data[0] = 1 };
-	SendMessageToMain(_getGameEngine()->msgAssist, sendToMain, false);
+	MsgAssistant_SendMsgToMain(_getGameEngine()->msgAssist, sendToMain, false);
 
 	while (true)
 	{
-		EnterCriticalSection(_getGameEngine()->criticalSection_render);
-
-		LeaveCriticalSection(_getGameEngine()->criticalSection_render);
-		Message m = GetMessageToThread(_getGameEngine()->msgAssist, false);
+		printf("Renderer Tick Start\n");
+		Message m = MsgAssistant_GetMsgToThread(_getGameEngine()->msgAssist, false);
 		if (m.type == MESSAGE_CLOSE)
 		{
 			break;
 		}
-		printf("Renderer Tick Start\n");
-		Renderer_DrawBg();
 
-		//渲染Mesh
+		volatile uint32_t d = 121;
 
-		Renderer_ReleaseMEM(2);
-		EnterCriticalSection(_getGameEngine()->criticalSection_render);
-
-		LeaveCriticalSection(_getGameEngine()->criticalSection_render);
-
-		printf("Renderer Tick End\n");
-		//每帧清除动态内存
 		Sleep(10);
+
+		//完成渲染任务
+		sendToMain.type = MESSAGE_RENDEROVER;
+		MsgAssistant_SendMsgToMain(_getGameEngine()->msgAssist, sendToMain, true);
+		printf("Renderer Tick End\n");
 	}
 
 	//释放
@@ -392,7 +392,7 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	//发送关闭消息到主线程
 	Message sendToMainClose = { .type = MESSAGE_CLOSE,.data[0] = 1 };
 	printf("Renderer::will Close\n");
-	SendMessageToMain(_getGameEngine()->msgAssist, sendToMainClose, false);
+	MsgAssistant_SendMsgToMain(_getGameEngine()->msgAssist, sendToMainClose, false);
 
 }
 
@@ -506,7 +506,7 @@ void ReleaseMessageAssistant(MessageAssistant* assistant) {
 }
 
 /*给子线程发消息*/
-Message SendMessageToThread(MessageAssistant* assistant, Message msg, const bool isblock) {
+Message MsgAssistant_SendMsgToThread(MessageAssistant* assistant, Message msg, const bool isblock) {
 
 	EnterCriticalSection(assistant->pToLock);
 	assistant->toThreadMessage = msg;
@@ -530,7 +530,7 @@ Message SendMessageToThread(MessageAssistant* assistant, Message msg, const bool
 }
 
 /*给主线程发消息*/
-Message SendMessageToMain(MessageAssistant* assistant, Message msg, const bool isblock) {
+Message MsgAssistant_SendMsgToMain(MessageAssistant* assistant, Message msg, const bool isblock) {
 	EnterCriticalSection(assistant->pFromLock);
 	assistant->fromThreadMessage = msg;
 	LeaveCriticalSection(assistant->pFromLock);
@@ -553,7 +553,7 @@ Message SendMessageToMain(MessageAssistant* assistant, Message msg, const bool i
 }
 
 /*从子线程获取消息*/
-Message GetMessageFromThread(MessageAssistant* assistant, const bool isblock) {
+Message MsgAssistant_GetMsgFromThread(MessageAssistant* assistant, const bool isblock) {
 	Message ret = { .type = MESSAGE_NONE,.data = {0} };
 
 	while (true) {
@@ -572,7 +572,7 @@ Message GetMessageFromThread(MessageAssistant* assistant, const bool isblock) {
 }
 
 /*从主线程获取消息*/
-Message GetMessageToThread(MessageAssistant* assistant, const bool isblock) {
+Message MsgAssistant_GetMsgToThread(MessageAssistant* assistant, const bool isblock) {
 	Message ret = { .type = MESSAGE_NONE,.data = {0} };
 	while (true) {
 		if (assistant->toThreadMessage.type != MESSAGE_NONE)

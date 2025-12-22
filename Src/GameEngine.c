@@ -10,27 +10,21 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	gameengine->height = height;
 	gameengine->bytepp = bytepp;
 	gameengine->gameIsRuning = true;
-	gameengine->criticalSection_render = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 	gameengine->msgAssist = CreateMessageAssistant();
-
+	gameengine->isRenderingFinish = false;
 	//创建线程
 	RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
 	thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
-	
+
 	//发送消息到渲染线程
-	Message sendToChild = { .type = MESSAGE_START,.data[0] = 1 };
-	sendToChild.data[1] = width;
-	sendToChild.data[2] = height;
-	sendToChild.data[3] = bytepp;
+	Message sendToRenderer = { .type = MESSAGE_START,.data[0] = 1 };
+	sendToRenderer.data[1] = width;
+	sendToRenderer.data[2] = height;
+	sendToRenderer.data[3] = bytepp;
 
-	printf("GameEngine -- send\n");
-	Message back = SendMessageToThread(gameengine->msgAssist, sendToChild, true);
+	//等渲染器返回消息才继续（卡住）
+	MsgAssistant_SendMsgToThread(gameengine->msgAssist, sendToRenderer, true);
 
-	printf("GameEngine -- back\n");
-
-
-	InitializeCriticalSection(gameengine->criticalSection_render);
-	
 
 	//创建贴图数据
 	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
@@ -57,26 +51,32 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 
 	//Instance初始化
 	GameIns_Init();
-	
 }
 
-void GameEngin_SceneLoop(float delta) {
-
-	printf("GameEngine Tick Start\n");
-	
-	GameIns_Tick(delta);
+void GameEngine_SceneLoop(float delta) {
+	printf("GameEngine Tick Start,%f\n",delta);
+	if (_getGameEngine()->isRenderingFinish)
+	{
+		//回消息 （有收到消息才回）
+		Message sendToRenderer = { .type = MESSAGE_RENDEROVER,.data[0] = 1 };
+		MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToRenderer, false);
+	}
 
 	//每帧提交相机和mesh信息
 	Renderer_SubmitCamera(*(_getGameIns()->pCam));
 	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
 	{
 		Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, i);
-		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat,m->id);
+		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat, m->id);
 	}
-	
-	//GameEngine_DrawBg();
-	printf("GameEngine Tick End\n");
-	
+
+	GameIns_Tick(delta);
+	printf("GameEngine Loop\n");
+
+	//收到完成渲染的消息 收到完成才结束当前帧
+	MsgAssistant_GetMsgFromThread(_getGameEngine()->msgAssist, true);
+	_getGameEngine()->isRenderingFinish = true;
+	printf("GameEngine Tick End\n\n");
 }
 
 void EngineClose() {
@@ -129,7 +129,7 @@ bool GameEngine_IsRuning() {
 	return _getGameEngine()->gameIsRuning;
 }
 
-void GameEnginRenderLoop() {
+void GameEngineRenderLoop() {
 	printf("GameEnginRenderLoop\n");
 }
 
@@ -144,12 +144,9 @@ void GameEngine_DrawBg() {
 
 void GameEngine_Release() {
 
-	//删除锁
-	DeleteCriticalSection(_getGameEngine()->criticalSection_render);
-
 	Message sendToChild = { .type = MESSAGE_CLOSE,.data[0] = 1 };
 	printf("GameEngine Release\n");
-	Message back = SendMessageToThread(_getGameEngine()->msgAssist, sendToChild, true);
+	Message back = MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToChild, true);
 
 	if (_gameEngne)
 	{
