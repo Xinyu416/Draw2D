@@ -155,6 +155,7 @@
     <ClCompile Include="..\Src\Queue.c" />
     <ClCompile Include="..\Src\Renderer.c" />
     <ClCompile Include="..\Src\Scene.c" />
+    <ClCompile Include="..\Src\Shader.c" />
     <ClCompile Include="..\Src\Texture.c" />
     <ClCompile Include="..\Src\Thread.c" />
     <ClCompile Include="..\Src\threadTest.c" />
@@ -177,6 +178,7 @@
     <ClInclude Include="..\Include\Queue.h" />
     <ClInclude Include="..\Include\Renderer.h" />
     <ClInclude Include="..\Include\Scene.h" />
+    <ClInclude Include="..\Include\Shader.h" />
     <ClInclude Include="..\Include\Texture.h" />
     <ClInclude Include="..\Include\Thread.h" />
     <ClInclude Include="..\Include\MemManager.h" />

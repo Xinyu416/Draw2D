@@ -38,15 +38,8 @@ Renderer* _getRenderer() {
 	return _renderer;
 }
 
-//void Renderer_FrameBufferCreate(uint32_t width, uint32_t height, uint8_t bytepp) {
-//	uint8_t* data = (uint8_t*)malloc(width * height * bytepp);
-//	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp };
-//	_getRenderer()->frameBuffer = FB;
-//}
-
-void Renderer_FrameBufferRelease() {
-	if (_getRenderer()->frameBuffer.buffer == NULL)return NULL;
-	free(_getRenderer()->frameBuffer.buffer);
+void Renderer_Stop() {
+	_getRenderer()->isRunning = false;
 }
 
 uint8_t* Renderer_GetFrameBuffer() {
@@ -368,16 +361,16 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	Message sendToMain = { .type = MESSAGE_START,.data[0] = 1 };
 	MsgAssistant_SendMsgToMain(_getGameEngine()->msgAssist, sendToMain, false);
 
-	while (true)
+	Renderer* r = _getRenderer();
+	r->isRunning = true;
+	while (r->isRunning)
 	{
 		printf("Renderer Tick Start\n");
-		Message m = MsgAssistant_GetMsgToThread(_getGameEngine()->msgAssist, false);
+	/*	Message m = MsgAssistant_GetMsgToThread(_getGameEngine()->msgAssist, false);
 		if (m.type == MESSAGE_CLOSE)
 		{
 			break;
-		}
-
-		volatile uint32_t d = 121;
+		}*/
 
 		Sleep(10);
 

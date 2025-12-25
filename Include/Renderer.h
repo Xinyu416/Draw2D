@@ -47,16 +47,13 @@ typedef struct {
 	Array objcects;
 	Array RenderMeshs;
 	Camera camera;
-
+	bool isRunning;
 }Renderer;
 
 Renderer* _getRenderer();
 
-/*创建缓冲区*/
-//void Renderer_FrameBufferCreate(uint32_t width, uint32_t height, uint8_t bytepp);
 
-/*释放缓冲区*/
-void Renderer_FrameBufferRelease();
+void Renderer_Stop();
 
 /*创建渲染器*/
 void Renderer_Initialize(uint32_t width, uint32_t height, uint8_t bytepp);

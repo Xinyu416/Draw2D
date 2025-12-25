@@ -11,7 +11,8 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 	gameengine->bytepp = bytepp;
 	gameengine->gameIsRuning = true;
 	gameengine->msgAssist = CreateMessageAssistant();
-	gameengine->isRenderingFinish = false;
+	gameengine->isRenderingStart = false;
+
 	//创建线程
 	RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
 	thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
@@ -24,7 +25,6 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 
 	//等渲染器返回消息才继续（卡住）
 	MsgAssistant_SendMsgToThread(gameengine->msgAssist, sendToRenderer, true);
-
 
 	//创建贴图数据
 	const char* path1 = "C:\\Users\\DRF\\Desktop\\Temp\\bg.bmp";
@@ -54,8 +54,8 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 }
 
 void GameEngine_SceneLoop(float delta) {
-	printf("GameEngine Tick Start,%f\n",delta);
-	if (_getGameEngine()->isRenderingFinish)
+	printf("GameEngine Tick Start,%f\n", delta);
+	if (_getGameEngine()->isRenderingStart)
 	{
 		//回消息 （有收到消息才回）
 		Message sendToRenderer = { .type = MESSAGE_RENDEROVER,.data[0] = 1 };
@@ -71,11 +71,12 @@ void GameEngine_SceneLoop(float delta) {
 	}
 
 	GameIns_Tick(delta);
+	Sleep(5);
 	printf("GameEngine Loop\n");
 
 	//收到完成渲染的消息 收到完成才结束当前帧
 	MsgAssistant_GetMsgFromThread(_getGameEngine()->msgAssist, true);
-	_getGameEngine()->isRenderingFinish = true;
+	_getGameEngine()->isRenderingStart = true;
 	printf("GameEngine Tick End\n\n");
 }
 
@@ -144,10 +145,17 @@ void GameEngine_DrawBg() {
 
 void GameEngine_Release() {
 
-	Message sendToChild = { .type = MESSAGE_CLOSE,.data[0] = 1 };
 	printf("GameEngine Release\n");
-	Message back = MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToChild, true);
+	//关闭renderer循环
+	Renderer_Stop();
+	
+	//回消息 出renderer 循环
+	Message sendToChildOver = { .type = MESSAGE_RENDEROVER,.data[0] = 1 };
+	MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToChildOver, false);
+	
+	Message back =  MsgAssistant_GetMsgFromThread(_getGameEngine()->msgAssist, true);
 
+	printf("GameEngine will close\n");
 	if (_gameEngne)
 	{
 		//释放消息助手

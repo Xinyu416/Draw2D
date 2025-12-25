@@ -8,6 +8,7 @@
 #include "Thread.h"
 #include "Queue.h"
 #include "MemManager.h"
+#include "Shader.h"
 
 
 //窗口过程函数(消息回调)
@@ -213,10 +214,8 @@ int main()
 	//PrintMemManager(&memM);
 	//PrintMemData(&memM);
 	//Mem_Release(&memM);
-
-	//return;
-
-
+	GetNumberOfProcessors();
+	return;
 
 	HWND hwnd = CreateRenderWindow(700 + 16, 775 + 39);
 	if (hwnd == NULL)

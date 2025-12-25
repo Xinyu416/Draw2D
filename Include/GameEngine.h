@@ -41,7 +41,7 @@ typedef struct {
 	bool gameIsRuning;
 	Array texture;
 	MessageAssistant* msgAssist; //消息助手
-	bool isRenderingFinish;
+	bool isRenderingStart;//渲染器是否开始（有消息返回）
 }GameEngine;
 
 /*场景循环*/
