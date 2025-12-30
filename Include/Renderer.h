@@ -47,7 +47,21 @@ typedef struct {
 	Array objcects;
 	Array RenderMeshs;
 	Camera camera;
+	//渲染线程参数
 	bool isRunning;
+
+
+	//渲染任务数 （三角面index数）  线程加锁访问
+	uint32_t* taskTriangleIndex;
+	//渲染任务数 （三角面中片元index数） 线程加锁访问
+	uint32_t* taskFragmentIndex;
+	//所有三角面内片元总数
+	uint32_t completeCount;
+	//裁切空间顶点数
+	float* verticesInClip;
+	//三角面边界盒
+	float* triangleBBox;
+
 }Renderer;
 
 Renderer* _getRenderer();

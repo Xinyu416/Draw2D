@@ -22,6 +22,9 @@ typedef struct {
 	uint8_t* colors; //24*quad 顶点颜色数组		8byte 
 	uint32_t numOfQuad;//当前quad数				4byte		
 	uint32_t maxOfQuad;//最大quad数				4byte
+
+	//顶点缓存备份
+	float* verticesRenderCopy;
 }Geometry;//32byte
 
 typedef struct {
@@ -33,6 +36,10 @@ typedef struct {
 	Vect2 scale; //8byte
 	Material mat;//5byte
 	uint8_t block[7];
+
+	//变换矩阵缓存
+	Matrix tmRenderCopy;
+
 }Mesh;//96byte
 
 Geometry CreateGeometry(const uint32_t maxOfQuads);

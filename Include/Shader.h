@@ -11,3 +11,5 @@ typedef struct {
 }Shader;
 
 uint8_t GetNumberOfProcessors();
+
+DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread);

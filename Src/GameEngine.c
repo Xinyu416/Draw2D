@@ -62,13 +62,22 @@ void GameEngine_SceneLoop(float delta) {
 		MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToRenderer, false);
 	}
 
+
 	//每帧提交相机和mesh信息
-	Renderer_SubmitCamera(*(_getGameIns()->pCam));
+	/*Renderer_SubmitCamera(*(_getGameIns()->pCam));
 	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
 	{
 		Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, i);
 		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat, m->id);
-	}
+	}*/
+
+	//提交数据，缓存数据(Mesh 相机)
+	_getRenderer()->camera = *(_getGameIns()->pCam);
+	Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, 0);
+	memcpy(m->geo.verticesRenderCopy, m->geo.vertices, m->geo.maxOfQuad * 12);
+	m->tmRenderCopy = m->tm;
+	
+	printf("submit camera and mesh data\n");
 
 	GameIns_Tick(delta);
 	Sleep(5);
@@ -148,12 +157,12 @@ void GameEngine_Release() {
 	printf("GameEngine Release\n");
 	//关闭renderer循环
 	Renderer_Stop();
-	
+
 	//回消息 出renderer 循环
 	Message sendToChildOver = { .type = MESSAGE_RENDEROVER,.data[0] = 1 };
 	MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToChildOver, false);
-	
-	Message back =  MsgAssistant_GetMsgFromThread(_getGameEngine()->msgAssist, true);
+
+	Message back = MsgAssistant_GetMsgFromThread(_getGameEngine()->msgAssist, true);
 
 	printf("GameEngine will close\n");
 	if (_gameEngne)

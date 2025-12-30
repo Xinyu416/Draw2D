@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Shader.h"
 
 typedef struct {
 	float* vertices;		//2*3  顶点数组			8byte(64位操作系统指针是8字节)
@@ -61,20 +62,25 @@ uint32_t Renderer_GetFrameBytepp() {
 void Renderer_Initialize(uint32_t width, uint32_t height, uint8_t bytepp) {
 
 	uint8_t* data = (uint8_t*)malloc(width * height * bytepp);
-	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp,.backgroudColor = MakeColor4(0.f,0.f,0.f,0.f)};
+	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp,.backgroudColor = MakeColor4(0.f,0.f,0.f,0.f) };
 	_getRenderer()->frameBuffer = FB;
 
-	//创建内存管理器128MB
-	_getRenderer()->memM = Mem_Create(128 * 1024 * 1024);
+	_getRenderer()->taskFragmentIndex = (uint32_t*)malloc(sizeof(uint32_t));
 
-	//创建texture数组
-	_getRenderer()->textures = ArrayCreate(sizeof(Tex));
+	_getRenderer()->taskTriangleIndex = (uint32_t*)malloc(sizeof(uint32_t));
 
-	//创建obj数组
-	_getRenderer()->objcects = ArrayCreate(sizeof(Geo));
+	_getRenderer()->verticesInClip = (float*)malloc(sizeof(float) * 2 * 3 * 2 * 30 * 30);//三角面*2*宽*高
+	_getRenderer()->triangleBBox = (float*)malloc(sizeof(float) * 2 * 2 * 2 * 30 * 30);
 
-	//背景色
-	_getRenderer()->frameBuffer.backgroudColor = MakeColor4(0, 0, 0, 255);
+	////创建内存管理器128MB
+	//_getRenderer()->memM = Mem_Create(128 * 1024 * 1024);
+
+	////创建texture数组
+	//_getRenderer()->textures = ArrayCreate(sizeof(Tex));
+
+	////创建obj数组
+	//_getRenderer()->objcects = ArrayCreate(sizeof(Geo));
+
 }
 
 void Renderer_ReleaseMEM(uint8_t type) {
@@ -360,17 +366,21 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	//向主线程发送的消息
 	Message sendToMain = { .type = MESSAGE_START,.data[0] = 1 };
 	MsgAssistant_SendMsgToMain(_getGameEngine()->msgAssist, sendToMain, false);
-
 	Renderer* r = _getRenderer();
+
+	//创建Shader线程
+	ShaderThread* shaderThread = (ShaderThread*)malloc(sizeof(ShaderThread));
+	shaderThread->handle = CreateThread(NULL, 0, Shader_ThreadMain, shaderThread, 0, &shaderThread->id);
+
 	r->isRunning = true;
 	while (r->isRunning)
 	{
 		printf("Renderer Tick Start\n");
-	/*	Message m = MsgAssistant_GetMsgToThread(_getGameEngine()->msgAssist, false);
-		if (m.type == MESSAGE_CLOSE)
-		{
-			break;
-		}*/
+		/*Message m = MsgAssistant_GetMsgToThread(_getGameEngine()->msgAssist, false);
+		 if (m.type == MESSAGE_CLOSE)
+		 {
+			 break;
+		 }*/
 
 		Sleep(10);
 

@@ -5,6 +5,8 @@ Geometry CreateGeometry(const uint32_t maxOfQuads) {
 	geo.vertices = (float*)malloc(sizeof(float) * maxOfQuads * 12);
 	geo.uvs = (float*)malloc(sizeof(float) * maxOfQuads * 12);
 	geo.colors = (uint8_t*)malloc(sizeof(uint8_t) * maxOfQuads * 24);
+	//»º´æ±¸·Ý
+	geo.verticesRenderCopy = (float*)malloc(sizeof(float) * maxOfQuads * 12);
 	return geo;
 }
 
@@ -30,7 +32,7 @@ void GeometryAddQuad(Geometry* geo, const Quad quad) {
 }
 
 Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geometry geo, const Matrix tm, const Material mat) {
-	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.scale = scale,.geo = geo,.tm = tm,.mat = mat };
+	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.scale = scale,.geo = geo,.tm = tm,.mat = mat,.tmRenderCopy = tm };
 	return mesh;
 }
 

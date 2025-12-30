@@ -214,8 +214,8 @@ int main()
 	//PrintMemManager(&memM);
 	//PrintMemData(&memM);
 	//Mem_Release(&memM);
-	GetNumberOfProcessors();
-	return;
+	//GetNumberOfProcessors();
+	//return;
 
 	HWND hwnd = CreateRenderWindow(700 + 16, 775 + 39);
 	if (hwnd == NULL)
@@ -238,7 +238,7 @@ int main()
 	uint8_t bytepp = bpp / 8;
 
 	/*引擎初始化*/
-	uint8_t fps = 1;
+	uint8_t fps = 2;
 	GameEngineInit(width, height, fps, bytepp);
 
 	/*显示窗口*/
