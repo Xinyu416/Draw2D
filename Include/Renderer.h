@@ -52,7 +52,7 @@ typedef struct {
 
 
 	//渲染任务数 （三角面index数）  线程加锁访问
-	uint32_t* taskTriangleIndex;
+	uint32_t* taskTriangleIndex; 
 	//渲染任务数 （三角面中片元index数） 线程加锁访问
 	uint32_t* taskFragmentIndex;
 	//所有三角面内片元总数
@@ -61,6 +61,16 @@ typedef struct {
 	float* verticesInClip;
 	//三角面边界盒
 	float* triangleBBox;
+
+	//顶点编号
+	uint32_t* vertexIndex;
+
+	CRITICAL_SECTION* vertexIndexLock;
+	CRITICAL_SECTION* taskTriangleIndexLock;
+	CRITICAL_SECTION* taskFragmentIndexLock;
+
+	//渲染阶段（切换到不同阶段做不同任务）
+	uint8_t renderStage;
 
 }Renderer;
 

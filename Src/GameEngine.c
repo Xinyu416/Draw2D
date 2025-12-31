@@ -73,7 +73,7 @@ void GameEngine_SceneLoop(float delta) {
 
 	//提交数据，缓存数据(Mesh 相机)
 	_getRenderer()->camera = *(_getGameIns()->pCam);
-	Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, 0);
+	Mesh* m = _getGameIns()->cMesh;
 	memcpy(m->geo.verticesRenderCopy, m->geo.vertices, m->geo.maxOfQuad * 12);
 	m->tmRenderCopy = m->tm;
 	

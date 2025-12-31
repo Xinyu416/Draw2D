@@ -69,8 +69,15 @@ void Renderer_Initialize(uint32_t width, uint32_t height, uint8_t bytepp) {
 
 	_getRenderer()->taskTriangleIndex = (uint32_t*)malloc(sizeof(uint32_t));
 
-	_getRenderer()->verticesInClip = (float*)malloc(sizeof(float) * 2 * 3 * 2 * 30 * 30);//三角面*2*宽*高
+	_getRenderer()->vertexIndex = (uint32_t*)malloc(sizeof(uint32_t));
+
+	_getRenderer()->verticesInClip = (float*)malloc(sizeof(float) * 2 * 3 * 2 * 30 * 30);//三角面*2*宽*高 测试数据（临时用）
 	_getRenderer()->triangleBBox = (float*)malloc(sizeof(float) * 2 * 2 * 2 * 30 * 30);
+
+	_getRenderer()->vertexIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
+	_getRenderer()->taskTriangleIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
+	_getRenderer()->taskFragmentIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
+
 
 	////创建内存管理器128MB
 	//_getRenderer()->memM = Mem_Create(128 * 1024 * 1024);
@@ -354,13 +361,11 @@ Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID) {
 void Renderer_ThreadMain(RendererThread* thread) {
 
 	DWORD threadId = thread->id;
-	//printf("[%d]: threadMain\n", threadId);
 	Message fromMain = MsgAssistant_GetMsgToThread(_getGameEngine()->msgAssist, true);
 	uint32_t width = fromMain.data[1];
 	uint32_t height = fromMain.data[2];
 	uint32_t bytepp = fromMain.data[3];
 
-	printf("fromMain type: %d,width:%d,height:%d,bytepp:%d\n", fromMain.type, width, height, bytepp);
 	Renderer_Initialize(width, height, bytepp);
 
 	//向主线程发送的消息
@@ -368,19 +373,47 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	MsgAssistant_SendMsgToMain(_getGameEngine()->msgAssist, sendToMain, false);
 	Renderer* r = _getRenderer();
 
-	//创建Shader线程
-	ShaderThread* shaderThread = (ShaderThread*)malloc(sizeof(ShaderThread));
-	shaderThread->handle = CreateThread(NULL, 0, Shader_ThreadMain, shaderThread, 0, &shaderThread->id);
+	/*创建Shader线程*/
+	//ShaderThread* shaderThread = (ShaderThread*)malloc(sizeof(ShaderThread));
+	//shaderThread->handle = CreateThread(NULL, 0, Shader_ThreadMain, shaderThread, 0, &shaderThread->id);
+
+	//最大线程数
+	const uint32_t MAX_THREADS = 1;
+	ShaderThread* threadArray = (ShaderThread*)malloc(sizeof(ShaderThread) * MAX_THREADS);
+	//渲染线程
+	ShaderThread* shaderThread = NULL;
+	for (int i = 0; i < MAX_THREADS; i++)
+	{
+		shaderThread = threadArray + i;
+		shaderThread->handle = CreateThread(NULL, 0, Shader_ThreadMain, shaderThread, 0, &shaderThread->id);
+
+	}
+
+	InitializeCriticalSection(r->taskFragmentIndexLock);
+	InitializeCriticalSection(r->taskTriangleIndexLock);
+	InitializeCriticalSection(r->vertexIndexLock);
 
 	r->isRunning = true;
 	while (r->isRunning)
 	{
 		printf("Renderer Tick Start\n");
-		/*Message m = MsgAssistant_GetMsgToThread(_getGameEngine()->msgAssist, false);
-		 if (m.type == MESSAGE_CLOSE)
-		 {
-			 break;
-		 }*/
+
+		//模型空间矩阵拷贝进缓存空间
+		if (_getGameIns()->cMesh)
+		{
+			/*计算模型空间矩阵*/
+			Geometry* geo = &(_getGameIns()->cMesh->geo);
+			Matrix srm = CreateStandardMatrix();
+			Matrix srtm = CreateStandardMatrix();
+			Matrix ms = MakeScaMatrix(1, 1);
+			Matrix mr = MakeRotMatrix(Deg2Rad(0));
+			Matrix mt = MakeTranslataMatrix(0, 0);
+			Multi2Matrix(mr.m, ms.m, srm.m);
+			Multi2Matrix(mt.m, srm.m, srtm.m);
+			_getGameIns()->cMesh->tmRenderCopy = srtm;
+			//渲染阶段为顶点变换
+			r->renderStage = 1;
+		}
 
 		Sleep(10);
 
