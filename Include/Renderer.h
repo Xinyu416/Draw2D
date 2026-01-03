@@ -43,34 +43,26 @@ typedef struct {
 typedef struct {
 	MemManager memM;
 	FrameBuffer frameBuffer;
-	Array textures;
 	Array objcects;
-	Array RenderMeshs;
-	Camera camera;
+	//渲染相机
+	Camera cameraForRender;
 	//渲染线程参数
 	bool isRunning;
-
-
 	//渲染任务数 （三角面index数）  线程加锁访问
 	uint32_t* taskTriangleIndex; 
 	//渲染任务数 （三角面中片元index数） 线程加锁访问
 	uint32_t* taskFragmentIndex;
 	//所有三角面内片元总数
 	uint32_t completeCount;
-	//裁切空间顶点数
-	float* verticesInClip;
-	//三角面边界盒
-	float* triangleBBox;
 
-	//顶点编号
-	uint32_t* vertexIndex;
+	//任务编号
+	uint32_t* taskIndex;
+	//渲染阶段（切换到不同阶段做不同任务）
+	uint8_t renderStage;
 
 	CRITICAL_SECTION* vertexIndexLock;
 	CRITICAL_SECTION* taskTriangleIndexLock;
 	CRITICAL_SECTION* taskFragmentIndexLock;
-
-	//渲染阶段（切换到不同阶段做不同任务）
-	uint8_t renderStage;
 
 }Renderer;
 
@@ -126,6 +118,8 @@ void Renderer_TaskMain();
 
 void Renderer_ThreadMain(RendererThread* thread);
 
+/*Shader领取任务函数*/
+uint32_t Renderer_GetTaskIndex();
 
 
 

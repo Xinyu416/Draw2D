@@ -24,7 +24,7 @@ typedef struct {
 	uint32_t maxOfQuad;//最大quad数				4byte
 
 	//顶点缓存备份
-	float* verticesRenderCopy;
+	float* verticesInClipForRender;
 }Geometry;//32byte
 
 typedef struct {
@@ -32,13 +32,15 @@ typedef struct {
 	uint32_t id; //4byte
 	Vect2 pos; //8byte
 	Matrix tm; //36byte
+
+	//变换矩阵缓存
+	Matrix tmForRender;
 	float rot; //4byte
 	Vect2 scale; //8byte
 	Material mat;//5byte
 	uint8_t block[7];
-
-	//变换矩阵缓存
-	Matrix tmRenderCopy;
+	//三角面边界盒
+	float* triangleBBox;
 
 }Mesh;//96byte
 
@@ -48,9 +50,11 @@ void ReleaseGeometry(Geometry* geo);
 
 void GeometryAddQuad(Geometry* geo, const Quad quad);
 
-Mesh CreateMesh(const uint32_t id, Vect2 pos,float rot, Vect2 scale, const Geometry geo,const Matrix tm,const Material mat);
+Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geometry geo, const Matrix tm, const Material mat);
 
-Vect2* getUVbyType(uint8_t category,uint8_t type, uint32_t wNum, uint32_t hNum);
+void SubmitMesh(Mesh* m);
+
+Vect2* getUVbyType(uint8_t category, uint8_t type, uint32_t wNum, uint32_t hNum);
 
 /*用点乘的符号判断点跟向量的角度 进而判断点是否在四边形内*/
 bool IsPointInQuadDotSign(Vect2 p, Vect2 vertices[4]);

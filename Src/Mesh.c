@@ -6,7 +6,7 @@ Geometry CreateGeometry(const uint32_t maxOfQuads) {
 	geo.uvs = (float*)malloc(sizeof(float) * maxOfQuads * 12);
 	geo.colors = (uint8_t*)malloc(sizeof(uint8_t) * maxOfQuads * 24);
 	//缓存备份
-	geo.verticesRenderCopy = (float*)malloc(sizeof(float) * maxOfQuads * 12);
+	geo.verticesInClipForRender = (float*)malloc(sizeof(float) * maxOfQuads * 12);
 	return geo;
 }
 
@@ -32,13 +32,18 @@ void GeometryAddQuad(Geometry* geo, const Quad quad) {
 }
 
 Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geometry geo, const Matrix tm, const Material mat) {
-	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.scale = scale,.geo = geo,.tm = tm,.mat = mat,.tmRenderCopy = tm };
+	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.scale = scale,.geo = geo,.tm = tm,.mat = mat,.tmForRender = tm };
+	mesh.triangleBBox = (float*)malloc(sizeof(float) * 4 * mesh.geo.numOfQuad * 2);
 	return mesh;
+}
+
+void SubmitMesh(Mesh* m) {
+	m->tmForRender = m->tm;
 }
 
 //通过index取到切块的uv图
 //category 为一张贴图只有一个元素时 除了背景都是单个贴图 背景为0
-Vect2* getUVbyType(uint8_t category,uint8_t index, uint32_t wNum, uint32_t hNum) {
+Vect2* getUVbyType(uint8_t category, uint8_t index, uint32_t wNum, uint32_t hNum) {
 	//贴图为单种贴图单个元素时 uv值需要特殊计算
 	if (category > 0)
 	{
@@ -153,7 +158,7 @@ bool IsPointInQuadRayCast(Vect2 p, Quad quad) {
 	return (crossCount % 2) == 1;
 }
 
-void PrintMesh(Mesh *mesh) {
+void PrintMesh(Mesh* mesh) {
 
 	printf("mesh: id = %d, textureId = %d\n", mesh->id, mesh->mat.textureId);
 	printf("mesh pos:");

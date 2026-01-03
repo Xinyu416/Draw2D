@@ -69,10 +69,7 @@ void Renderer_Initialize(uint32_t width, uint32_t height, uint8_t bytepp) {
 
 	_getRenderer()->taskTriangleIndex = (uint32_t*)malloc(sizeof(uint32_t));
 
-	_getRenderer()->vertexIndex = (uint32_t*)malloc(sizeof(uint32_t));
-
-	_getRenderer()->verticesInClip = (float*)malloc(sizeof(float) * 2 * 3 * 2 * 30 * 30);//三角面*2*宽*高 测试数据（临时用）
-	_getRenderer()->triangleBBox = (float*)malloc(sizeof(float) * 2 * 2 * 2 * 30 * 30);
+	_getRenderer()->taskIndex = (uint32_t*)malloc(sizeof(uint32_t));
 
 	_getRenderer()->vertexIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 	_getRenderer()->taskTriangleIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
@@ -115,8 +112,8 @@ void Renderer_Release() {
 	Renderer_ReleaseMEM(0);
 	free(_getRenderer()->frameBuffer.buffer);
 	ArrayRelease(&(_getRenderer()->objcects));
-	ArrayRelease(&(_getRenderer()->textures));
-	ArrayRelease(&(_getRenderer()->RenderMeshs));
+	//ArrayRelease(&(_getRenderer()->textures));
+	//ArrayRelease(&(_getRenderer()->RenderMeshs));
 	free(_getRenderer());
 }
 
@@ -127,13 +124,13 @@ void Renderer_SubmitTexture(uint8_t* inPixels, uint32_t inWidth, uint32_t inHeig
 	if (data == NULL)return;
 	memcpy(data, inPixels, inWidth * inHeight * bpp / 8);
 
-	texture->id = _getRenderer()->textures.length + 1;
+	//texture->id = _getRenderer()->textures.length + 1;
 	texture->pixels = data;
 	texture->bpp = bpp;
 	texture->width = inWidth;
 	texture->height = inHeight;
 
-	ArrayPush(&_getRenderer()->textures, texture);
+	//ArrayPush(&_getRenderer()->textures, texture);
 }
 
 uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOfVetices, uint32_t inObjID) {
@@ -188,7 +185,7 @@ void Renderer_SubmitMesh(Vect2 pos, Matrix tm, float rot, Vect2 scale, Material 
 	pRmesh->scale = scale;
 	pRmesh->mat = mat;
 	pRmesh->id = meshID;
-	ArrayPush(&_getRenderer()->RenderMeshs, pRmesh);
+	//ArrayPush(&_getRenderer()->RenderMeshs, pRmesh);
 }
 
 void Renderer_Render() {
@@ -213,8 +210,8 @@ void Renderer_Render() {
 		//以三角面为单位（三个点一组）
 		for (size_t v = 0; v < geo->numOfVetices / 3; v++)
 		{
-			Vect2 uv[3] = { 0 };
 			Vect2 vp[3] = { 0 };
+			Vect2 uv[3] = { 0 };
 			uint32_t vi = v * 6;
 
 			uv[0] = MakeVect2(geo->uvs[vi + 0], geo->uvs[vi + 1]);
@@ -318,14 +315,14 @@ void Renderer_Clear() {
 }
 
 Tex* Renderer_GetTextureByID(uint32_t tID) {
-	for (size_t i = 0; i < &(_getRenderer()->textures).length; i++)
+	/*for (size_t i = 0; i < &(_getRenderer()->textures).length; i++)
 	{
 		Tex* texture = (Tex*)GetArrayElementByIndex(&(_getRenderer()->textures), i);
 		if (texture->id = tID)
 		{
 			return texture;
 		}
-	}
+	}*/
 	return NULL;
 }
 
@@ -393,6 +390,7 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	InitializeCriticalSection(r->taskTriangleIndexLock);
 	InitializeCriticalSection(r->vertexIndexLock);
 
+	//渲染循环
 	r->isRunning = true;
 	while (r->isRunning)
 	{
@@ -410,7 +408,8 @@ void Renderer_ThreadMain(RendererThread* thread) {
 			Matrix mt = MakeTranslataMatrix(0, 0);
 			Multi2Matrix(mr.m, ms.m, srm.m);
 			Multi2Matrix(mt.m, srm.m, srtm.m);
-			_getGameIns()->cMesh->tmRenderCopy = srtm;
+			_getGameIns()->cMesh->tmForRender = srtm;
+
 			//渲染阶段为顶点变换
 			r->renderStage = 1;
 		}
@@ -431,6 +430,36 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	MsgAssistant_SendMsgToMain(_getGameEngine()->msgAssist, sendToMainClose, false);
 
 }
+
+
+//shader请求任务的小函数
+//结果缓冲区边界判断
+//顶点任务完成判断
+uint32_t Renderer_GetTaskIndex() {
+
+	return -1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void Renderer_TaskMain() {
 

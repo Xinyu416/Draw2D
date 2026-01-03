@@ -54,30 +54,23 @@ void GameEngineInit(uint32_t width, uint32_t height, uint8_t fps, uint8_t bytepp
 }
 
 void GameEngine_SceneLoop(float delta) {
+
 	printf("GameEngine Tick Start,%f\n", delta);
 	if (_getGameEngine()->isRenderingStart)
 	{
+		//提交数据，缓存数据(Mesh 相机)
+		_getRenderer()->cameraForRender = *(_getGameIns()->pCam);
+		for (size_t i = 0; i < GetArrayElementCount(&(_getGameIns()->meshs)); i++)
+		{
+			Mesh* m = GetArrayElementByIndex(&(_getGameIns()->meshs),i);
+			SubmitMesh(m);
+		}
+		printf("submit camera and mesh data\n");
+
 		//回消息 （有收到消息才回）
 		Message sendToRenderer = { .type = MESSAGE_RENDEROVER,.data[0] = 1 };
 		MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToRenderer, false);
 	}
-
-
-	//每帧提交相机和mesh信息
-	/*Renderer_SubmitCamera(*(_getGameIns()->pCam));
-	for (size_t i = 0; i < _getGameIns()->meshs.length; i++)
-	{
-		Mesh* m = GetArrayElementByIndex(&_getGameIns()->meshs, i);
-		Renderer_SubmitMesh(m->pos, m->tm, m->rot, m->scale, m->mat, m->id);
-	}*/
-
-	//提交数据，缓存数据(Mesh 相机)
-	_getRenderer()->camera = *(_getGameIns()->pCam);
-	Mesh* m = _getGameIns()->cMesh;
-	memcpy(m->geo.verticesRenderCopy, m->geo.vertices, m->geo.maxOfQuad * 12);
-	m->tmRenderCopy = m->tm;
-	
-	printf("submit camera and mesh data\n");
 
 	GameIns_Tick(delta);
 	Sleep(5);
