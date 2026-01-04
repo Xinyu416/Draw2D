@@ -54,7 +54,7 @@ void PlayLevel_MouseKeyEvent(VMEVENT eventType, void* key) {
 
 void PlayLevelInit() {
 	Vect2* uvs = getUVbyType(0, 0, 1, 1);
-	Geometry geo = CreateGeometry(1);
+	Geometry geo = CreateGeometry(1 * 2);
 	//Vect2* vertices = getVeticesbyCoord(x, y, offset, GridSize);
 	Vect2 offset = MakeVect2(_getGameIns()->pCam->width / 2, _getGameIns()->pCam->height / 2);
 	Quad quad = {
@@ -71,8 +71,8 @@ void PlayLevelInit() {
 	Mesh mesh = CreateMesh(4, pos, -90, MakeVect2(1.f, 1.f), geo, tm, mat);
 
 	//向渲染器提交点数据(返回id供mesh更新点数据)
-	uint32_t objID = Renderer_SubmitObject(mesh.geo.vertices, mesh.geo.uvs, mesh.geo.numOfQuad * 6, 0);
-	mesh.id = objID;
+	//uint32_t objID = Renderer_SubmitObject(mesh.geo.vertices, mesh.geo.uvs, mesh.geo.numOfVertex, 0);
+	//mesh.id = objID;
 
 	ArrayPush(&_getGameIns()->meshs, &mesh);
 	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);

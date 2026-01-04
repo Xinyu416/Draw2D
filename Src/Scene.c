@@ -34,16 +34,16 @@ void Scene_Init() {
 		ArrayRelease(&_getGameIns()->meshs);
 	}
 
-	SetMapData();
-	CreateMeshData(BG, 3, 3, 1);	//0
+	//SetMapData();
+	//CreateMeshData(BG, 3, 3, 1);		//0
 	CreateMeshData(BEAN, 1, 1, 2);	//1
-	CreateMeshData(ITEM, 1, 1, 3);	//2
-	GenerateRoleData();				//3
+	//CreateMeshData(ITEM, 1, 1, 3);	//2
+	//GenerateRoleData();				//3
 	//设置角色数据
 	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
 	_getGameIns()->cMesh = pmesh;
-
-	printf("Scene_Init::meshNumOfVertex:%d\n", pmesh->geo.numOfQuad*6);
+	uint32_t meshCount = GetArrayElementCount(&_getGameIns()->meshs);
+	//printf("Scene_Init::meshCount:%d,meshNumOfVertex:%d\n", meshCount, pmesh->geo.numOfVertex);
 }
 
 void SetMapData() {
@@ -108,11 +108,11 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 	switch (meshType)
 	{
 	case BG:
-		geo = CreateGeometry(wNum * hNum);
+		geo = CreateGeometry(wNum * hNum * 2);
 		break;
 	case BEAN:
 		count = 0;
-		for (size_t i = 0; i < wNum * hNum; i++)
+		for (size_t i = 0; i < wNum * hNum * 2; i++)
 		{
 			if (_getMapData()->typeData[i] == 7) {
 				count++;
@@ -122,7 +122,7 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 		break;
 	case ITEM:
 		count = 0;
-		for (size_t i = 0; i < wNum * hNum; i++)
+		for (size_t i = 0; i < wNum * hNum * 2; i++)
 		{
 			if (_getMapData()->typeData[i] == 8) {
 				count++;
@@ -193,8 +193,8 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 	Mesh mesh = CreateMesh(textureId, _getGameIns()->pCam->pos, 0, MakeVect2(1.f, 1.f), geo, tm, mat);
 
 	//向渲染器提交点数据(返回id供mesh更新点数据)
-	uint32_t objID = Renderer_SubmitObject(mesh.geo.vertices, mesh.geo.uvs, mesh.geo.numOfQuad * 6, 0);
-	mesh.id = objID;
+	//uint32_t objID = Renderer_SubmitObject(mesh.geo.vertices, mesh.geo.uvs, mesh.geo.numOfVertex, 0);
+	//mesh.id = objID;
 	//printf("mesh.geo.numOfVertices:%d\n", mesh.geo.numOfQuad * 6);
 
 	ArrayPush(&_getGameIns()->meshs, &mesh);
@@ -202,7 +202,7 @@ void CreateMeshData(MESHTYPE meshType, uint32_t texWidth, uint32_t texHeight, ui
 
 void GenerateRoleData() {
 	Vect2* uvs = getUVbyType(0, 0, 1, 1);
-	Geometry geo = CreateGeometry(1);
+	Geometry geo = CreateGeometry(1 * 2);
 	//Vect2* vertices = getVeticesbyCoord(x, y, offset, GridSize);
 	Vect2 offset = MakeVect2(_getGameIns()->pCam->width / 2, _getGameIns()->pCam->height / 2);
 	Quad quad = {

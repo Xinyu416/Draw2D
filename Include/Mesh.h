@@ -20,9 +20,11 @@ typedef struct {
 	float* vertices; //12*quad  顶点数组			8byte(64位操作系统指针是8字节)
 	float* uvs;		 //12*quad  顶点uv数组		8byte	
 	uint8_t* colors; //24*quad 顶点颜色数组		8byte 
-	uint32_t numOfQuad;//当前quad数				4byte		
-	uint32_t maxOfQuad;//最大quad数				4byte
+	uint32_t numOfVertex;//当前quad数				4byte		
+	uint32_t maxOfTriangle;//最大quad数				4byte
 
+	//三角面边界盒
+	float* triangleBBox;
 	//顶点缓存备份
 	float* verticesInClipForRender;
 }Geometry;//32byte
@@ -39,12 +41,10 @@ typedef struct {
 	Vect2 scale; //8byte
 	Material mat;//5byte
 	uint8_t block[7];
-	//三角面边界盒
-	float* triangleBBox;
 
 }Mesh;//96byte
 
-Geometry CreateGeometry(const uint32_t maxOfQuads);
+Geometry CreateGeometry(const uint32_t maxOfTriangle);
 
 void ReleaseGeometry(Geometry* geo);
 
@@ -52,7 +52,7 @@ void GeometryAddQuad(Geometry* geo, const Quad quad);
 
 Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geometry geo, const Matrix tm, const Material mat);
 
-void SubmitMesh(Mesh* m);
+void MeshSendToRenderer(Mesh* m);
 
 Vect2* getUVbyType(uint8_t category, uint8_t type, uint32_t wNum, uint32_t hNum);
 

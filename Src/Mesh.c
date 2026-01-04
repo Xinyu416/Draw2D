@@ -1,17 +1,19 @@
 #include "Mesh.h"
 
-Geometry CreateGeometry(const uint32_t maxOfQuads) {
-	Geometry geo = { .maxOfQuad = maxOfQuads,.numOfQuad = 0 };
-	geo.vertices = (float*)malloc(sizeof(float) * maxOfQuads * 12);
-	geo.uvs = (float*)malloc(sizeof(float) * maxOfQuads * 12);
-	geo.colors = (uint8_t*)malloc(sizeof(uint8_t) * maxOfQuads * 24);
+Geometry CreateGeometry(const uint32_t maxOfTriangle) {
+	Geometry geo = { .maxOfTriangle = maxOfTriangle,.numOfVertex = 0 };
+	geo.vertices = (float*)malloc(sizeof(float) * maxOfTriangle * 6);
+	geo.uvs = (float*)malloc(sizeof(float) * maxOfTriangle * 6);
+	geo.colors = (uint8_t*)malloc(sizeof(uint8_t) * maxOfTriangle * 12);
 	//缓存备份
-	geo.verticesInClipForRender = (float*)malloc(sizeof(float) * maxOfQuads * 12);
+	geo.verticesInClipForRender = (float*)malloc(sizeof(float) * maxOfTriangle * 6);
+	//三角面边界盒数据
+	geo.triangleBBox = (float*)malloc(sizeof(float) * maxOfTriangle * 4);
 	return geo;
 }
 
 void ReleaseGeometry(Geometry* geo) {
-	if (!geo->maxOfQuad == 0)
+	if (!geo->maxOfTriangle == 0)
 	{
 		free(geo->vertices);
 		free(geo->uvs);
@@ -20,24 +22,23 @@ void ReleaseGeometry(Geometry* geo) {
 }
 
 void GeometryAddQuad(Geometry* geo, const Quad quad) {
-	if (geo->numOfQuad >= geo->maxOfQuad)
+	if (geo->numOfVertex >= geo->maxOfTriangle * 3)
 	{
 		printf("GeometryAddQuad out of limit\n");
 		return;
 	}
-	memcpy(geo->vertices + (geo->numOfQuad * 12), quad.vertices, sizeof(quad.vertices));
-	memcpy(geo->uvs + (geo->numOfQuad * 12), quad.uvs, sizeof(quad.uvs));
-	memcpy(geo->colors + (geo->numOfQuad * 24), quad.color, sizeof(quad.color));
-	geo->numOfQuad++;
+	memcpy(geo->vertices + (geo->numOfVertex * 2), quad.vertices, sizeof(quad.vertices));
+	memcpy(geo->uvs + (geo->numOfVertex * 2), quad.uvs, sizeof(quad.uvs));
+	memcpy(geo->colors + (geo->numOfVertex * 4), quad.color, sizeof(quad.color));
+	geo->numOfVertex += 6;
 }
 
 Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geometry geo, const Matrix tm, const Material mat) {
 	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.scale = scale,.geo = geo,.tm = tm,.mat = mat,.tmForRender = tm };
-	mesh.triangleBBox = (float*)malloc(sizeof(float) * 4 * mesh.geo.numOfQuad * 2);
 	return mesh;
 }
 
-void SubmitMesh(Mesh* m) {
+void MeshSendToRenderer(Mesh* m) {
 	m->tmForRender = m->tm;
 }
 
@@ -166,7 +167,7 @@ void PrintMesh(Mesh* mesh) {
 	printf("mesh rot:%.2f\n", mesh->rot);
 	printf("mesh matrix:\n");
 	PrintMatrix(mesh->tm.m);
-	for (size_t i = 0; i < mesh->geo.numOfQuad; i++)
+	for (size_t i = 0; i < mesh->geo.numOfVertex / 6; i++)
 	{
 		printf("Quad[%d] vertices:(", i);
 		for (size_t j = 0; j < 8; j++)

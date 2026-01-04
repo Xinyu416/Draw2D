@@ -62,8 +62,8 @@ void GameEngine_SceneLoop(float delta) {
 		_getRenderer()->cameraForRender = *(_getGameIns()->pCam);
 		for (size_t i = 0; i < GetArrayElementCount(&(_getGameIns()->meshs)); i++)
 		{
-			Mesh* m = GetArrayElementByIndex(&(_getGameIns()->meshs),i);
-			SubmitMesh(m);
+			Mesh* m = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs),i);
+			MeshSendToRenderer(m);
 		}
 		printf("submit camera and mesh data\n");
 

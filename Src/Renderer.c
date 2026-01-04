@@ -65,15 +65,15 @@ void Renderer_Initialize(uint32_t width, uint32_t height, uint8_t bytepp) {
 	FrameBuffer FB = { .buffer = data,.width = width,.height = height,.bytepp = bytepp,.backgroudColor = MakeColor4(0.f,0.f,0.f,0.f) };
 	_getRenderer()->frameBuffer = FB;
 
-	_getRenderer()->taskFragmentIndex = (uint32_t*)malloc(sizeof(uint32_t));
-
-	_getRenderer()->taskTriangleIndex = (uint32_t*)malloc(sizeof(uint32_t));
-
-	_getRenderer()->taskIndex = (uint32_t*)malloc(sizeof(uint32_t));
+	//_getRenderer()->taskFragmentIndex = (uint32_t*)malloc(sizeof(uint32_t));
+	//_getRenderer()->taskTriangleIndex = (uint32_t*)malloc(sizeof(uint32_t));
+	//_getRenderer()->taskIndex = (uint32_t*)malloc(sizeof(uint32_t));
+	//_getRenderer()->meshIndex = (uint32_t*)malloc(sizeof(uint32_t));
 
 	_getRenderer()->vertexIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 	_getRenderer()->taskTriangleIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 	_getRenderer()->taskFragmentIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
+	_getRenderer()->taskIndexLock = (CRITICAL_SECTION*)malloc(sizeof(CRITICAL_SECTION));
 
 
 	////创建内存管理器128MB
@@ -112,8 +112,7 @@ void Renderer_Release() {
 	Renderer_ReleaseMEM(0);
 	free(_getRenderer()->frameBuffer.buffer);
 	ArrayRelease(&(_getRenderer()->objcects));
-	//ArrayRelease(&(_getRenderer()->textures));
-	//ArrayRelease(&(_getRenderer()->RenderMeshs));
+
 	free(_getRenderer());
 }
 
@@ -386,21 +385,97 @@ void Renderer_ThreadMain(RendererThread* thread) {
 
 	}
 
+	/*初始化锁*/
 	InitializeCriticalSection(r->taskFragmentIndexLock);
 	InitializeCriticalSection(r->taskTriangleIndexLock);
 	InitializeCriticalSection(r->vertexIndexLock);
+	InitializeCriticalSection(r->taskIndexLock);
 
+	r->meshIndex = 0;
+	Sleep(10);
 	//渲染循环
 	r->isRunning = true;
 	while (r->isRunning)
 	{
-		printf("Renderer Tick Start\n");
+		//printf("Renderer_ThreadMain Start\n");
+		//渲染阶段为顶点变换
+		r->renderStage = 1;
+		Mesh* m = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs), r->meshIndex);
+		if (m == NULL)continue;
+		r->numOfVertex = m->geo.numOfVertex;
+		uint32_t meshCount = GetArrayElementCount(&(_getGameIns()->meshs));
+
+		while (true) {
+			if (r->renderStage == 4) {
+				break;
+			}
+
+			switch (r->renderStage)
+			{
+			case 1:
+				printf("meshIndex:%d,meshCount:%d,renderStage:%d,taskIndex:%d,numOfVertex:%d\n", r->meshIndex, meshCount, r->renderStage, r->taskIndex, r->numOfVertex);
+
+				//顶点处理阶段
+				//taskIndex 代表顶点Index
+				if (r->taskIndex < r->numOfVertex) {
+				}
+				else {
+					//翻牌子 切换渲染阶段
+					r->renderStage = 2;
+					EnterCriticalSection(r->taskIndexLock);
+					r->taskIndex = 0;
+					LeaveCriticalSection(r->taskIndexLock);
+				}
+				break;
+			case 2:
+				printf("meshIndex:%d,meshCount:%d,renderStage:%d,taskIndex:%d,numOfVertex:%d\n", r->meshIndex, meshCount, r->renderStage, r->taskIndex, r->numOfVertex);
+
+				//片元裁切阶段
+				//taskIndex 代表三角面Index
+				if (r->taskIndex < r->numOfVertex / 3) {
+
+				}
+				else {
+					//翻牌子 切换渲染阶段
+					r->renderStage = 3;
+					//重置任务数
+					EnterCriticalSection(r->taskIndexLock);
+					r->taskIndex = 0;
+					LeaveCriticalSection(r->taskIndexLock);
+				}
+				break;
+			case 3:
+				printf("meshIndex:%d,meshCount:%d,renderStage:%d,taskIndex:%d,numOfVertex:%d\n", r->meshIndex, meshCount, r->renderStage, r->taskIndex, r->numOfVertex);
+				//片元着色阶段
+				//逐包围盒 taskIndex代表包围盒Index
+				if (r->taskIndex < (r->numOfVertex / 3)) {
+
+				}
+				else {
+					if (r->meshIndex < meshCount) {
+
+					}
+					else {
+						//r->meshIndex++;
+					}
+					EnterCriticalSection(r->taskIndexLock);
+					r->taskIndex = 0;
+					LeaveCriticalSection(r->taskIndexLock);
+					r->renderStage = 4;
+
+				}
+				break;
+			default:
+				break;
+			}
+
+			Sleep(10);
+		}
 
 		//模型空间矩阵拷贝进缓存空间
-		if (_getGameIns()->cMesh)
+		if (m != NULL)
 		{
 			/*计算模型空间矩阵*/
-			Geometry* geo = &(_getGameIns()->cMesh->geo);
 			Matrix srm = CreateStandardMatrix();
 			Matrix srtm = CreateStandardMatrix();
 			Matrix ms = MakeScaMatrix(1, 1);
@@ -408,14 +483,10 @@ void Renderer_ThreadMain(RendererThread* thread) {
 			Matrix mt = MakeTranslataMatrix(0, 0);
 			Multi2Matrix(mr.m, ms.m, srm.m);
 			Multi2Matrix(mt.m, srm.m, srtm.m);
-			_getGameIns()->cMesh->tmForRender = srtm;
-
-			//渲染阶段为顶点变换
-			r->renderStage = 1;
+			m->tmForRender = srtm;
 		}
 
-		Sleep(10);
-
+		//Sleep(1);
 		//完成渲染任务
 		sendToMain.type = MESSAGE_RENDEROVER;
 		MsgAssistant_SendMsgToMain(_getGameEngine()->msgAssist, sendToMain, true);
@@ -436,101 +507,89 @@ void Renderer_ThreadMain(RendererThread* thread) {
 //结果缓冲区边界判断
 //顶点任务完成判断
 uint32_t Renderer_GetTaskIndex() {
+	Renderer* r = _getRenderer();
+	uint32_t meshCount = GetArrayElementCount(&(_getGameIns()->meshs));
+	uint32_t taskIndex = -1;
+	if (r->meshIndex > meshCount)return taskIndex;
 
-	return -1;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void Renderer_TaskMain() {
-
-	RendererThread* thread = (RendererThread*)malloc(sizeof(RendererThread));
-	thread->handle = CreateThread(NULL, 0, Renderer_ThreadMain, thread, 0, &thread->id);
-
-	uint32_t* resultCount = (uint32_t*)malloc(sizeof(uint32_t));
-	uint32_t taskCount = 0;
-	//Queue RMeshs = CreateQueue(_getRenderer()->RenderMeshs.length, sizeof(RMesh));
-	//for (size_t i = 0; i < _getRenderer()->RenderMeshs.length; i++)
-	//{
-	//	EnQueue(&RMeshs, GetArrayElementByIndex(&_getRenderer()->RenderMeshs, i));
-	//}
-	//RMesh* rmesh = (RMesh*)DeQueue(&RMeshs);
-	//for (size_t i = 0; i < _getRenderer()->objcects.length; i++)
-	//{
-	//	Geo* geo = (Geo*)GetArrayElementByIndex(&_getRenderer()->objcects, i);
-	//	if (geo->id == rmesh->id)
-	//	{
-	//		//取顶点数据
-	//		taskCount = geo->numOfVetices;
-	//	}
-	//}
-
-	bool isRunning = true;
-	while (isRunning)
+	Mesh* mesh = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs), r->meshIndex);
+	switch (r->renderStage)
 	{
-		uint8_t fromThreadMsg = _getGameEngine()->msgAssist->fromThreadMessage.type;
-		if (fromThreadMsg != MESSAGE_NONE)
+	case 1:
+		//顶点处理阶段
+		//taskIndex 代表顶点Index
+		if (r->taskIndex < r->numOfVertex)
 		{
-			if (fromThreadMsg == MESSAGE_START)
-			{
-				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_START;
-			}
-			if (fromThreadMsg == MESSAGE_TYPE2)
-			{
-				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_TYPE2;
-
-			}
-			if (fromThreadMsg == MESSAGE_CLOSE)
-			{
-				_getGameEngine()->msgAssist->toThreadMessage.type = MESSAGE_CLOSE;
-
-			}
-			_getGameEngine()->msgAssist->fromThreadMessage.type = MESSAGE_NONE;
+			EnterCriticalSection(r->taskIndexLock);
+			r->taskIndex += 1;
+			LeaveCriticalSection(r->taskIndexLock);
+			taskIndex = r->taskIndex;
 		}
+		break;
+	case 2:
+		//片元裁切阶段
+		//taskIndex 代表三角形Index
+		if (r->taskIndex < r->numOfVertex / 3)
+		{
+			EnterCriticalSection(r->taskIndexLock);
+			r->taskIndex += 1;
+			LeaveCriticalSection(r->taskIndexLock);
+			taskIndex = r->taskIndex;
+		}
+		
 
-		//if (*resultCount == taskCount)
-		//{
-		//	RMesh* rmesh = (RMesh*)DeQueue(&RMeshs);
-		//	for (size_t i = 0; i < _getRenderer()->objcects.length; i++)
-		//	{
-		//		Geo* geo = (Geo*)GetArrayElementByIndex(&_getRenderer()->objcects, i);
-		//		if (geo->id == rmesh->id)
-		//		{
-		//			//取顶点数据
-		//			taskCount = geo->numOfVetices;
-		//			*resultCount = 0;
-		//			thread->toThreadMessage.type = 11;
-		//		}
-		//	}
+		break;
+	case 3:
+		//片元着色阶段
+		//逐包围盒 taskIndex代表包围盒Index
+		if (r->taskIndex < (r->numOfVertex / 3))
+		{
+			/*临时用*/
+			EnterCriticalSection(r->taskIndexLock);
+			r->taskIndex += 1;
+			LeaveCriticalSection(r->taskIndexLock);
+			//break;
+			//获取BBox信息
+			//float x_min = mesh->geo.triangleBBox[r->taskIndex * 4 + 0];
+			//float y_min = mesh->geo.triangleBBox[r->taskIndex * 4 + 1];
+			//float x_max = mesh->geo.triangleBBox[r->taskIndex * 4 + 2];
+			//float y_max = mesh->geo.triangleBBox[r->taskIndex * 4 + 3];
+
+			//float w = x_max - x_min;
+			//float h = y_max - y_min;
+			////w*h 表示包围盒中片元总个数
+			//if (r->taskFragmentIndex < (uint32_t)(w * h))
+			//{
+			//	//在当前BBox中的片元递增
+			//	r->taskFragmentIndex = r->taskFragmentIndex + 1;
+			//}
+			//else {
+			//	//三角面递增
+			//	EnterCriticalSection(r->taskIndexLock);
+			//	r->taskIndex = r->taskIndex + 1;
+			//	LeaveCriticalSection(r->taskIndexLock);
+			//	//片元归零
+			//	r->taskFragmentIndex = 0;
+			//}
+		}
+		//else {
+		//	//当前mesh任务完成 mesh递增
+		//	r->meshIndex++;
+		//	//重置任务
+		//	r->taskIndex = 0;
 		//}
 
-		//条件触发
-		//isRunning = false;
-		Sleep(10);
+
+		break;
+	default:
+		break;
 	}
 
-	CloseHandle(thread->handle);
-
+	return taskIndex;
 }
+
+
+
 
 
 

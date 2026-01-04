@@ -17,10 +17,6 @@
 typedef struct {
 	DWORD id;
 	HANDLE handle;
-	/*bool isActive;
-	uint8_t fromThreadMessage;
-	Message toThreadMessage;
-	uint32_t* resultCount;*/
 }RendererThread;
 
 typedef struct {
@@ -49,20 +45,22 @@ typedef struct {
 	//渲染线程参数
 	bool isRunning;
 	//渲染任务数 （三角面index数）  线程加锁访问
-	uint32_t* taskTriangleIndex; 
+	uint32_t taskTriangleIndex; 
 	//渲染任务数 （三角面中片元index数） 线程加锁访问
-	uint32_t* taskFragmentIndex;
+	uint32_t taskFragmentIndex;
 	//所有三角面内片元总数
-	uint32_t completeCount;
-
+	uint32_t numOfVertex;
+	//mesh编号
+	uint32_t meshIndex;
 	//任务编号
-	uint32_t* taskIndex;
+	uint32_t taskIndex;
 	//渲染阶段（切换到不同阶段做不同任务）
 	uint8_t renderStage;
 
 	CRITICAL_SECTION* vertexIndexLock;
 	CRITICAL_SECTION* taskTriangleIndexLock;
 	CRITICAL_SECTION* taskFragmentIndexLock;
+	CRITICAL_SECTION* taskIndexLock;
 
 }Renderer;
 
@@ -112,9 +110,6 @@ void Renderer_Clear();
 
 /*贴图采样器*/
 Color4 Renderer_UVTextureSample(float u, float v, uint32_t tID);
-
-/*渲染主线程*/
-void Renderer_TaskMain();
 
 void Renderer_ThreadMain(RendererThread* thread);
 
