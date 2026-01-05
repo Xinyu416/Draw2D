@@ -36,7 +36,8 @@ typedef struct {
 	Matrix tm; //36byte
 
 	//变换矩阵缓存
-	Matrix tmForRender;
+	Matrix modelTMForRender;
+	Matrix cameraTMForRender;
 	float rot; //4byte
 	Vect2 scale; //8byte
 	Material mat;//5byte
@@ -53,6 +54,12 @@ void GeometryAddQuad(Geometry* geo, const Quad quad);
 Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geometry geo, const Matrix tm, const Material mat);
 
 void MeshSendToRenderer(Mesh* m);
+
+/*模型空间TM*/
+void UpdateModelTM(Mesh* m);
+
+/*相机空间TM*/
+void UpdateCameraTM(Mesh* m, Matrix camMatrix);
 
 Vect2* getUVbyType(uint8_t category, uint8_t type, uint32_t wNum, uint32_t hNum);
 

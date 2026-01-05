@@ -59,19 +59,20 @@ void GameEngine_SceneLoop(float delta) {
 	if (_getGameEngine()->isRenderingStart)
 	{
 		//提交数据，缓存数据(Mesh 相机)
-		_getRenderer()->cameraForRender = *(_getGameIns()->pCam);
 		for (size_t i = 0; i < GetArrayElementCount(&(_getGameIns()->meshs)); i++)
 		{
 			Mesh* m = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs),i);
 			MeshSendToRenderer(m);
+			UpdateModelTM(m);
+			UpdateCameraTM(m,_getGameIns()->pCam->tm);
 		}
-		printf("submit camera and mesh data\n");
 
 		//回消息 （有收到消息才回）
 		Message sendToRenderer = { .type = MESSAGE_RENDEROVER,.data[0] = 1 };
 		MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToRenderer, false);
 	}
-
+	//画背景（临时用）
+	GameEngine_DrawBg();
 	GameIns_Tick(delta);
 	Sleep(5);
 	printf("GameEngine Loop\n");
@@ -142,7 +143,7 @@ void GameEngine_Render() {
 
 void GameEngine_DrawBg() {
 
-	//Renderer_DrawBg();
+	Renderer_DrawBg();
 }
 
 void GameEngine_Release() {

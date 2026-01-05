@@ -34,12 +34,27 @@ void GeometryAddQuad(Geometry* geo, const Quad quad) {
 }
 
 Mesh CreateMesh(const uint32_t id, Vect2 pos, float rot, Vect2 scale, const Geometry geo, const Matrix tm, const Material mat) {
-	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.scale = scale,.geo = geo,.tm = tm,.mat = mat,.tmForRender = tm };
+	Mesh mesh = { .id = id,.pos = pos,.rot = rot,.scale = scale,.geo = geo,.tm = tm,.mat = mat,.modelTMForRender = tm };
 	return mesh;
 }
 
 void MeshSendToRenderer(Mesh* m) {
-	m->tmForRender = m->tm;
+	m->modelTMForRender = m->tm;
+}
+
+void UpdateModelTM(Mesh* m) {
+	Matrix srm = CreateStandardMatrix();
+	Matrix srtm = CreateStandardMatrix();
+	Matrix ms = MakeScaMatrix(m->scale.x, m->scale.y);
+	Matrix mr = MakeRotMatrix(Deg2Rad(m->rot));
+	Matrix mt = MakeTranslataMatrix(m->pos.x, m->pos.y);
+	Multi2Matrix(mr.m, ms.m, srm.m);
+	Multi2Matrix(mt.m, srm.m, srtm.m);
+	m->modelTMForRender = srtm;
+}
+
+void UpdateCameraTM(Mesh* m, Matrix camMatrix) {
+	Multi2Matrix(m->modelTMForRender.m, camMatrix.m, m->cameraTMForRender.m);
 }
 
 //通过index取到切块的uv图

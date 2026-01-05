@@ -11,6 +11,22 @@ uint8_t GetNumberOfProcessors() {
 	return proNum;
 }
 
+void VertexTranfrom(Mesh *mesh,uint32_t inTaskIndex) {
+	/*顶点变换阶段*/
+	//模型的顶点信息
+	float* vertex = mesh->geo.vertices;
+	Matrix cameraTM = mesh->cameraTMForRender;
+	//buffer中心
+	Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
+	//将mesh的顶点转换到相机空间 *相机的逆矩阵
+	Vect2 p0 = Vect2MultMatrix(MakeVect2(vertex[inTaskIndex + 0], vertex[inTaskIndex + 1]), cameraTM.m);
+	//顶点转世界计算裁切空间位置 （需要考虑偏移值）
+	Vect2 clipP = MakeVect2((p0.x / _getGameIns()->pCam->width), (p0.y / _getGameIns()->pCam->height));
+	//裁切空间点信息存入缓存空间
+	mesh->geo.verticesInClipForRender[inTaskIndex + 0] = clipP.x;
+	mesh->geo.verticesInClipForRender[inTaskIndex + 1] = clipP.y;
+}
+
 DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 	DWORD threadId = thread->id;
 	printf("[Shader_ThreadMain]::id = %d\n", thread->id);
@@ -20,33 +36,17 @@ DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 		//获取任务index
 		uint32_t getTaskIndex = Renderer_GetTaskIndex();
 		Mesh* mesh = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs), r->meshIndex);
-		//取不到任务 空跑
+		//取不到任务 空跑 什么也不做
 		if (getTaskIndex == -1)continue;
 
 		switch (r->renderStage) {
-		case 1:
-			/*顶点变换阶段*/
-
-			////模型的顶点信息
-			//float* vertex = mesh->geo.vertices;
-			//Matrix m = _getGameIns()->cMesh->tmForRender;
-			////顶点从模型空间转换成世界空间
-			//Vect2 vp = Vect2MultMatrix(MakeVect2(vertex[getTaskIndex + 0], vertex[getTaskIndex + 1]), m.m);
-			////buffer中心
-			//Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
-			////将mesh的顶点转换到相机空间 *相机的逆矩阵
-			//Vect2 p0 = Vect2MultMatrix(vp, _getRenderer()->cameraForRender.tm.m);
-			////顶点转世界计算裁切空间位置 （需要考虑偏移值）
-			//Vect2 clipP = MakeVect2((p0.x / _getGameIns()->pCam->width), (p0.y / _getGameIns()->pCam->height));
-			////裁切空间点信息存入缓存空间
-			//_getGameIns()->cMesh->geo.verticesInClipForRender[getTaskIndex + 0] = clipP.x;
-			//_getGameIns()->cMesh->geo.verticesInClipForRender[getTaskIndex + 1] = clipP.y;
+		case RENDERSTAGE_VERTEXTRAS:
 			
 			//做任务
-			Sleep(1);
-
+			VertexTranfrom(mesh, getTaskIndex);
+			//Sleep(1);
 			break;
-		case 2:
+		case RENDERSTAGE_FRAGMENTCLIP:
 
 			///*片元裁切阶段*/
 			////以三角面为单位（三个点一组）
@@ -73,7 +73,7 @@ DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 			//做任务
 			Sleep(1);
 			break;
-		case 3:
+		case RENDERSTAGE_FRAGMENTSHADING:
 			/*片元着色阶段*/
 			//Geometry geo = _getGameIns()->cMesh->geo;
 			//for (size_t y = 0; y < Renderer_GetFrameHeight(); y++)
@@ -118,6 +118,9 @@ DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 
 			//做任务
 			Sleep(1);
+
+			break;
+		case RENDERSTAGE_SHADECOMPLETE:
 
 			break;
 		}
@@ -191,13 +194,12 @@ DWORD CALLBACK __Shader_ThreadMain(ShaderThread* thread) {
 			//printf("[%d]:completeCount:%d,currentVertexIndex:%d\n", thread->id, _getRenderer()->completeCount, currentVertexIndex);
 			//模型的顶点信息
 			float* vertex = _getGameIns()->cMesh->geo.vertices;
-			Matrix m = _getGameIns()->cMesh->tmForRender;
-			//顶点从模型空间转换成世界空间
-			Vect2 vp = Vect2MultMatrix(MakeVect2(vertex[vi + 0], vertex[vi + 1]), m.m);
+			Mesh* mesh = _getGameIns()->cMesh;
+			Matrix m = _getGameIns()->cMesh->modelTMForRender;
 			//buffer中心
 			Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
 			//将mesh的顶点转换到相机空间 *相机的逆矩阵
-			Vect2 p0 = Vect2MultMatrix(vp, _getRenderer()->cameraForRender.tm.m);
+			Vect2 p0 = Vect2MultMatrix(MakeVect2(vertex[vi + 0], vertex[vi + 1]), mesh->cameraTMForRender.m);
 			//顶点转世界计算裁切空间位置 （需要考虑偏移值）
 			Vect2 clipP = MakeVect2((p0.x / _getGameIns()->pCam->width), (p0.y / _getGameIns()->pCam->height));
 			//Vect2 SA = AddVect2(MakeVect2((p0.x / _getGameIns()->pCam->width) * (float)Renderer_GetFrameWidth(), (p0.y / _getGameIns()->pCam->height) * (float)Renderer_GetFrameHeight()), half);
@@ -232,7 +234,7 @@ DWORD CALLBACK __Shader_ThreadMain(ShaderThread* thread) {
 
 			//以三角面为单位（三个点一组）
 			uint32_t ti = currentTriangleIndex * 6;
-			Matrix srtm = _getGameIns()->cMesh->tmForRender;
+			Matrix srtm = _getGameIns()->cMesh->cameraTMForRender;
 
 			//屏幕空间点信息
 			Vect2 A = MakeVect2(_getGameIns()->cMesh->geo.verticesInClipForRender[ti + 0], _getGameIns()->cMesh->geo.verticesInClipForRender[ti + 1]);

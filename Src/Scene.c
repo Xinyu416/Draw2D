@@ -34,9 +34,9 @@ void Scene_Init() {
 		ArrayRelease(&_getGameIns()->meshs);
 	}
 
-	//SetMapData();
-	//CreateMeshData(BG, 3, 3, 1);		//0
-	CreateMeshData(BEAN, 1, 1, 2);	//1
+	SetMapData();
+	CreateMeshData(BG, 3, 3, 1);		//0
+	//CreateMeshData(BEAN, 1, 1, 2);	//1
 	//CreateMeshData(ITEM, 1, 1, 3);	//2
 	//GenerateRoleData();				//3
 	//设置角色数据

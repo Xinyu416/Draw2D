@@ -13,6 +13,11 @@
 #include "Queue.h"
 #include "GameEngine.h";
 
+#define RENDERSTAGE_NONE 0
+#define RENDERSTAGE_VERTEXTRAS 1
+#define RENDERSTAGE_FRAGMENTCLIP 2
+#define RENDERSTAGE_FRAGMENTSHADING 3
+#define RENDERSTAGE_SHADECOMPLETE 4
 
 typedef struct {
 	DWORD id;
@@ -40,8 +45,7 @@ typedef struct {
 	MemManager memM;
 	FrameBuffer frameBuffer;
 	Array objcects;
-	//渲染相机
-	Camera cameraForRender;
+
 	//渲染线程参数
 	bool isRunning;
 	//渲染任务数 （三角面index数）  线程加锁访问
@@ -54,6 +58,11 @@ typedef struct {
 	uint32_t meshIndex;
 	//任务编号
 	uint32_t taskIndex;
+	//任务总数
+	uint32_t taskTotalCount;
+
+	Mesh* currentMesh;
+
 	//渲染阶段（切换到不同阶段做不同任务）
 	uint8_t renderStage;
 
