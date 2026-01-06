@@ -43,6 +43,14 @@ void Renderer_Stop() {
 	_getRenderer()->isRunning = false;
 }
 
+Mesh* Renderer_GetCurrentMesh() {
+	return _getRenderer()->currentMesh;
+}
+
+void Renderer_SetCurrentMesh(Mesh* m) {
+	_getRenderer()->currentMesh = m;
+}
+
 uint8_t* Renderer_GetFrameBuffer() {
 	return _getRenderer()->frameBuffer.buffer;
 }
@@ -370,7 +378,9 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	//shaderThread->handle = CreateThread(NULL, 0, Shader_ThreadMain, shaderThread, 0, &shaderThread->id);
 
 	//最大线程数
-	const uint32_t MAX_THREADS = 1;
+	uint32_t nop = GetNumberOfProcessors() - 2;
+	printf("Renderer_ThreadMain::GetNumberOfProcessors:%d\n", nop);
+	const uint32_t MAX_THREADS = 20;
 	ShaderThread* threadArray = (ShaderThread*)malloc(sizeof(ShaderThread) * MAX_THREADS);
 	//渲染线程
 	ShaderThread* shaderThread = NULL;
@@ -378,7 +388,6 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	{
 		shaderThread = threadArray + i;
 		shaderThread->handle = CreateThread(NULL, 0, Shader_ThreadMain, shaderThread, 0, &shaderThread->id);
-
 	}
 
 	/*初始化锁*/
@@ -387,81 +396,78 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	InitializeCriticalSection(r->vertexIndexLock);
 	InitializeCriticalSection(r->taskIndexLock);
 
-	r->meshIndex = 0;
 	Sleep(10);
 	//渲染循环
 	r->isRunning = true;
 	while (r->isRunning)
 	{
-		//当前处理的Mesh
-		Mesh* m = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs), r->meshIndex);
-		if (m == NULL)continue;
-		r->numOfVertex = m->geo.numOfVertex;
 		uint32_t numOfMeshes = GetArrayElementCount(&(_getGameIns()->meshs));
-
+		printf("Renderer_ThreadMain::numOfMeshes:%d\n", numOfMeshes);
 		for (size_t i = 0; i < numOfMeshes; i++)
 		{
-			r->currentMesh = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs), r->meshIndex);
+			Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs), i);
+			Renderer_SetCurrentMesh(pmesh);
 
 			//渲染阶段为顶点变换
 			r->renderStage = RENDERSTAGE_VERTEXTRAS;
 			r->taskIndex = 0;
-			r->taskTotalCount = 20;
+			r->taskTotalCount = 100;
 			while (true)
 			{
 				if (r->renderStage == RENDERSTAGE_VERTEXTRAS)
 				{
-					if (r->taskIndex == r->taskTotalCount)
+					if (r->taskIndex >= r->taskTotalCount)
 					{
 						//任务做完 切换状态
 						r->renderStage = RENDERSTAGE_NONE;
 						break;
 					}
-					printf("[1]%d/%d\n", r->taskIndex, r->taskTotalCount);
+					printf("[%d]%d/%d\n", i, r->taskIndex, r->taskTotalCount);
 				}
-				//Sleep(5);
+				Sleep(1);
 			}
 
+
+
 			////当前阶段为片元裁切
-			//r->renderStage = RENDERSTAGE_FRAGMENTCLIP;
-			//r->taskIndex = 0;
-			//r->taskTotalCount = 100;
-			//printf("Stage 2\n");
-			//while (true)
-			//{
-			//	if (r->renderStage == RENDERSTAGE_FRAGMENTCLIP)
-			//	{
-			//		if (r->taskIndex == r->taskTotalCount)
-			//		{
-			//			//任务做完 切换状态
-			//			r->renderStage = RENDERSTAGE_NONE;
-			//			break;
-			//		}
-			//		printf("[2]%d/%d\n", r->taskIndex, r->taskTotalCount);
-			//	}
-			//	Sleep(5);
-			//}
-			////当前阶段为片元着色
-			//r->renderStage = RENDERSTAGE_FRAGMENTSHADING;
-			//r->taskIndex = 0;
-			//r->taskTotalCount = 100;//三角面数量
-			//printf("Stage 3\n");
-			//while (true)
-			//{
-			//	if (r->renderStage == RENDERSTAGE_FRAGMENTSHADING)
-			//	{
-			//		//逐三顶点处理片元像素
-			//		if (r->taskIndex == r->taskTotalCount)
-			//		{
-			//			//任务做完 切换状态
-			//			r->renderStage = RENDERSTAGE_NONE;
-			//			r->meshIndex++;
-			//		}
-			//		printf("[3]%d/%d\n", r->taskIndex, r->taskTotalCount);
-			//	}
-			//	Sleep(5);
-			//}
-		//}
+			r->renderStage = RENDERSTAGE_FRAGMENTCLIP;
+			r->taskIndex = 0;
+			r->taskTotalCount = 100;
+			printf("Stage 2\n");
+			while (true)
+			{
+				if (r->renderStage == RENDERSTAGE_FRAGMENTCLIP)
+				{
+					if (r->taskIndex >= r->taskTotalCount)
+					{
+						//任务做完 切换状态
+						r->renderStage = RENDERSTAGE_NONE;
+						break;
+					}
+					printf("[%d]%d/%d\n", i, r->taskIndex, r->taskTotalCount);
+				}
+				Sleep(3);
+			}
+			//当前阶段为片元着色
+			r->renderStage = RENDERSTAGE_FRAGMENTSHADING;
+			r->taskIndex = 0;
+			r->taskTotalCount = 100;//三角面数量
+			printf("Stage 3\n");
+			while (true)
+			{
+				if (r->renderStage == RENDERSTAGE_FRAGMENTSHADING)
+				{
+					//逐三顶点处理片元像素
+					if (r->taskIndex >= r->taskTotalCount)
+					{
+						//任务做完 切换状态
+						r->renderStage = RENDERSTAGE_NONE;
+						break;
+					}
+					printf("[%d]%d/%d\n", i, r->taskIndex, r->taskTotalCount);
+				}
+				Sleep(3);
+			}
 		}
 		Sleep(1);
 		//完成渲染任务
@@ -511,15 +517,20 @@ uint32_t Renderer_GetTaskIndex() {
 		(r->taskIndex)++;
 		LeaveCriticalSection(r->taskIndexLock);
 	}
-	else if (r->renderStage == RENDERSTAGE_FRAGMENTCLIP)
-	{
+	else if (r->renderStage == RENDERSTAGE_FRAGMENTCLIP) {
 		//获取任务index
 		EnterCriticalSection(r->taskIndexLock);
 		taskIndex = r->taskIndex;
 		(r->taskIndex)++;
 		LeaveCriticalSection(r->taskIndexLock);
 	}
-
+	else if (r->renderStage == RENDERSTAGE_FRAGMENTSHADING) {
+		//获取任务index
+		EnterCriticalSection(r->taskIndexLock);
+		taskIndex = r->taskIndex;
+		(r->taskIndex)++;
+		LeaveCriticalSection(r->taskIndexLock);
+	}
 	return taskIndex;
 }
 

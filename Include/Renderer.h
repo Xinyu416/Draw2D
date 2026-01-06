@@ -54,8 +54,6 @@ typedef struct {
 	uint32_t taskFragmentIndex;
 	//所有三角面内片元总数
 	uint32_t numOfVertex;
-	//mesh编号
-	uint32_t meshIndex;
 	//任务编号
 	uint32_t taskIndex;
 	//任务总数
@@ -75,6 +73,9 @@ typedef struct {
 
 Renderer* _getRenderer();
 
+void Renderer_SetCurrentMesh(Mesh* m);
+
+Mesh* Renderer_GetCurrentMesh();
 
 void Renderer_Stop();
 

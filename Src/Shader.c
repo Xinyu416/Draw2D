@@ -11,11 +11,12 @@ uint8_t GetNumberOfProcessors() {
 	return proNum;
 }
 
-void VertexTranfrom(Mesh *mesh,uint32_t inTaskIndex) {
+void VertexTranfrom(uint32_t inTaskIndex) {
 	/*顶点变换阶段*/
+	Mesh* pmesh = Renderer_GetCurrentMesh();
 	//模型的顶点信息
-	float* vertex = mesh->geo.vertices;
-	Matrix cameraTM = mesh->cameraTMForRender;
+	float* vertex = pmesh->geo.vertices;
+	Matrix cameraTM = pmesh->cameraTMForRender;
 	//buffer中心
 	Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
 	//将mesh的顶点转换到相机空间 *相机的逆矩阵
@@ -23,8 +24,83 @@ void VertexTranfrom(Mesh *mesh,uint32_t inTaskIndex) {
 	//顶点转世界计算裁切空间位置 （需要考虑偏移值）
 	Vect2 clipP = MakeVect2((p0.x / _getGameIns()->pCam->width), (p0.y / _getGameIns()->pCam->height));
 	//裁切空间点信息存入缓存空间
-	mesh->geo.verticesInClipForRender[inTaskIndex + 0] = clipP.x;
-	mesh->geo.verticesInClipForRender[inTaskIndex + 1] = clipP.y;
+	pmesh->geo.verticesInClipForRender[inTaskIndex + 0] = clipP.x;
+	pmesh->geo.verticesInClipForRender[inTaskIndex + 1] = clipP.y;
+}
+
+void FragmentClip(uint32_t inTaskIndex) {
+	//以三角面为单位（三个点一组）
+	uint32_t ti = inTaskIndex * 6;
+	Mesh* pmesh = Renderer_GetCurrentMesh();
+	//屏幕空间点信息
+	Vect2 A = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 0], pmesh->geo.verticesInClipForRender[ti + 1]);
+	Vect2 B = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 2], pmesh->geo.verticesInClipForRender[ti + 3]);
+	Vect2 C = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 4], pmesh->geo.verticesInClipForRender[ti + 5]);
+	//计算boundingBox大小 
+	float x_min = fminf(fminf(A.x, B.x), C.x);
+	float y_min = fminf(fminf(A.y, B.y), C.y);
+	float x_max = fmaxf(fmaxf(A.x, B.x), C.x);
+	float y_max = fmaxf(fmaxf(A.y, B.y), C.y);
+	//写入BBox值
+	EnterCriticalSection(_getRenderer()->taskTriangleIndexLock);
+	*(pmesh->geo.triangleBBox + inTaskIndex * 4 + 0) = x_min;
+	*(pmesh->geo.triangleBBox + inTaskIndex * 4 + 1) = y_min;
+	*(pmesh->geo.triangleBBox + inTaskIndex * 4 + 2) = x_max;
+	*(pmesh->geo.triangleBBox + inTaskIndex * 4 + 3) = y_max;
+	LeaveCriticalSection(_getRenderer()->taskTriangleIndexLock);
+}
+
+void FragmentShading(uint32_t inTaskIndex) {
+	//以三角面为单位（三个点一组）
+	Mesh* pmesh = Renderer_GetCurrentMesh();
+	Geometry geo = pmesh->geo;
+	uint32_t ti = inTaskIndex * 6;
+	//三角面内片元（像素数）为单位
+	//三个顶点值取出BBox
+	//屏幕空间点信息
+	Vect2 A = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 0], pmesh->geo.verticesInClipForRender[ti + 1]);
+	Vect2 B = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 2], pmesh->geo.verticesInClipForRender[ti + 3]);
+	Vect2 C = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 4], pmesh->geo.verticesInClipForRender[ti + 5]);
+
+	for (size_t y = 0; y < Renderer_GetFrameHeight(); y++)
+	{
+		for (size_t x = 0; x < Renderer_GetFrameWidth(); x++)
+		{
+			Vect2 uv[3] = { 0 };
+			uv[0] = MakeVect2(geo.uvs[ti + 0], geo.uvs[ti + 1]);
+			uv[1] = MakeVect2(geo.uvs[ti + 2], geo.uvs[ti + 3]);
+			uv[2] = MakeVect2(geo.uvs[ti + 4], geo.uvs[ti + 5]);
+			//像素在boundingBox内才计算 否则跳过
+			if (!(x >= x_min && x <= x_max && y >= y_min && y <= y_max))continue;
+			size_t index = y * Renderer_GetFrameWidth() * Renderer_GetFrameBytepp() + x * Renderer_GetFrameBytepp();
+			//bgr buffer像素坐标 偏移到每个像素中心去除锯齿
+			Vect2 pix = MakeVect2((float)x + 0.5f, (float)y + 0.5f);
+			//重心坐标值
+			float alpha = (-(pix.x - B.x) * (C.y - B.y) + (pix.y - B.y) * (C.x - B.x)) / (-(A.x - B.x) * (C.y - B.y) + (A.y - B.y) * (C.x - B.x));
+			float beta = (-(pix.x - C.x) * (A.y - C.y) + (pix.y - C.y) * (A.x - C.x)) / (-(B.x - C.x) * (A.y - C.y) + (B.y - C.y) * (A.x - C.x));
+			float gama = 1.f - alpha - beta;
+			//判断点在三角形内还是外
+			if (alpha >= 0 && beta >= 0 && gama >= 0)
+			{
+				//通过顶点的uv值算出每个点的uv值
+				float uv_u = alpha * uv[0].x + beta * uv[1].x + gama * uv[2].x;
+				float uv_v = alpha * uv[0].y + beta * uv[1].y + gama * uv[2].y;
+				//贴图颜色采样
+				Color4 colPick = Renderer_UVTextureSample(uv_u, uv_v, 1);
+				//颜色混合 color*alpha + bg*(1-alpha)
+				float colorAlpha = ((float)colPick.a / 255.f);
+				_getRenderer()->frameBuffer.buffer[index + 0] = colPick.b * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 0] * (1.f - colorAlpha);
+				_getRenderer()->frameBuffer.buffer[index + 1] = colPick.g * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 1] * (1.f - colorAlpha);
+				_getRenderer()->frameBuffer.buffer[index + 2] = colPick.r * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 2] * (1.f - colorAlpha);
+			}
+			else
+			{
+				_getRenderer()->frameBuffer.buffer[index + 0] = _getRenderer()->frameBuffer.buffer[index + 0] + _getRenderer()->frameBuffer.backgroudColor.b;
+				_getRenderer()->frameBuffer.buffer[index + 1] = _getRenderer()->frameBuffer.buffer[index + 1] + _getRenderer()->frameBuffer.backgroudColor.g;
+				_getRenderer()->frameBuffer.buffer[index + 2] = _getRenderer()->frameBuffer.buffer[index + 2] + _getRenderer()->frameBuffer.backgroudColor.r;
+			}
+		}
+	}
 }
 
 DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
@@ -35,86 +111,26 @@ DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 	while (true) {
 		//获取任务index
 		uint32_t getTaskIndex = Renderer_GetTaskIndex();
-		Mesh* mesh = (Mesh*)GetArrayElementByIndex(&(_getGameIns()->meshs), r->meshIndex);
+
 		//取不到任务 空跑 什么也不做
 		if (getTaskIndex == -1)continue;
 
 		switch (r->renderStage) {
 		case RENDERSTAGE_VERTEXTRAS:
-			
+
 			//做任务
-			VertexTranfrom(mesh, getTaskIndex);
+			VertexTranfrom(getTaskIndex);
 			//Sleep(1);
 			break;
 		case RENDERSTAGE_FRAGMENTCLIP:
 
 			///*片元裁切阶段*/
-			////以三角面为单位（三个点一组）
-			//uint32_t ti = getTaskIndex * 6;
-			//Matrix srtm = _getGameIns()->cMesh->tmForRender;
-			////屏幕空间点信息
-			//Vect2 A = MakeVect2(_getGameIns()->cMesh->geo.verticesInClipForRender[ti + 0], _getGameIns()->cMesh->geo.verticesInClipForRender[ti + 1]);
-			//Vect2 B = MakeVect2(_getGameIns()->cMesh->geo.verticesInClipForRender[ti + 2], _getGameIns()->cMesh->geo.verticesInClipForRender[ti + 3]);
-			//Vect2 C = MakeVect2(_getGameIns()->cMesh->geo.verticesInClipForRender[ti + 4], _getGameIns()->cMesh->geo.verticesInClipForRender[ti + 5]);
-			////计算boundingBox大小 
-			//float x_min = fminf(fminf(A.x, B.x), C.x);
-			//float y_min = fminf(fminf(A.y, B.y), C.y);
-			//float x_max = fmaxf(fmaxf(A.x, B.x), C.x);
-			//float y_max = fmaxf(fmaxf(A.y, B.y), C.y);
-			////写入BBox值
-			//EnterCriticalSection(_getRenderer()->taskTriangleIndexLock);
-			//Mesh* mesh = GetArrayElementByIndex(&(_getGameIns()->meshs), r->meshIndex);
-			//*(mesh->geo.triangleBBox + getTaskIndex * 4 + 0) = x_min;
-			//*(mesh->geo.triangleBBox + getTaskIndex * 4 + 1) = y_min;
-			//*(mesh->geo.triangleBBox + getTaskIndex * 4 + 2) = x_max;
-			//*(mesh->geo.triangleBBox + getTaskIndex * 4 + 3) = y_max;
-			//LeaveCriticalSection(_getRenderer()->taskTriangleIndexLock);
-
+			FragmentClip(getTaskIndex);
 			//做任务
 			Sleep(1);
 			break;
 		case RENDERSTAGE_FRAGMENTSHADING:
 			/*片元着色阶段*/
-			//Geometry geo = _getGameIns()->cMesh->geo;
-			//for (size_t y = 0; y < Renderer_GetFrameHeight(); y++)
-			//{
-			//	for (size_t x = 0; x < Renderer_GetFrameWidth(); x++)
-			//	{
-			//		Vect2 uv[3] = { 0 };
-			//		uv[0] = MakeVect2(geo.uvs[vi + 0], geo.uvs[vi + 1]);
-			//		uv[1] = MakeVect2(geo.uvs[vi + 2], geo.uvs[vi + 3]);
-			//		uv[2] = MakeVect2(geo.uvs[vi + 4], geo.uvs[vi + 5]);
-			//		//像素在boundingBox内才计算 否则跳过
-			//		if (!(x >= x_min && x <= x_max && y >= y_min && y <= y_max))continue;
-			//		size_t index = y * Renderer_GetFrameWidth() * Renderer_GetFrameBytepp() + x * Renderer_GetFrameBytepp();
-			//		//bgr buffer像素坐标 偏移到每个像素中心去除锯齿
-			//		Vect2 pix = MakeVect2((float)x + 0.5f, (float)y + 0.5f);
-			//		//重心坐标值
-			//		float alpha = (-(pix.x - B.x) * (C.y - B.y) + (pix.y - B.y) * (C.x - B.x)) / (-(A.x - B.x) * (C.y - B.y) + (A.y - B.y) * (C.x - B.x));
-			//		float beta = (-(pix.x - C.x) * (A.y - C.y) + (pix.y - C.y) * (A.x - C.x)) / (-(B.x - C.x) * (A.y - C.y) + (B.y - C.y) * (A.x - C.x));
-			//		float gama = 1.f - alpha - beta;
-			//		//判断点在三角形内还是外
-			//		if (alpha >= 0 && beta >= 0 && gama >= 0)
-			//		{
-			//			//通过顶点的uv值算出每个点的uv值
-			//			float uv_u = alpha * uv[0].x + beta * uv[1].x + gama * uv[2].x;
-			//			float uv_v = alpha * uv[0].y + beta * uv[1].y + gama * uv[2].y;
-			//			//贴图颜色采样
-			//			Color4 colPick = Renderer_UVTextureSample(uv_u, uv_v, 1);
-			//			//颜色混合 color*alpha + bg*(1-alpha)
-			//			float colorAlpha = ((float)colPick.a / 255.f);
-			//			_getRenderer()->frameBuffer.buffer[index + 0] = colPick.b * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 0] * (1.f - colorAlpha);
-			//			_getRenderer()->frameBuffer.buffer[index + 1] = colPick.g * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 1] * (1.f - colorAlpha);
-			//			_getRenderer()->frameBuffer.buffer[index + 2] = colPick.r * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 2] * (1.f - colorAlpha);
-			//		}
-			//		else
-			//		{
-			//			_getRenderer()->frameBuffer.buffer[index + 0] = _getRenderer()->frameBuffer.buffer[index + 0] + _getRenderer()->frameBuffer.backgroudColor.b;
-			//			_getRenderer()->frameBuffer.buffer[index + 1] = _getRenderer()->frameBuffer.buffer[index + 1] + _getRenderer()->frameBuffer.backgroudColor.g;
-			//			_getRenderer()->frameBuffer.buffer[index + 2] = _getRenderer()->frameBuffer.buffer[index + 2] + _getRenderer()->frameBuffer.backgroudColor.r;
-			//		}
-			//	}
-			//}
 
 			//做任务
 			Sleep(1);
