@@ -1,21 +1,4 @@
-﻿  Mesh.c
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
-D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Mesh.c(88,1): warning C4305: “初始化”: 从“double”到“float”截断
-D:\QXY\cpp\Draw2D\Src\Mesh.c(99,9): warning C4101: “v2”: 未引用的局部变量
-D:\QXY\cpp\Draw2D\Src\Mesh.c(98,9): warning C4101: “v1”: 未引用的局部变量
-D:\QXY\cpp\Draw2D\Src\Mesh.c(128,1): warning C4305: “初始化”: 从“double”到“float”截断
-D:\QXY\cpp\Draw2D\Src\Mesh.c(188,10): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
-D:\QXY\cpp\Draw2D\Src\Mesh.c(188,10): message : 请考虑在格式字符串中使用“%zd”
-D:\QXY\cpp\Draw2D\Src\Mesh.c(196,10): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
-D:\QXY\cpp\Draw2D\Src\Mesh.c(196,10): message : 请考虑在格式字符串中使用“%zd”
-D:\QXY\cpp\Draw2D\Src\Mesh.c(204,10): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 1 拥有了类型“size_t”
-D:\QXY\cpp\Draw2D\Src\Mesh.c(204,10): message : 请考虑在格式字符串中使用“%zd”
-D:\QXY\cpp\Draw2D\Src\Mesh.c(191,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Mesh.c(199,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Mesh.c(207,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
-  Scene.c
+﻿  Scene.c
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
 D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
 D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
@@ -23,8 +6,9 @@ D:\QXY\cpp\Draw2D\Src\Scene.c(149,41): warning C4267: “函数”: 从“size_t
 D:\QXY\cpp\Draw2D\Src\Scene.c(149,44): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
 D:\QXY\cpp\Draw2D\Src\Scene.c(207,8): warning C4101: “offset”: 未引用的局部变量
   正在生成代码
-  7 of 108 functions ( 6.5%) were compiled, the rest were copied from previous compilation.
+D:\QXY\cpp\Draw2D\Src\Mesh.c(81): warning C4172: 返回局部变量或临时变量的地址: uvs
+  4 of 110 functions ( 3.6%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    2 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
   Draw2D.vcxproj -> D:\QXY\cpp\Draw2D\x64\Release\Draw2D.exe

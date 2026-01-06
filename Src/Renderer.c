@@ -380,7 +380,7 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	//最大线程数
 	uint32_t nop = GetNumberOfProcessors() - 2;
 	printf("Renderer_ThreadMain::GetNumberOfProcessors:%d\n", nop);
-	const uint32_t MAX_THREADS = 20;
+	const uint32_t MAX_THREADS = 10;
 	ShaderThread* threadArray = (ShaderThread*)malloc(sizeof(ShaderThread) * MAX_THREADS);
 	//渲染线程
 	ShaderThread* shaderThread = NULL;
@@ -401,6 +401,7 @@ void Renderer_ThreadMain(RendererThread* thread) {
 	r->isRunning = true;
 	while (r->isRunning)
 	{
+		Sleep(10);
 		uint32_t numOfMeshes = GetArrayElementCount(&(_getGameIns()->meshs));
 		printf("Renderer_ThreadMain::numOfMeshes:%d\n", numOfMeshes);
 		for (size_t i = 0; i < numOfMeshes; i++)
@@ -411,7 +412,9 @@ void Renderer_ThreadMain(RendererThread* thread) {
 			//渲染阶段为顶点变换
 			r->renderStage = RENDERSTAGE_VERTEXTRAS;
 			r->taskIndex = 0;
-			r->taskTotalCount = 100;
+			r->taskTotalCount = pmesh->geo.numOfVertex;
+			printf("mesh:%d\n",i);
+			printf("Stage 1\n");
 			while (true)
 			{
 				if (r->renderStage == RENDERSTAGE_VERTEXTRAS)
@@ -422,18 +425,18 @@ void Renderer_ThreadMain(RendererThread* thread) {
 						r->renderStage = RENDERSTAGE_NONE;
 						break;
 					}
-					printf("[%d]%d/%d\n", i, r->taskIndex, r->taskTotalCount);
+					//printf("mesh:[%d]-stage:[%d] %d/%d\n", i,1, r->taskIndex, r->taskTotalCount);
 				}
 				Sleep(1);
 			}
 
 
 
-			////当前阶段为片元裁切
+			//当前阶段为片元裁切
 			r->renderStage = RENDERSTAGE_FRAGMENTCLIP;
 			r->taskIndex = 0;
-			r->taskTotalCount = 100;
-			printf("Stage 2\n");
+			r->taskTotalCount = pmesh->geo.maxOfTriangle;
+			printf("Stage 2,maxTriangle:%d\n", pmesh->geo.maxOfTriangle);
 			while (true)
 			{
 				if (r->renderStage == RENDERSTAGE_FRAGMENTCLIP)
@@ -444,14 +447,14 @@ void Renderer_ThreadMain(RendererThread* thread) {
 						r->renderStage = RENDERSTAGE_NONE;
 						break;
 					}
-					printf("[%d]%d/%d\n", i, r->taskIndex, r->taskTotalCount);
+					//printf("mesh:[%d]-stage:[%d]%d/%d\n", i,2, r->taskIndex, r->taskTotalCount);
 				}
 				Sleep(3);
 			}
 			//当前阶段为片元着色
 			r->renderStage = RENDERSTAGE_FRAGMENTSHADING;
 			r->taskIndex = 0;
-			r->taskTotalCount = 100;//三角面数量
+			r->taskTotalCount = pmesh->geo.maxOfTriangle;//三角面数量
 			printf("Stage 3\n");
 			while (true)
 			{
@@ -464,7 +467,7 @@ void Renderer_ThreadMain(RendererThread* thread) {
 						r->renderStage = RENDERSTAGE_NONE;
 						break;
 					}
-					printf("[%d]%d/%d\n", i, r->taskIndex, r->taskTotalCount);
+					//printf("mesh:[%d]- stage:[%d] %d/%d\n", i,3, r->taskIndex, r->taskTotalCount);
 				}
 				Sleep(3);
 			}

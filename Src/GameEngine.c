@@ -72,7 +72,8 @@ void GameEngine_SceneLoop(float delta) {
 		MsgAssistant_SendMsgToThread(_getGameEngine()->msgAssist, sendToRenderer, false);
 	}
 	//ª≠±≥æ∞£®¡Ÿ ±”√£©
-	GameEngine_DrawBg();
+	//GameEngine_DrawBg();
+
 	GameIns_Tick(delta);
 	Sleep(5);
 	printf("GameEngine Loop\n");

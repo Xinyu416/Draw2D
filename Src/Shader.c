@@ -11,14 +11,16 @@ uint8_t GetNumberOfProcessors() {
 	return proNum;
 }
 
+/*顶点变换阶段*/
 void VertexTranfrom(uint32_t inTaskIndex) {
 	/*顶点变换阶段*/
 	Mesh* pmesh = Renderer_GetCurrentMesh();
 	//模型的顶点信息
 	float* vertex = pmesh->geo.vertices;
 	Matrix cameraTM = pmesh->cameraTMForRender;
+
 	//buffer中心
-	Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
+	//Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
 	//将mesh的顶点转换到相机空间 *相机的逆矩阵
 	Vect2 p0 = Vect2MultMatrix(MakeVect2(vertex[inTaskIndex + 0], vertex[inTaskIndex + 1]), cameraTM.m);
 	//顶点转世界计算裁切空间位置 （需要考虑偏移值）
@@ -28,9 +30,12 @@ void VertexTranfrom(uint32_t inTaskIndex) {
 	pmesh->geo.verticesInClipForRender[inTaskIndex + 1] = clipP.y;
 }
 
+/*片元裁切阶段*/
 void FragmentClip(uint32_t inTaskIndex) {
 	//以三角面为单位（三个点一组）
+	//taskIndex为三角面index
 	uint32_t ti = inTaskIndex * 6;
+
 	Mesh* pmesh = Renderer_GetCurrentMesh();
 	//屏幕空间点信息
 	Vect2 A = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 0], pmesh->geo.verticesInClipForRender[ti + 1]);
@@ -41,6 +46,8 @@ void FragmentClip(uint32_t inTaskIndex) {
 	float y_min = fminf(fminf(A.y, B.y), C.y);
 	float x_max = fmaxf(fmaxf(A.x, B.x), C.x);
 	float y_max = fmaxf(fmaxf(A.y, B.y), C.y);
+
+	//printf("FragmentClip::inTaskIndex:%d,xmin:%f,xmax:%f,ymin:%f,ymax:%f\n", inTaskIndex, x_min, x_max, y_min, y_max);
 	//写入BBox值
 	EnterCriticalSection(_getRenderer()->taskTriangleIndexLock);
 	*(pmesh->geo.triangleBBox + inTaskIndex * 4 + 0) = x_min;
@@ -50,11 +57,14 @@ void FragmentClip(uint32_t inTaskIndex) {
 	LeaveCriticalSection(_getRenderer()->taskTriangleIndexLock);
 }
 
+/*片元着色阶段*/
 void FragmentShading(uint32_t inTaskIndex) {
 	//以三角面为单位（三个点一组）
 	Mesh* pmesh = Renderer_GetCurrentMesh();
 	Geometry geo = pmesh->geo;
+	//taskIndex为三角面index
 	uint32_t ti = inTaskIndex * 6;
+	Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
 	//三角面内片元（像素数）为单位
 	//三个顶点值取出BBox
 	//屏幕空间点信息
@@ -62,17 +72,30 @@ void FragmentShading(uint32_t inTaskIndex) {
 	Vect2 B = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 2], pmesh->geo.verticesInClipForRender[ti + 3]);
 	Vect2 C = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 4], pmesh->geo.verticesInClipForRender[ti + 5]);
 
-	for (size_t y = 0; y < Renderer_GetFrameHeight(); y++)
+	uint32_t x_min = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 0] * Renderer_GetFrameWidth() + half.x);
+	uint32_t y_min = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 1] * Renderer_GetFrameHeight() + half.y);
+	uint32_t x_max = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 2] * Renderer_GetFrameWidth() + half.x);
+	uint32_t y_max = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 3] * Renderer_GetFrameHeight() + half.y);
+
+
+	Vect2 uv[3] = { 0 };
+	uv[0] = MakeVect2(geo.uvs[ti + 0], geo.uvs[ti + 1]);
+	uv[1] = MakeVect2(geo.uvs[ti + 2], geo.uvs[ti + 3]);
+	uv[2] = MakeVect2(geo.uvs[ti + 4], geo.uvs[ti + 5]);
+
+	uint32_t width = x_max - x_min;
+	uint32_t height = y_max - y_min;
+	//printf("FragmentShading()::inTaskIndex:%d,xmin:%d,xmax:%d,ymin:%d,ymax:%d,width:%d,height:%d\n",
+	//	inTaskIndex, x_min, x_max, y_min, y_max, width, height);
+
+	//return;
+	for (size_t y = y_min; y < y_max; y++)
 	{
-		for (size_t x = 0; x < Renderer_GetFrameWidth(); x++)
+		for (size_t x = x_min; x < x_max; x++)
 		{
-			Vect2 uv[3] = { 0 };
-			uv[0] = MakeVect2(geo.uvs[ti + 0], geo.uvs[ti + 1]);
-			uv[1] = MakeVect2(geo.uvs[ti + 2], geo.uvs[ti + 3]);
-			uv[2] = MakeVect2(geo.uvs[ti + 4], geo.uvs[ti + 5]);
 			//像素在boundingBox内才计算 否则跳过
-			if (!(x >= x_min && x <= x_max && y >= y_min && y <= y_max))continue;
 			size_t index = y * Renderer_GetFrameWidth() * Renderer_GetFrameBytepp() + x * Renderer_GetFrameBytepp();
+			//printf("index:%d\n", index);
 			//bgr buffer像素坐标 偏移到每个像素中心去除锯齿
 			Vect2 pix = MakeVect2((float)x + 0.5f, (float)y + 0.5f);
 			//重心坐标值
@@ -89,15 +112,20 @@ void FragmentShading(uint32_t inTaskIndex) {
 				Color4 colPick = Renderer_UVTextureSample(uv_u, uv_v, 1);
 				//颜色混合 color*alpha + bg*(1-alpha)
 				float colorAlpha = ((float)colPick.a / 255.f);
+
 				_getRenderer()->frameBuffer.buffer[index + 0] = colPick.b * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 0] * (1.f - colorAlpha);
 				_getRenderer()->frameBuffer.buffer[index + 1] = colPick.g * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 1] * (1.f - colorAlpha);
 				_getRenderer()->frameBuffer.buffer[index + 2] = colPick.r * colorAlpha + _getRenderer()->frameBuffer.buffer[index + 2] * (1.f - colorAlpha);
 			}
 			else
 			{
-				_getRenderer()->frameBuffer.buffer[index + 0] = _getRenderer()->frameBuffer.buffer[index + 0] + _getRenderer()->frameBuffer.backgroudColor.b;
-				_getRenderer()->frameBuffer.buffer[index + 1] = _getRenderer()->frameBuffer.buffer[index + 1] + _getRenderer()->frameBuffer.backgroudColor.g;
-				_getRenderer()->frameBuffer.buffer[index + 2] = _getRenderer()->frameBuffer.buffer[index + 2] + _getRenderer()->frameBuffer.backgroudColor.r;
+				//_getRenderer()->frameBuffer.buffer[index + 0] = _getRenderer()->frameBuffer.buffer[index + 0] + _getRenderer()->frameBuffer.backgroudColor.b;
+				//_getRenderer()->frameBuffer.buffer[index + 1] = _getRenderer()->frameBuffer.buffer[index + 1] + _getRenderer()->frameBuffer.backgroudColor.g;
+				//_getRenderer()->frameBuffer.buffer[index + 2] = _getRenderer()->frameBuffer.buffer[index + 2] + _getRenderer()->frameBuffer.backgroudColor.r;
+
+				_getRenderer()->frameBuffer.buffer[index + 0] = 255;
+				_getRenderer()->frameBuffer.buffer[index + 1] = 255;
+				_getRenderer()->frameBuffer.buffer[index + 2] = 255;
 			}
 		}
 	}
@@ -114,16 +142,15 @@ DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 
 		//取不到任务 空跑 什么也不做
 		if (getTaskIndex == -1)continue;
-
+		//任务领完了，防止主线程监听不到
+		if (getTaskIndex >= r->taskTotalCount)continue;
 		switch (r->renderStage) {
 		case RENDERSTAGE_VERTEXTRAS:
-
 			//做任务
 			VertexTranfrom(getTaskIndex);
 			//Sleep(1);
 			break;
 		case RENDERSTAGE_FRAGMENTCLIP:
-
 			///*片元裁切阶段*/
 			FragmentClip(getTaskIndex);
 			//做任务
@@ -132,6 +159,7 @@ DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 		case RENDERSTAGE_FRAGMENTSHADING:
 			/*片元着色阶段*/
 
+			FragmentShading(getTaskIndex);
 			//做任务
 			Sleep(1);
 
