@@ -1,14 +1,53 @@
-﻿  Scene.c
+﻿  Renderer.c
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
 D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
 D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Scene.c(149,41): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Scene.c(149,44): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-D:\QXY\cpp\Draw2D\Src\Scene.c(207,8): warning C4101: “offset”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Include\Renderer.h(14,1): warning C4067: 预处理器指令后有意外标记 - 应输入换行符
+D:\QXY\cpp\Draw2D\Src\Renderer.c(73,117): warning C4244: “函数”: 从“float”转换到“const uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Renderer.c(73,121): warning C4244: “函数”: 从“float”转换到“const uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Renderer.c(73,125): warning C4244: “函数”: 从“float”转换到“const uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Renderer.c(73,129): warning C4244: “函数”: 从“float”转换到“const uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Renderer.c(135,34): warning C4047: “return”:“uint32_t”与“void *”的间接级别不同
+D:\QXY\cpp\Draw2D\Src\Renderer.c(140,29): warning C4047: “return”:“uint32_t”与“void *”的间接级别不同
+D:\QXY\cpp\Draw2D\Src\Renderer.c(145,33): warning C4047: “return”:“uint32_t”与“void *”的间接级别不同
+D:\QXY\cpp\Draw2D\Src\Renderer.c(149,39): warning C4047: “return”:“uint32_t”与“void *”的间接级别不同
+D:\QXY\cpp\Draw2D\Src\Renderer.c(272,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Renderer.c(273,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Renderer.c(274,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Renderer.c(209,1): warning C4267: “初始化”: 从“size_t”转换到“uint32_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Renderer.c(387,20): warning C4018: “<”: 有符号/无符号不匹配
+D:\QXY\cpp\Draw2D\Src\Renderer.c(410,74): warning C4267: “函数”: 从“size_t”转换到“uint32_t”，可能丢失数据
+  Shader.c
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\winbase.h(9572,5): warning C5105: 生成“已定义”的宏扩展具有未定义的行为
+D:\QXY\cpp\Draw2D\Include\Define.h(52,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Define.h(57,1): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Include\Renderer.h(14,1): warning C4067: 预处理器指令后有意外标记 - 应输入换行符
+D:\QXY\cpp\Draw2D\Src\Shader.c(46,112): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(46,199): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(47,112): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(47,199): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(48,112): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(48,199): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(55,50): warning C4244: “函数”: 从“uint32_t”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(56,51): warning C4244: “函数”: 从“uint32_t”转换到“float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(79,106): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(79,193): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(80,106): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(80,193): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(81,106): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(81,193): warning C4244: “函数”: 从“double”转换到“const float”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(118,144): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(119,144): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(120,144): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(346,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(347,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(348,146): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+D:\QXY\cpp\Draw2D\Src\Shader.c(279,11): warning C4101: “srtm”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Src\Shader.c(240,11): warning C4101: “m”: 未引用的局部变量
+D:\QXY\cpp\Draw2D\Src\Shader.c(242,10): warning C4101: “half”: 未引用的局部变量
   正在生成代码
-D:\QXY\cpp\Draw2D\Src\Mesh.c(81): warning C4172: 返回局部变量或临时变量的地址: uvs
-  4 of 110 functions ( 3.6%) were compiled, the rest were copied from previous compilation.
+  3 of 110 functions ( 2.7%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    2 functions had inline decision re-evaluated but remain unchanged
+    3 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
   Draw2D.vcxproj -> D:\QXY\cpp\Draw2D\x64\Release\Draw2D.exe

@@ -238,7 +238,7 @@ int main()
 	uint8_t bytepp = bpp / 8;
 
 	/*引擎初始化*/
-	uint8_t fps = 2;
+	uint8_t fps = 10;
 	GameEngineInit(width, height, fps, bytepp);
 
 	/*显示窗口*/

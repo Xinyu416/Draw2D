@@ -36,9 +36,9 @@ void Scene_Init() {
 
 	SetMapData();
 	//CreateMeshData(BG, 3, 3, 1);		//0
-	//CreateMeshData(BEAN, 1, 1, 2);	//1
+	CreateMeshData(BEAN, 1, 1, 2);	//1
 	CreateMeshData(ITEM, 1, 1, 3);	//2
-	//GenerateRoleData();				//3
+	GenerateRoleData();				//3
 	//设置角色数据
 	Mesh* pmesh = (Mesh*)GetArrayElementByIndex(&_getGameIns()->meshs, 0);
 	_getGameIns()->cMesh = pmesh;

@@ -144,7 +144,7 @@ void GameEngine_Render() {
 
 void GameEngine_DrawBg() {
 
-	Renderer_DrawBg();
+	//Renderer_DrawBg();
 }
 
 void GameEngine_Release() {

@@ -22,12 +22,16 @@ void VertexTranfrom(uint32_t inTaskIndex) {
 	//buffer中心
 	//Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
 	//将mesh的顶点转换到相机空间 *相机的逆矩阵
-	Vect2 p0 = Vect2MultMatrix(MakeVect2(vertex[inTaskIndex + 0], vertex[inTaskIndex + 1]), cameraTM.m);
-	//顶点转世界计算裁切空间位置 （需要考虑偏移值）
-	Vect2 clipP = MakeVect2((p0.x / _getGameIns()->pCam->width), (p0.y / _getGameIns()->pCam->height));
+	Vect2 p0 = Vect2MultMatrix(MakeVect2(vertex[inTaskIndex*2 + 0], vertex[inTaskIndex*2  + 1]), cameraTM.m);
+	//顶点转世界计算裁切空间位置 （需要考虑偏移值）（-1~1空间）
+	 //printf("p0:(%f,%f)\n", p0.x, p0.y);
+	Vect2 clipP = MakeVect2(0.f, 0.f);
+	float aspect = (float)Renderer_GetFrameWidth() / Renderer_GetFrameHeight();
+	clipP.x = (p0.x / (_getGameIns()->pCam->width * 0.5f));
+	clipP.y = (p0.y / (_getGameIns()->pCam->height * 0.5f));
 	//裁切空间点信息存入缓存空间
-	pmesh->geo.verticesInClipForRender[inTaskIndex + 0] = clipP.x;
-	pmesh->geo.verticesInClipForRender[inTaskIndex + 1] = clipP.y;
+	pmesh->geo.verticesInClipForRender[inTaskIndex*2 + 0] = clipP.x;
+	pmesh->geo.verticesInClipForRender[inTaskIndex*2 + 1] = clipP.y;
 }
 
 /*片元裁切阶段*/
@@ -37,15 +41,19 @@ void FragmentClip(uint32_t inTaskIndex) {
 	uint32_t ti = inTaskIndex * 6;
 
 	Mesh* pmesh = Renderer_GetCurrentMesh();
-	//屏幕空间点信息
-	Vect2 A = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 0], pmesh->geo.verticesInClipForRender[ti + 1]);
-	Vect2 B = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 2], pmesh->geo.verticesInClipForRender[ti + 3]);
-	Vect2 C = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 4], pmesh->geo.verticesInClipForRender[ti + 5]);
+	Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
+	//屏幕空间点信息(从裁切空间转换的信息)
+	Vect2 screen1 = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 0] * Renderer_GetFrameWidth() * 0.5 + half.x, pmesh->geo.verticesInClipForRender[ti + 1] * Renderer_GetFrameHeight() * 0.5 + half.y);
+	Vect2 screen2 = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 2] * Renderer_GetFrameWidth() * 0.5 + half.x, pmesh->geo.verticesInClipForRender[ti + 3] * Renderer_GetFrameHeight() * 0.5 + half.y);
+	Vect2 screen3 = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 4] * Renderer_GetFrameWidth() * 0.5 + half.x, pmesh->geo.verticesInClipForRender[ti + 5] * Renderer_GetFrameHeight() * 0.5 + half.y);
+
+	// 在屏幕空间计算边界框，而不是在裁切空间
+	// 使用整数坐标，并钳制到屏幕范围内
 	//计算boundingBox大小 
-	float x_min = fminf(fminf(A.x, B.x), C.x);
-	float y_min = fminf(fminf(A.y, B.y), C.y);
-	float x_max = fmaxf(fmaxf(A.x, B.x), C.x);
-	float y_max = fmaxf(fmaxf(A.y, B.y), C.y);
+	float x_min = fminf(0.f, fminf(fminf(screen1.x, screen2.x), screen3.x));
+	float y_min = fminf(0.f, fminf(fminf(screen1.y, screen2.y), screen3.y));
+	float x_max = fmaxf(Renderer_GetFrameWidth() - 1, fmaxf(fmaxf(screen1.x, screen2.x), screen3.x));
+	float y_max = fmaxf(Renderer_GetFrameHeight() - 1, fmaxf(fmaxf(screen1.y, screen2.y), screen3.y));
 
 	//printf("FragmentClip::inTaskIndex:%d,xmin:%f,xmax:%f,ymin:%f,ymax:%f\n", inTaskIndex, x_min, x_max, y_min, y_max);
 	//写入BBox值
@@ -67,35 +75,29 @@ void FragmentShading(uint32_t inTaskIndex) {
 	Vect2 half = MakeVect2((float)Renderer_GetFrameWidth() / 2.f, (float)Renderer_GetFrameHeight() / 2.f);
 	//三角面内片元（像素数）为单位
 	//三个顶点值取出BBox
-	//屏幕空间点信息
-	Vect2 A = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 0], pmesh->geo.verticesInClipForRender[ti + 1]);
-	Vect2 B = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 2], pmesh->geo.verticesInClipForRender[ti + 3]);
-	Vect2 C = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 4], pmesh->geo.verticesInClipForRender[ti + 5]);
+	//屏幕空间点信息（从-1~1的裁切空间转成屏幕空间）
+	Vect2 A = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 0] * Renderer_GetFrameWidth() * 0.5 + half.x, pmesh->geo.verticesInClipForRender[ti + 1] * Renderer_GetFrameHeight() * 0.5 + half.y);
+	Vect2 B = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 2] * Renderer_GetFrameWidth() * 0.5 + half.x, pmesh->geo.verticesInClipForRender[ti + 3] * Renderer_GetFrameHeight() * 0.5 + half.y);
+	Vect2 C = MakeVect2(pmesh->geo.verticesInClipForRender[ti + 4] * Renderer_GetFrameWidth() * 0.5 + half.x, pmesh->geo.verticesInClipForRender[ti + 5] * Renderer_GetFrameHeight() * 0.5 + half.y);
 
-	uint32_t x_min = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 0] * Renderer_GetFrameWidth() + half.x);
-	uint32_t y_min = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 1] * Renderer_GetFrameHeight() + half.y);
-	uint32_t x_max = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 2] * Renderer_GetFrameWidth() + half.x);
-	uint32_t y_max = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 3] * Renderer_GetFrameHeight() + half.y);
-
+	uint32_t x_min = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 0]);
+	uint32_t y_min = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 1]);
+	uint32_t x_max = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 2]);
+	uint32_t y_max = (uint32_t)(pmesh->geo.triangleBBox[inTaskIndex * 4 + 3]);
 
 	Vect2 uv[3] = { 0 };
 	uv[0] = MakeVect2(geo.uvs[ti + 0], geo.uvs[ti + 1]);
 	uv[1] = MakeVect2(geo.uvs[ti + 2], geo.uvs[ti + 3]);
 	uv[2] = MakeVect2(geo.uvs[ti + 4], geo.uvs[ti + 5]);
 
-	uint32_t width = x_max - x_min;
-	uint32_t height = y_max - y_min;
-	//printf("FragmentShading()::inTaskIndex:%d,xmin:%d,xmax:%d,ymin:%d,ymax:%d,width:%d,height:%d\n",
-	//	inTaskIndex, x_min, x_max, y_min, y_max, width, height);
 
-	//return;
+
 	for (size_t y = y_min; y < y_max; y++)
 	{
 		for (size_t x = x_min; x < x_max; x++)
 		{
 			//像素在boundingBox内才计算 否则跳过
 			size_t index = y * Renderer_GetFrameWidth() * Renderer_GetFrameBytepp() + x * Renderer_GetFrameBytepp();
-			//printf("index:%d\n", index);
 			//bgr buffer像素坐标 偏移到每个像素中心去除锯齿
 			Vect2 pix = MakeVect2((float)x + 0.5f, (float)y + 0.5f);
 			//重心坐标值
@@ -109,7 +111,7 @@ void FragmentShading(uint32_t inTaskIndex) {
 				float uv_u = alpha * uv[0].x + beta * uv[1].x + gama * uv[2].x;
 				float uv_v = alpha * uv[0].y + beta * uv[1].y + gama * uv[2].y;
 				//贴图颜色采样
-				Color4 colPick = Renderer_UVTextureSample(uv_u, uv_v, 1);
+				Color4 colPick = UVTextureSample(uv_u, uv_v, pmesh->mat.textureId);
 				//颜色混合 color*alpha + bg*(1-alpha)
 				float colorAlpha = ((float)colPick.a / 255.f);
 
@@ -119,13 +121,9 @@ void FragmentShading(uint32_t inTaskIndex) {
 			}
 			else
 			{
-				//_getRenderer()->frameBuffer.buffer[index + 0] = _getRenderer()->frameBuffer.buffer[index + 0] + _getRenderer()->frameBuffer.backgroudColor.b;
-				//_getRenderer()->frameBuffer.buffer[index + 1] = _getRenderer()->frameBuffer.buffer[index + 1] + _getRenderer()->frameBuffer.backgroudColor.g;
-				//_getRenderer()->frameBuffer.buffer[index + 2] = _getRenderer()->frameBuffer.buffer[index + 2] + _getRenderer()->frameBuffer.backgroudColor.r;
-
-				_getRenderer()->frameBuffer.buffer[index + 0] = 255;
-				_getRenderer()->frameBuffer.buffer[index + 1] = 255;
-				_getRenderer()->frameBuffer.buffer[index + 2] = 255;
+				_getRenderer()->frameBuffer.buffer[index + 0] = _getRenderer()->frameBuffer.buffer[index + 0] + _getRenderer()->frameBuffer.backgroudColor.b;
+				_getRenderer()->frameBuffer.buffer[index + 1] = _getRenderer()->frameBuffer.buffer[index + 1] + _getRenderer()->frameBuffer.backgroudColor.g;
+				_getRenderer()->frameBuffer.buffer[index + 2] = _getRenderer()->frameBuffer.buffer[index + 2] + _getRenderer()->frameBuffer.backgroudColor.r;
 			}
 		}
 	}
@@ -145,7 +143,7 @@ DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 		//任务领完了，防止主线程监听不到
 		if (getTaskIndex >= r->taskTotalCount)continue;
 		switch (r->renderStage) {
-		case RENDERSTAGE_VERTEXTRAS:
+		case RENDERSTAGE_VERTEXTRANS:
 			//做任务
 			VertexTranfrom(getTaskIndex);
 			//Sleep(1);
@@ -165,7 +163,7 @@ DWORD CALLBACK Shader_ThreadMain(ShaderThread* thread) {
 
 			break;
 		case RENDERSTAGE_SHADECOMPLETE:
-
+			/*全部完成*/
 			break;
 		}
 		Sleep(10);
