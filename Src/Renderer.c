@@ -132,21 +132,21 @@ uint32_t Renderer_SubmitObject(float* inVertices, float* inUvs, uint32_t inNumOf
 	uint32_t objID = inObjID;
 	//顶点数据
 	float* vertices = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
-	if (vertices == NULL)return NULL;
+	if (vertices == NULL)return 0;
 	memcpy(vertices, inVertices, sizeof(float) * inNumOfVetices * 2);
 
 	//uv 数据
 	float* uvs = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
-	if (uvs == NULL)return NULL;
+	if (uvs == NULL)return 0;
 	memcpy(uvs, inUvs, sizeof(float) * inNumOfVetices * 2);
 
 	//为边界盒数据准备的空间
 	float* bboxes = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices / 3 * 2);
-	if (bboxes == NULL) return NULL;
+	if (bboxes == NULL) return 0;
 
 	//为裁切空间点数据准备的空间
 	float* clipVertices = (float*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(float) * inNumOfVetices * 2);
-	if (clipVertices == NULL) return NULL;
+	if (clipVertices == NULL) return 0;
 
 	//几何体结构体数据
 	Geo* obj = (Geo*)Mem_AllocateStatic(&_getRenderer()->memM, sizeof(Geo));

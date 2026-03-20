@@ -13,7 +13,7 @@ Geometry CreateGeometry(const uint32_t maxOfTriangle) {
 }
 
 void ReleaseGeometry(Geometry* geo) {
-	if (!geo->maxOfTriangle == 0)
+	if (geo->maxOfTriangle != 0)
 	{
 		free(geo->vertices);
 		free(geo->uvs);
